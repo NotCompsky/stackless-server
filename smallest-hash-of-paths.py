@@ -2,6 +2,12 @@
 
 # inspired by https://orlp.net/blog/worlds-smallest-hash-table/
 
+import zlib
+
+def gzip_compress(contents:bytes):
+	CO = zlib.compressobj(level=9, wbits=31)
+	return CO.compress(contents)+CO.flush()
+
 def h(x, c):
 	m = (x * c) % 2**32
 	return m >> 28
@@ -48,25 +54,19 @@ if __name__ == "__main__":
 	if (args.pack_files_to is not None) and (args.multiplier == 0):
 		raise ValueError("For your own protection, can only pack files with a pre-set multiplier")
 	
-	input_indx2fsz:list = [0 for x in args.inputs]
 	input_indx2fp:list = [None for x in args.inputs]
 	
 	if args.dir is not None:
 		import os
 		args.inputs.append(" /\r\n")
-		input_indx2fsz.append(0)
 		input_indx2fp.append(None)
 		for fname in os.listdir(args.dir):
 			fp:str = args.dir + "/" + fname
 			if os.path.isdir(fp):
 				continue
-			stat = os.stat(fp)
-			fsz:int = stat.st_size
 			if fname == "index.html":
-				input_indx2fsz[args.inputs.index(" /\r\n")] = fsz
 				input_indx2fp[args.inputs.index(" /\r\n")] = fname
 				continue
-			input_indx2fsz.append(fsz)
 			input_indx2fp.append(fname)
 			val:str = " /"+fname[:2]
 			if val in args.inputs:
@@ -74,8 +74,6 @@ if __name__ == "__main__":
 			args.inputs.append(val)
 	
 	if args.pack_files_to is not None:
-		if 0 in input_indx2fsz:
-			raise ValueError("Some files do not have an input size (index.html not exist?)")
 		if None in input_indx2fp:
 			raise ValueError("Some files do not have a file path (index.html not exist?)")
 	
@@ -93,18 +91,31 @@ if __name__ == "__main__":
 	print(inputs)
 	if args.multiplier == 0:
 		args.multiplier = finding_0xedc72f12(inputs)
-	offset:int = 0
 	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 28")
-	sorteds:list = sorted(zip(args.inputs, inputs, input_indx2fsz, input_indx2fp), key=lambda x:((x[1]*args.multiplier) & 0xffffffff) >> 28)
-	for path, path_id, fsz, fp in sorteds:
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {json.dumps(path)}\toffset {offset}\tsize {fsz}")
-		offset += fsz
+	sorteds:list = sorted(zip(args.inputs, inputs, input_indx2fp), key=lambda x:((x[1]*args.multiplier) & 0xffffffff) >> 28)
+	for path, path_id, fp in sorteds:
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {json.dumps(path)}")
 	
 	if args.pack_files_to is not None:
-		written_n_bytes:int = 0
+		offset:int = 0
+		files__offsets_and_sizes:list = []
 		with open(args.pack_files_to, "wb") as fw:
-			for path, path_id, fsz, fp in sorteds:
+			for path, path_id, fp in sorteds:
+				written_n_bytes:int = 0
+				contents:bytes = b""
 				with open(fp, "rb") as fr:
-					written_n_bytes += fw.write(fr.read())
-		if written_n_bytes != offset:
-			raise ValueError(f"Written {written_n_bytes} bytes != {offset}")
+					contents = fr.read()
+				
+				contents_compressed:bytes = gzip_compress(contents)
+				if len(contents_compressed) < len(contents):
+					contents = contents_compressed
+				
+				written_n_bytes:int = fw.write(contents)
+				if written_n_bytes != len(contents):
+					raise ValueError(f"Written {written_n_bytes} bytes != {len(contents)}")
+				
+				offset += len(contents)
+				
+				files__offsets_and_sizes.append(offset)
+				files__offsets_and_sizes.append(len(contents))
+		print(files__offsets_and_sizes)
