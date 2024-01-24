@@ -23,16 +23,36 @@ def make_lut(h, inputs, answers):
 		lut[h(x)] = ans
 	return lut
 
-def finding_0xedc72f12(inputs:list):
+def finding_0xedc72f12(inputs:list, anti_inputs:list):
 	val:int = None
 	best = float('inf')
 	while best >= len(inputs):
 		val = random.randrange(2**32)
 		max_idx = max(h(x, val) for x in inputs)
 		if max_idx < best and is_phf(lambda x: h(x, val), inputs):
+			rejected:bool = False
+			for n in anti_inputs:
+				print("--")
+				if h(n, val) <= max_idx:
+					rejected = True
+					break
+			print("==")
+			if rejected:
+				print("REJECTED:", max_idx, hex(val))
+				continue
 			print(max_idx, hex(val))
 			best = max_idx
 	return val
+
+def get_path_id(path:str):
+	b:bytes = path.encode()
+	if len(b) != 4:
+		raise ValueError("All inputs must be 4 bytes (to be interpreted as u32): "+path)
+	little_endian_u32:int = 0
+	for n in b[::-1]:
+		little_endian_u32 <<= 8
+		little_endian_u32 |= n
+	return little_endian_u32
 
 if __name__ == "__main__":
 	import argparse
@@ -46,6 +66,7 @@ if __name__ == "__main__":
 	group1exclusive = group1.add_mutually_exclusive_group()
 	group1exclusive.add_argument("-i","--inputs",default=[],action="append")
 	group1exclusive.add_argument("--dir")
+	parser.add_argument("--anti-inputs",default=[],action="append",help="Require that these 'anti-inputs' be mapped to numbers OUTSIDE the range")
 	parser.add_argument("--multiplier", default=0, type=int, help="If you have already run this script")
 	parser.add_argument("--pack-files-to", help="For --dir. Create a single file that contains all files, ordered according to the resulting hash")
 	
@@ -77,24 +98,17 @@ if __name__ == "__main__":
 		if None in input_indx2fp:
 			raise ValueError("Some files do not have a file path (index.html not exist?)")
 	
-	inputs:list = []
-	for s in args.inputs:
-		b:bytes = s.encode()
-		if len(b) != 4:
-			raise ValueError("All inputs must be 4 bytes (to be interpreted as u32): "+s)
-		little_endian_u32:int = 0
-		for n in b[::-1]:
-			little_endian_u32 <<= 8
-			little_endian_u32 |= n
-		inputs.append(little_endian_u32)
+	inputs:list = [get_path_id(x) for x in args.inputs]
 	
 	print(inputs)
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12(inputs)
+		args.multiplier = finding_0xedc72f12(inputs, [get_path_id(x) for x in args.anti_inputs])
 	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 28")
 	sorteds:list = sorted(zip(args.inputs, inputs, input_indx2fp), key=lambda x:((x[1]*args.multiplier) & 0xffffffff) >> 28)
 	for path, path_id, fp in sorteds:
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {json.dumps(path)}")
+	for anti_input in args.anti_inputs:
+		print(f"{((get_path_id(anti_input)*args.multiplier) & 0xffffffff) >> 28}: {json.dumps(anti_input)}")
 	
 	if args.pack_files_to is not None:
 		offset:int = 0
