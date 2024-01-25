@@ -81,10 +81,9 @@ if __name__ == "__main__":
 	group1exclusive.add_argument("-i","--inputs",default=[],action="append")
 	group1exclusive.add_argument("--dir")
 	
-	group2 = parser.add_argument_group('Model 2')
-	group2exclusive = group2.add_mutually_exclusive_group()
-	group2exclusive.add_argument("--anti-inputs",default=[],action="append",help="Require that these 'anti-inputs' be mapped to numbers OUTSIDE the range")
-	group2exclusive.add_argument("--anti-dir")
+	parser.add_argument("--dir2")
+	
+	parser.add_argument("--anti-inputs",default=[],action="append",help="Require that these 'anti-inputs' be mapped to numbers OUTSIDE the range")
 	
 	parser.add_argument("--multiplier", default=0, type=int, help="If you have already run this script")
 	parser.add_argument("--pack-files-to", help="For --dir. Create a single file that contains all files, ordered according to the resulting hash")
@@ -93,7 +92,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	input_indx2fp:list = [None for x in args.inputs]
-	antiinput_indx2fp:list = [None for x in args.anti_inputs]
+	dir2_indx2fp:list = []
 	
 	if args.dir is not None:
 		import os
@@ -111,17 +110,18 @@ if __name__ == "__main__":
 			if val in args.inputs:
 				raise ValueError("2 files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
 			args.inputs.append(val)
-	if args.anti_dir is not None:
+	inputs2_paths:list = []
+	if args.dir2 is not None:
 		import os
-		for fname in os.listdir(args.anti_dir):
-			fp:str = args.anti_dir + "/" + fname
+		for fname in os.listdir(args.dir2):
+			fp:str = args.dir2 + "/" + fname
 			if os.path.isdir(fp):
 				continue
-			antiinput_indx2fp.append(fp)
+			dir2_indx2fp.append(fp)
 			val:str = " /"+fname[:2]
-			if val in args.anti_inputs:
+			if val in inputs2_paths:
 				raise ValueError("2 anti-files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
-			args.anti_inputs.append(val)
+			inputs2_paths.append(val)
 	
 	if args.pack_files_to is not None:
 		if None in input_indx2fp:
@@ -130,19 +130,24 @@ if __name__ == "__main__":
 			raise ValueError("--pack-files-to requires --write-hpp (for safety)")
 	
 	inputs:list = [get_path_id(x) for x in args.inputs]
+	inputs2:list = [get_path_id(x) for x in inputs2_paths]
 	anti_inputs:list = [get_path_id(x) for x in args.anti_inputs]
 	
 	print(inputs)
 	multiplier2:int = 0
-	if len(anti_inputs) != 0:
-		multiplier2 = finding_0xedc72f12(anti_inputs, [])
+	if len(inputs2) != 0:
+		multiplier2 = finding_0xedc72f12(inputs2, [])
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12(inputs, anti_inputs)
+		args.multiplier = finding_0xedc72f12(inputs, inputs2+anti_inputs)
 	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 28")
 	sorteds:list = sorted(zip(args.inputs, inputs, input_indx2fp), key=lambda x:((x[1]*args.multiplier) & 0xffffffff) >> 28)
 	for path, path_id, fp in sorteds:
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}:\t{path_id}\t{json.dumps(path)}")
 	print(f"((path_id*{multiplier2}) & 0xffffffff) >> 28 // for unpackaged files")
+	for path, path_id in zip(inputs2_paths, inputs2):
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {((path_id*multiplier2) & 0xffffffff) >> 28}:{path_id}\t{json.dumps(path)}")
+	
+	print("--anti-inputs:")
 	for path, path_id in zip(args.anti_inputs, anti_inputs):
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {((path_id*multiplier2) & 0xffffffff) >> 28}:{path_id}\t{json.dumps(path)}")
 	
@@ -151,14 +156,14 @@ if __name__ == "__main__":
 		offset:int = 0
 		files__offsets_and_sizes:list = []
 		max_file_and_header_sz:int = 0
-		antiinput_indx2mimetype:list = []
-		antiinput_indx2fsz:list = []
-		for fp in antiinput_indx2fp:
+		dir2_indx2mimetype:list = []
+		dir2_indx2fsz:list = []
+		for fp in dir2_indx2fp:
 			mimetype:str = magic.from_file(os.path.realpath(fp), mime=True)
 			mimetype = standardise_mimetype(mimetype, fp)
-			antiinput_indx2mimetype.append(mimetype)
+			dir2_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
-			antiinput_indx2fsz.append(stat.st_size)
+			dir2_indx2fsz.append(stat.st_size)
 		with open(args.pack_files_to, "wb") as fw:
 			for path, path_id, fp in sorteds:
 				written_n_bytes:int = 0
@@ -232,19 +237,19 @@ if __name__ == "__main__":
 			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {len(args.inputs)};\n")
 			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
 			
-			if len(anti_inputs) == 0:
+			if len(inputs2) == 0:
 				f.write("#define HASH2_IS_NONE\n")
 			else:
 				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {multiplier2};\n")
-				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {len(args.anti_inputs)};\n")
+				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {len(inputs2)};\n")
 				f.write("""struct HASH2_indx2metadata_item {
 	const char* const fp;
 	const char* const mimetype;
 	const size_t fsz;
 };\n""")
 				s:str = ""
-				for fp, mimetype, fsz in zip(antiinput_indx2fp, antiinput_indx2mimetype, antiinput_indx2fsz):
+				for fp, mimetype, fsz in zip(dir2_indx2fp, dir2_indx2mimetype, dir2_indx2fsz):
 					s += f",{{{json.dumps(fp)}, {json.dumps(mimetype)}, {fsz}}}"
-				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{len(args.anti_inputs)}] = {{{s[1:]}}};\n")
+				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{len(inputs2)}] = {{{s[1:]}}};\n")
 			
 			f.write(f"constexpr unsigned HASH1_max_file_and_header_sz = {max_file_and_header_sz};\n")
