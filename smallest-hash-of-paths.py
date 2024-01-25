@@ -44,7 +44,11 @@ def finding_0xedc72f12(inputs:list, anti_inputs:list):
 
 def get_path_id(path:str):
 	b:bytes = path.encode()
-	if len(b) != 4:
+	if len(b) == 3:
+		b = b + b" "
+	elif len(b) == 2:
+		b = b + b" H"
+	elif len(b) != 4:
 		raise ValueError("All inputs must be 4 bytes (to be interpreted as u32): "+path)
 	# return unpack("<I", b)[0]
 	little_endian_u32:int = 0
