@@ -5,6 +5,15 @@
 import zlib
 from struct import unpack
 
+def standardise_mimetype(mimetype):
+	if mimetype.startswith("text/html"):
+		mimetype = "text/html"
+	elif mimetype.startswith("text/x-"):
+		mimetype = "text/plain"
+	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain"):
+		raise ValueError("Bad mimetype: "+mimetype)
+	return mimetype
+
 def gzip_compress(contents:bytes):
 	CO = zlib.compressobj(level=9, wbits=31)
 	return CO.compress(contents)+CO.flush()
@@ -140,6 +149,14 @@ if __name__ == "__main__":
 		offset:int = 0
 		files__offsets_and_sizes:list = []
 		max_file_and_header_sz:int = 0
+		antiinput_indx2mimetype:list = []
+		antiinput_indx2fsz:list = []
+		for fp in antiinput_indx2fp:
+			mimetype:str = magic.from_file(os.path.realpath(fp), mime=True)
+			mimetype = standardise_mimetype(mimetype)
+			antiinput_indx2mimetype.append(mimetype)
+			stat = os.stat(fp)
+			antiinput_indx2fsz.append(stat.st_size)
 		with open(args.pack_files_to, "wb") as fw:
 			for path, path_id, fp in sorteds:
 				written_n_bytes:int = 0
@@ -151,10 +168,7 @@ if __name__ == "__main__":
 				if mimetype == "application/gzip":
 					contents = zlib.decompress(contents, wbits=31)
 					mimetype = magic.from_buffer(contents, mime=True)
-				if mimetype.startswith("text/html"):
-					mimetype = "text/html"
-				elif mimetype.startswith("text/x-"):
-					mimetype = "text/plain"
+				mimetype = standardise_mimetype(mimetype)
 				
 				headers:str = (
 					"HTTP/1.1 200 OK\r\n"
@@ -221,6 +235,14 @@ if __name__ == "__main__":
 			else:
 				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {multiplier2};\n")
 				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {len(args.anti_inputs)};\n")
-				f.write(f"const char* HASH2_FILEPATHS[{len(args.anti_inputs)}] = {json.dumps(antiinput_indx2fp)};")
+				f.write("""struct HASH2_indx2metadata_item {
+	const char* const fp;
+	const char* const mimetype;
+	const size_t fsz;
+};\n""")
+				s:str = ""
+				for fp, mimetype, fsz in zip(antiinput_indx2fp, antiinput_indx2mimetype, antiinput_indx2fsz):
+					s += f",{{{json.dumps(fp)}, {json.dumps(mimetype)}, {fsz}}}"
+				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{len(args.anti_inputs)}] = {{{s[1:]}}};\n")
 			
 			f.write(f"constexpr unsigned HASH1_max_file_and_header_sz = {max_file_and_header_sz};\n")

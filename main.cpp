@@ -5,6 +5,8 @@
 #define COMPSKY_SERVER_NOSENDFILE
 #include <compsky/server/server.hpp>
 #include <compsky/server/static_response.hpp>
+#include <compsky/http/parse.hpp>
+#include <compsky/utils/ptrdiff.hpp>
 #include <signal.h>
 #include "files/files.hpp"
 
@@ -35,6 +37,11 @@ constexpr static const std::string_view server_error =
 
 constexpr size_t MAX_HEADER_LEN = 4096;
 constexpr size_t default_req_buffer_sz_minus1 = 4*4096-1;
+constexpr size_t filestreaming__block_sz = 1024 * 1024 * 10;
+constexpr size_t filestreaming__stream_block_sz = 1024 * 1024;
+constexpr size_t filestreaming__max_response_header_sz = 4321; // TODO: Establish actual value - this is an (over)estimate
+static_assert(filestreaming__block_sz >= filestreaming__stream_block_sz, "filestreaming__block_sz must be >= filestreaming__stream_block_sz");
+constexpr size_t server_buf_sz = (HASH1_max_file_and_header_sz > (filestreaming__block_sz+filestreaming__max_response_header_sz)) ? HASH1_max_file_and_header_sz : (filestreaming__block_sz+filestreaming__max_response_header_sz);
 class HTTPResponseHandler;
 typedef std::nullptr_t NonHTTPRequestHandler;
 typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 3, 60, 3> Server;
@@ -85,9 +92,62 @@ class HTTPResponseHandler {
 #ifndef HASH2_IS_NONE
 				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> 28;
 				if (likely(path_indx2 < HASH2_LIST_LENGTH)){
-					const int fd = open(HASH2_FILEPATHS[path_indx2], O_NOATIME|O_RDONLY);
-					close(fd);
-					return "TODO2";
+					
+					size_t from;
+					size_t to;
+					const compsky::http::header::GetRangeHeaderResult rc = compsky::http::header::get_range(str, from, to);
+					if (unlikely(rc == compsky::http::header::GetRangeHeaderResult::invalid)){
+						return not_found;
+					}
+					
+					if (unlikely( (to != 0) and (to <= from) ))
+						return not_found;
+					
+					const HASH2_indx2metadata_item& metadata = HASH2_indx2metadata[path_indx2];
+					
+					const size_t bytes_to_read1 = (rc == compsky::http::header::GetRangeHeaderResult::none) ? filestreaming__block_sz : ((to) ? (to - from) : filestreaming__stream_block_sz);
+					const size_t bytes_to_read  = (bytes_to_read1 > (metadata.fsz-from)) ? (metadata.fsz-from) : bytes_to_read1;
+					
+					const int fd = open(metadata.fp, O_NOATIME|O_RDONLY);
+					if (likely(lseek(fd, from, SEEK_SET) == from)){
+						char* server_itr = server_buf;
+						if ((rc == compsky::http::header::GetRangeHeaderResult::none) and (bytes_to_read == metadata.fsz)){
+							// Both Firefox and Chrome send a range header for videos, neither for images
+							compsky::asciify::asciify(server_itr,
+								"HTTP/1.1 200 OK\r\n"
+								"Accept-Ranges: bytes\r\n"
+								"Content-Type: ", metadata.mimetype, "\r\n"
+								HEADER__CONNECTION_KEEP_ALIVE
+								// TODO: Surely content-range header should be here?
+								"Content-Length: ", metadata.fsz, "\r\n"
+								"\r\n"
+							);
+						} else {
+							compsky::asciify::asciify(server_itr,
+								"HTTP/1.1 206 Partial Content\r\n"
+								"Accept-Ranges: bytes\r\n"
+								"Content-Type: ", metadata.mimetype, "\r\n"
+								HEADER__CONNECTION_KEEP_ALIVE
+								"Content-Range: bytes ", from, '-', from + bytes_to_read - 1, '/', metadata.fsz, "\r\n"
+								// The minus one is because the range of n bytes is from zeroth byte to the (n-1)th byte
+								"Content-Length: ", bytes_to_read, "\r\n"
+								"\r\n"
+							);
+						}
+						const ssize_t n_bytes_read = read(fd, server_itr, bytes_to_read);
+						if (unlikely(n_bytes_read != bytes_to_read)){
+							// TODO: Maybe read FIRST, then construct headers?
+							///server_itr = server_buf;
+							///compsky::asciify::asciify(server_itr, n_bytes_read, " == n_bytes_read != bytes_to_read == ", bytes_to_read, "; bytes_to_read1 == ", bytes_to_read1);
+							close(fd);
+							return server_error;
+						}
+						close(fd);
+						return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf)+n_bytes_read);
+					} else {
+						close(fd);
+						return server_error;
+					}
 				} else {
 					return not_found;
 				}
@@ -124,7 +184,7 @@ int main(const int argc,  const char* argv[]){
 		return 1;
 	}
 	
-	server_buf = reinterpret_cast<char*>(malloc(HASH1_max_file_and_header_sz)); // NOTE: Size is arbitrary afaik
+	server_buf = reinterpret_cast<char*>(malloc(server_buf_sz));
 	if (unlikely(server_buf == nullptr)){
 		return 1;
 	}
