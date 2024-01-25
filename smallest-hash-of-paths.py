@@ -58,9 +58,9 @@ def finding_0xedc72f12(inputs:list, anti_inputs:list):
 def get_path_id(path:str):
 	b:bytes = path.encode()
 	if len(b) == 3:
-		b = b + b" "
+		b = b + b"T"
 	elif len(b) == 2:
-		b = b + b" H"
+		b = b + b"TT"
 	elif len(b) != 4:
 		raise ValueError("All inputs must be 4 bytes (to be interpreted as u32): "+path)
 	# return unpack("<I", b)[0]
@@ -98,17 +98,17 @@ if __name__ == "__main__":
 	
 	if args.dir is not None:
 		import os
-		args.inputs.append(" / H")
+		args.inputs.append(" HTT")
 		input_indx2fp.append(None)
 		for fname in os.listdir(args.dir):
 			fp:str = args.dir + "/" + fname
 			if os.path.isdir(fp):
 				continue
 			if fname == "index.html":
-				input_indx2fp[args.inputs.index(" / H")] = fp
+				input_indx2fp[args.inputs.index(" HTT")] = fp
 				continue
 			input_indx2fp.append(fp)
-			val:str = " /"+fname[:2]
+			val:str = fname[:4]
 			if val in args.inputs:
 				raise ValueError("2 files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
 			args.inputs.append(val)
@@ -120,7 +120,7 @@ if __name__ == "__main__":
 			if os.path.isdir(fp):
 				continue
 			dir2_indx2fp.append(fp)
-			val:str = " /"+fname[:2]
+			val:str = fname[:4]
 			if val in inputs2_paths:
 				raise ValueError("2 anti-files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
 			inputs2_paths.append(val)

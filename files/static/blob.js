@@ -142,15 +142,20 @@ function showMessage(msg){
 	messages.innerText += msg;
 	messages.scrollTop = messages.scrollHeight - messages.clientHeight;
 };
+var ws_onOpen_fn = null;
 function ws_onOpen(){
 	/*getorpost("/chatpassword.txt", null, password => {
 		ws.send(password);
 		console.log("Attempting to log in with password: "+password);
 	});*/
-	showMessage("[connection opened]\n");
+	showMessage("[Connection opened]\n");
+	if (ws_onOpen_fn !== null){
+		ws_onOpen_fn();
+		ws_onOpen_fn = null;
+	}
 }
 function ws_onClose(){
-	showMessage("[connection closed]\n");
+	showMessage("[Connection closed - probably timed out]\n");
 }
 function ws_onMsg(ev){
 	let fullmsg = ev.data;
@@ -217,7 +222,8 @@ function ws__send(msg, is_cmd){
 function send_onClick(){
 	const msg = sendMessage.value;
 	if (!ws__isConnectedOrConnecting()){
-		showerr("Must reconnect to server");
+		ws_onOpen_fn = send_onClick;
+		ws_connectToServer();
 	} else if (msg === ""){
 		showerr("You haven't written a message");
 	} else {
