@@ -120,6 +120,7 @@ int main(const int argc,  const char* argv[]){
 	}
 	
 	signal(SIGPIPE, SIG_IGN); // see https://stackoverflow.com/questions/5730975/difference-in-handling-of-signals-in-unix for why use this vs sigprocmask - seems like sigprocmask just causes a queue of signals to build up
+	std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 	Server::max_req_buffer_sz_minus_1 = 500*1024; // NOTE: Size is arbitrary
-	Server::run(8090, server_buf, all_client_contexts);
+	Server::run(8090, server_buf, all_client_contexts, EWOULDBLOCK_queue);
 }
