@@ -10,10 +10,12 @@ def standardise_mimetype(mimetype:str, fp:str):
 		mimetype = "text/html"
 	elif mimetype.startswith("text/x-"):
 		mimetype = "text/plain"
-	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain"):
+	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json"):
 		raise ValueError("Bad mimetype: "+mimetype)
 	if (mimetype == "text/plain") and fp.endswith(".js"):
 		mimetype = "application/javascript"
+	if (mimetype == "text/plain") and fp.endswith(".css"):
+		mimetype = "text/css"
 	return mimetype
 
 def gzip_compress(contents:bytes):
@@ -251,5 +253,8 @@ if __name__ == "__main__":
 				for fp, mimetype, fsz in zip(dir2_indx2fp, dir2_indx2mimetype, dir2_indx2fsz):
 					s += f",{{{json.dumps(fp)}, {json.dumps(mimetype)}, {fsz}}}"
 				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{len(inputs2)}] = {{{s[1:]}}};\n")
+			
+			for i, antiinput_val in enumerate(anti_inputs):
+				f.write(f"constexpr uint32_t HASH_ANTIINPUT_{i} = {antiinput_val};\n")
 			
 			f.write(f"constexpr unsigned HASH1_max_file_and_header_sz = {max_file_and_header_sz};\n")

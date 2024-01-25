@@ -115,7 +115,7 @@ function get_as_inline_document_body(full_path_minus_file_ext){
 var already_loaded_essay1 = false;
 function view_video_core(relative_path){
 	currently_viewing_file_id = relative_path;
-	const full_path = "/chatdirf/"+currently_viewing_file_id;
+	const full_path = "/"+currently_viewing_file_id;
 	if (currently_viewing_file_id.endsWith(".html")){
 		view_html.src = full_path;
 		view_video.classList.add("display-none");

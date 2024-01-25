@@ -1,5 +1,13 @@
+#include <openssl/sha.h>
+#include "typedefs.hpp"
+#include "b64d.hpp"
+
+constexpr
+bool is_b64_char(const char c){
+	return ((c >= 'A') and (c <= 'Z')) or ((c >= 'a') and (c <= 'z')) or ((c >= '0') and (c <= '9')) or (c == '+') or (c == '/') or (c == '=');
+}
+
 	std::string_view request_websocket_open(Server::ClientContext* client_context,  char* s,  std::vector<char*>& headers){
-		GET_USER_ID
 		
 		bool has_websocketupgrade_header = false;
 		char* websocketkey = nullptr;
@@ -81,7 +89,7 @@
 			(not has_websocketupgrade_header) or
 			(websocketkey == nullptr)
 		){
-			return this->send_not_found();
+			return not_found;
 		}
 		
 		bool is_valid_origin = false;
@@ -108,7 +116,7 @@
 		}
 		if (unlikely(not is_valid_origin)){
 			printf("Invalid origin vs hostname: %.20s vs %.20s\n", origin_header_start ? origin_header_start : "(NULL)", hostname_start ? hostname_start : "(NULL)");
-			return this->send_not_found();
+			return not_found;
 		}
 		
 		char server_key_input[24 + 36]; // TODO: See if client key is decoded first - it probably isn't because the purpose is just to be random

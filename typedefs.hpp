@@ -10,3 +10,22 @@ constexpr size_t server_buf_sz = (HASH1_max_file_and_header_sz > (filestreaming_
 class HTTPResponseHandler;
 class NonHTTPRequestHandler;
 typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 0, 60, 5> Server;
+
+constexpr static const std::string_view not_found =
+	HEADER__RETURN_CODE__NOT_FOUND
+	HEADER__CONTENT_TYPE__TEXT
+	HEADER__CONNECTION_KEEP_ALIVE
+	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Content-Length: 9\r\n"
+	"\r\n"
+	"Not Found"
+;
+constexpr static const std::string_view server_error =
+	HEADER__RETURN_CODE__SERVER_ERR
+	HEADER__CONTENT_TYPE__TEXT
+	HEADER__CONNECTION_KEEP_ALIVE
+	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Content-Length: 12\r\n"
+	"\r\n"
+	"Server error"
+;

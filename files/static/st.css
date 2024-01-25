@@ -1,0 +1,30 @@
+/* web chat: */
+
+#leftcol {
+	float:left;
+}
+#rightcol {
+	float:right;
+}
+#messages {
+	width: 600px;
+	height: 400px;
+	white-space: normal;
+	overflow: auto;
+	border: solid 1px #cccccc;
+	margin-bottom: 5px;
+}
+#showerr_node {
+	background: red;
+}
+.dir_files_container {}
+
+
+.unselectable {
+	-moz-user-select:-moz-none;
+	-khtml-user-select:none;
+	-webkit-user-select:none;
+}
+.display-none {
+	display:none;
+}

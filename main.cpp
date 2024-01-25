@@ -10,6 +10,7 @@
 #include <signal.h>
 #include "files/files.hpp"
 #include "server_nonhttp.hpp"
+#include "request_websocket_open.hpp"
 #include "typedefs.hpp"
 
 #include <cstdio>
@@ -17,25 +18,6 @@
 #define SECURITY_HEADERS \
 	GENERAL_SECURITY_HEADERS \
 	"Content-Security-Policy: default-src 'none'; frame-src 'none'; connect-src 'self'; script-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self'\r\n"
-
-constexpr static const std::string_view not_found =
-	HEADER__RETURN_CODE__NOT_FOUND
-	HEADER__CONTENT_TYPE__TEXT
-	HEADER__CONNECTION_KEEP_ALIVE
-	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
-	"Content-Length: 9\r\n"
-	"\r\n"
-	"Not Found"
-;
-constexpr static const std::string_view server_error =
-	HEADER__RETURN_CODE__SERVER_ERR
-	HEADER__CONTENT_TYPE__TEXT
-	HEADER__CONNECTION_KEEP_ALIVE
-	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
-	"Content-Length: 12\r\n"
-	"\r\n"
-	"Server error"
-;
 
 std::vector<Server::ClientContext> all_client_contexts;
 std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
@@ -48,7 +30,7 @@ class HTTPResponseHandler {
 	bool keep_alive;
 	
 	HTTPResponseHandler(const std::int64_t _thread_id,  char* const _buf)
-	: keep_alive(false)
+	: keep_alive(true)
 	{}
 	
 	char remote_addr_str[INET6_ADDRSTRLEN];
@@ -82,7 +64,7 @@ class HTTPResponseHandler {
 			} else {
 #ifndef HASH2_IS_NONE
 				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> 28;
-				if (likely(path_indx2 < HASH2_LIST_LENGTH)){
+				if (path_indx2 < HASH2_LIST_LENGTH){
 					
 					size_t from;
 					size_t to;
@@ -139,7 +121,10 @@ class HTTPResponseHandler {
 						close(fd);
 						return server_error;
 					}
+				} else if (path_id == HASH_ANTIINPUT_0){
+					return request_websocket_open(client_context, nullptr, headers);
 				} else {
+					[[unlikely]]
 					return not_found;
 				}
 #endif
