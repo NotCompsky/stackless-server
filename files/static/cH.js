@@ -182,13 +182,8 @@ function ws__isConnected(){
 }
 function ws_connectToServer(){
 	if (!ws__isConnectedOrConnecting()){
-		let server_url = "ws://localhost:8079";
-		if (document.location.host === "localhost:1999")
-			server_url = "ws://localhost:1999/tagem/chat";
-		else if (document.location.host !== ""){
-			server_url = "wss://"+document.location.host+"/chatcore";
-		}
-		ws = new WebSocket(server_url); // ws://localhost:8079 if testing
+		const server_url = "ws://"+document.location.host+"/1/test/new";
+		ws = new WebSocket(server_url);
 		ws.onopen    = ws_onOpen;
 		ws.onclose   = ws_onClose;
 		ws.onmessage = ws_onMsg;

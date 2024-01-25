@@ -5,13 +5,15 @@
 import zlib
 from struct import unpack
 
-def standardise_mimetype(mimetype):
+def standardise_mimetype(mimetype:str, fp:str):
 	if mimetype.startswith("text/html"):
 		mimetype = "text/html"
 	elif mimetype.startswith("text/x-"):
 		mimetype = "text/plain"
 	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain"):
 		raise ValueError("Bad mimetype: "+mimetype)
+	if (mimetype == "text/plain") and fp.endswith(".js"):
+		mimetype = "application/javascript"
 	return mimetype
 
 def gzip_compress(contents:bytes):
@@ -153,7 +155,7 @@ if __name__ == "__main__":
 		antiinput_indx2fsz:list = []
 		for fp in antiinput_indx2fp:
 			mimetype:str = magic.from_file(os.path.realpath(fp), mime=True)
-			mimetype = standardise_mimetype(mimetype)
+			mimetype = standardise_mimetype(mimetype, fp)
 			antiinput_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
 			antiinput_indx2fsz.append(stat.st_size)
@@ -168,7 +170,7 @@ if __name__ == "__main__":
 				if mimetype == "application/gzip":
 					contents = zlib.decompress(contents, wbits=31)
 					mimetype = magic.from_buffer(contents, mime=True)
-				mimetype = standardise_mimetype(mimetype)
+				mimetype = standardise_mimetype(mimetype, fp)
 				
 				headers:str = (
 					"HTTP/1.1 200 OK\r\n"

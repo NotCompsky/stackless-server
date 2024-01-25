@@ -3,8 +3,8 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Chat Client</title>
-	<link rel="stylesheet" href="style.css"/>
-	<script src="chat.js"></script>
+	<link rel="stylesheet" href="/style.css"/>
+	<script src="/cHTTPmessages.js"></script>
 </head>
 <body>
 <div class="entire_bg">
