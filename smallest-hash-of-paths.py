@@ -136,8 +136,10 @@ if __name__ == "__main__":
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {((path_id*multiplier2) & 0xffffffff) >> 28}:{path_id}\t{json.dumps(path)}")
 	
 	if args.pack_files_to is not None:
+		import magic
 		offset:int = 0
 		files__offsets_and_sizes:list = []
+		max_file_and_header_sz:int = 0
 		with open(args.pack_files_to, "wb") as fw:
 			for path, path_id, fp in sorteds:
 				written_n_bytes:int = 0
@@ -145,17 +147,49 @@ if __name__ == "__main__":
 				with open(fp, "rb") as fr:
 					contents = fr.read()
 				
+				mimetype:str = magic.from_buffer(contents, mime=True)
+				if mimetype == "application/gzip":
+					contents = zlib.decompress(contents, wbits=31)
+					mimetype = magic.from_buffer(contents, mime=True)
+				if mimetype.startswith("text/html"):
+					mimetype = "text/html"
+				elif mimetype.startswith("text/x-"):
+					mimetype = "text/plain"
+				
+				headers:str = (
+					"HTTP/1.1 200 OK\r\n"
+					"content-type: " + mimetype + "\r\n"
+					"x-xss-protection: 1; mode=block\r\n"
+					"x-content-type-options: nosniff\r\n"
+					"x-frame-options: SAMEORIGIN\r\n"
+					"referrer-policy: no-referrer\r\n"
+					"feature-policy: geolocation 'none'; camera 'none'; microphone 'none'\r\n"
+					"connection: keep-alive\r\n"
+				)
+				if mimetype == "text/html":
+					headers += "content-security-policy: default-src 'none'; connect-src 'self'; script-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'\r\n"
+				
 				contents_compressed:bytes = gzip_compress(contents)
+				
 				if len(contents_compressed) < len(contents)+10:
 					contents = contents_compressed
+					headers += "content-encoding: gzip\r\n"
+				
+				headers += "content-length: " + str(len(contents)) + "\r\n"
+				
+				contents = headers.encode() + b"\r\n" + contents
+				content_len:int = len(contents)
 				
 				written_n_bytes:int = fw.write(contents)
-				if written_n_bytes != len(contents):
-					raise ValueError(f"Written {written_n_bytes} bytes != {len(contents)}")
+				if written_n_bytes != content_len:
+					raise ValueError(f"Written {written_n_bytes} bytes != {content_len}")
+				
+				if content_len > max_file_and_header_sz:
+					max_file_and_header_sz = content_len
 				
 				files__offsets_and_sizes.append(offset)
-				offset += len(contents)
-				files__offsets_and_sizes.append(offset)
+				offset += content_len
+				files__offsets_and_sizes.append(content_len)
 		
 		def write_int_arr_for_cpp(arr:list):
 			s:str = "{"
@@ -176,3 +210,5 @@ if __name__ == "__main__":
 				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {multiplier2};\n")
 				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {len(args.anti_inputs)};\n")
 				f.write(f"const char* HASH2_FILEPATHS[{len(args.anti_inputs)}] = {json.dumps(antiinput_indx2fp)};")
+			
+			f.write(f"constexpr unsigned HASH1_max_file_and_header_sz = {max_file_and_header_sz};\n")

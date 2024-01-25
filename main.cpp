@@ -23,6 +23,15 @@ constexpr static const std::string_view not_found =
 	"\r\n"
 	"Not Found"
 ;
+constexpr static const std::string_view server_error =
+	HEADER__RETURN_CODE__SERVER_ERR
+	HEADER__CONTENT_TYPE__TEXT
+	HEADER__CONNECTION_KEEP_ALIVE
+	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Content-Length: 12\r\n"
+	"\r\n"
+	"Server error"
+;
 
 constexpr size_t MAX_HEADER_LEN = 4096;
 constexpr size_t default_req_buffer_sz_minus1 = 4*4096-1;
@@ -33,6 +42,7 @@ typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HT
 std::vector<Server::ClientContext> all_client_contexts;
 
 int packed_file_fd;
+char* server_buf;
 
 class HTTPResponseHandler {
  public:
@@ -64,7 +74,14 @@ class HTTPResponseHandler {
 			if (path_indx < HASH1_LIST_LENGTH){
 				const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
 				const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
-				return "TODO"; // TODO: read from packed_file_fd
+				if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
+					const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
+					printf("n_bytes_written %li\n", (int64_t)n_bytes_written);
+					fflush(stdout);
+					return std::string_view(server_buf, n_bytes_written);
+				} else {
+					return server_error;
+				}
 			} else {
 #ifndef HASH2_IS_NONE
 				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> 28;
@@ -97,7 +114,7 @@ int main(const int argc,  const char* argv[]){
 		return 1;
 	}
 	
-	char* const server_buf = reinterpret_cast<char*>(malloc(4*1024*1024)); // NOTE: Size is arbitrary afaik
+	server_buf = reinterpret_cast<char*>(malloc(HASH1_max_file_and_header_sz)); // NOTE: Size is arbitrary afaik
 	if (unlikely(server_buf == nullptr)){
 		return 1;
 	}
