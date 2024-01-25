@@ -167,7 +167,19 @@ if __name__ == "__main__":
 					"connection: keep-alive\r\n"
 				)
 				if mimetype == "text/html":
-					headers += "content-security-policy: default-src 'none'; connect-src 'self'; script-src 'self'; img-src 'self'; media-src 'self'; style-src 'self'\r\n"
+					if path == " /rp": # rpill
+						headers += "content-security-policy: default-src 'none'; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self';\r\n"
+					else:
+						headers += "content-security-policy: default-src 'none'; connect-src 'self'; "
+						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
+							headers += "script-src 'self' 'unsafe-inline'; "
+						else:
+							headers += "script-src 'self'; "
+						if b"<style>" in contents:
+							headers += "style-src 'self' 'unsafe-inline'; "
+						else:
+							headers += "style-src 'self'; "
+						headers += "img-src 'self'; media-src 'self';\r\n"
 				
 				contents_compressed:bytes = gzip_compress(contents)
 				
