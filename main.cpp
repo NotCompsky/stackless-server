@@ -40,6 +40,7 @@ typedef std::nullptr_t NonHTTPRequestHandler;
 typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 3, 60, 3> Server;
 
 std::vector<Server::ClientContext> all_client_contexts;
+std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 
 int packed_file_fd;
 char* server_buf;
@@ -76,8 +77,6 @@ class HTTPResponseHandler {
 				const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
 				if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
 					const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
-					printf("n_bytes_written %li\n", (int64_t)n_bytes_written);
-					fflush(stdout);
 					return std::string_view(server_buf, n_bytes_written);
 				} else {
 					return server_error;
@@ -100,6 +99,17 @@ class HTTPResponseHandler {
 	}
 	
 	bool handle_timer_event(){
+		unsigned n_nonempty = 0;
+		uint64_t total_sz = 0;
+		for (unsigned i = 0;  i < EWOULDBLOCK_queue.size();  ++i){
+			if (EWOULDBLOCK_queue[i].client_socket != 0){
+				++n_nonempty;
+				total_sz += EWOULDBLOCK_queue[i].queued_msg_length;
+			}
+		}
+		if (n_nonempty != 0)
+			printf("EWOULDBLOCK_queue[%lu] has %u non-empty entries (%luKiB)\n", EWOULDBLOCK_queue.size(), n_nonempty, total_sz/1024);
+		// TODO: Tidy vectors such as EWOULDBLOCK_queue by removing items where client_socket==0
 		return false;
 	}
 	bool is_acceptable_remote_ip_addr(){
@@ -120,7 +130,6 @@ int main(const int argc,  const char* argv[]){
 	}
 	
 	signal(SIGPIPE, SIG_IGN); // see https://stackoverflow.com/questions/5730975/difference-in-handling-of-signals-in-unix for why use this vs sigprocmask - seems like sigprocmask just causes a queue of signals to build up
-	std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 	Server::max_req_buffer_sz_minus_1 = 500*1024; // NOTE: Size is arbitrary
 	Server::run(8090, server_buf, all_client_contexts, EWOULDBLOCK_queue);
 }
