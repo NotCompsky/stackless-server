@@ -9,6 +9,8 @@
 #include <compsky/utils/ptrdiff.hpp>
 #include <signal.h>
 #include "files/files.hpp"
+#include "server_nonhttp.hpp"
+#include "typedefs.hpp"
 
 #include <cstdio>
 
@@ -34,17 +36,6 @@ constexpr static const std::string_view server_error =
 	"\r\n"
 	"Server error"
 ;
-
-constexpr size_t MAX_HEADER_LEN = 4096;
-constexpr size_t default_req_buffer_sz_minus1 = 4*4096-1;
-constexpr size_t filestreaming__block_sz = 1024 * 1024 * 10;
-constexpr size_t filestreaming__stream_block_sz = 1024 * 1024;
-constexpr size_t filestreaming__max_response_header_sz = 4321; // TODO: Establish actual value - this is an (over)estimate
-static_assert(filestreaming__block_sz >= filestreaming__stream_block_sz, "filestreaming__block_sz must be >= filestreaming__stream_block_sz");
-constexpr size_t server_buf_sz = (HASH1_max_file_and_header_sz > (filestreaming__block_sz+filestreaming__max_response_header_sz)) ? HASH1_max_file_and_header_sz : (filestreaming__block_sz+filestreaming__max_response_header_sz);
-class HTTPResponseHandler;
-typedef std::nullptr_t NonHTTPRequestHandler;
-typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 3, 60, 3> Server;
 
 std::vector<Server::ClientContext> all_client_contexts;
 std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Chat Client</title>
+	<link rel="stylesheet" href="style.css"/>
+	<script src="chat.js"></script>
+</head>
+<body>
+<div class="entire_bg">
+	<div id="view_files" class="display-none entire_bg"></div>
+	<div id="view_container" class="unselectable display-none entire_bg">
+		<video class="media-view entire_bg" id="view_video" controls><source id="view_video_src" type="video/mp4">Browser does not support videos</source></video>
+		<!--<audio class="media-view display-none" id="view_audio" controls>
+			<source onerror="on_media_error(this)">Browser does not support audio</source>
+		</audio>-->
+		<iframe id="view_html" class="entire_bg"></iframe>
+		<div id="inline_document_body" class="entire_bg">Loading HTML...</div>
+	</div>
+</div>
+
+<div class="human_movable_div">
+	<button id="showfilemenu" class="position_fixed">FILES</button>
+	<button id="showsiblingmenubtn" class="position_fixed">CHAT</button>
+	<div class="">
+		<div>TODO: rpill, controlled solely by master, hide when disconnected</div>
+		<button class="echo-button" id="connect">Connect</button>
+		<button class="echo-button" id="disconnect">Disconnect</button>
+		<div id="showerr_container" class="display-none">
+			<pre id="showerr_node"></pre>
+			<button id="hideerrbtn">OK</button>
+		</div>
+		<pre id="messages"></pre>
+		<div>
+			Message<br>
+			<input id="sendMessage" size="74" value="">
+			<button class="echo-button" id="send">Send</button>
+		</div>
+	</div>
+</div>
+</body>
+</html>
