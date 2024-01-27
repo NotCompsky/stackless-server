@@ -28,6 +28,9 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
+	uint32_t prev_max_sz = 1024;
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
 		
@@ -37,40 +40,35 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
 		}
 		
-		bool abandon = false;
-		for (unsigned i = 0;  i < arr_sz;  ++i){
-			if (arr[i] > 2*arr_sz){
-				abandon = true;
-				break;
-			}
-		}
-		if (abandon)
-			continue;
-		
-		uint32_t nonunique_values = -1;
-		for (unsigned i = 0;  i < arr_sz-1;  ++i){
-			for (unsigned j = i+1;  j < arr_sz;  ++j){
-				if (unlikely(arr[i] == arr[j])){
-					nonunique_values = arr[i];
-					break;
-				}
-			}
-			if (nonunique_values != -1)
-				break;
-		}
-		if (likely(nonunique_values != -1))
-			continue;
-		
 		uint32_t max_idx = 0;
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			if (arr[i] > max_idx)
 				max_idx = arr[i];
 		}
+		if (max_idx >= best)
+			continue;
 		
-		if (max_idx < best){
-			best = max_idx;
-			printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
+		if (unlikely(max_idx > prev_max_sz)){
+			free(counts_arr);
+			prev_max_sz = max_idx;
+			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
 		}
+		// memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
+		for (unsigned i = 0;  i < max_idx;  ++i){
+			counts_arr[i] = -1;
+		}
+		for (unsigned i = 0;  i < arr_sz;  ++i){
+			++counts_arr[arr[i]];
+		}
+		uint32_t dupl_count = 0;
+		for (unsigned i = 0;  i < max_idx;  ++i){
+			dupl_count += counts_arr[i];
+		}
+		if (dupl_count != 0)
+			continue;
+		
+		best = max_idx;
+		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
 	
 	if (best == UINT32_MAX)
@@ -86,6 +84,9 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
+	uint32_t prev_max_sz = 1024;
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
 		
@@ -95,39 +96,36 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
 		}
 		
-		bool abandon = false;
-		for (unsigned i = 0;  i < arr_sz;  ++i){
-			if (arr[i] > 2*arr_sz){
-				abandon = true;
-				break;
-			}
-		}
-		if (abandon)
-			continue;
-		
-		uint32_t nonunique_values = -1;
-		for (unsigned i = 0;  i < arr_sz-1;  ++i){
-			for (unsigned j = i+1;  j < arr_sz;  ++j){
-				if (unlikely(arr[i] == arr[j])){
-					nonunique_values = arr[i];
-					break;
-				}
-			}
-			if (nonunique_values != -1)
-				break;
-		}
-		if (likely(nonunique_values != -1))
-			continue;
-		
 		uint32_t max_idx = 0;
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			if (arr[i] > max_idx)
 				max_idx = arr[i];
 		}
+		if (max_idx >= best)
+			continue;
+		
+		if (unlikely(max_idx > prev_max_sz)){
+			free(counts_arr);
+			prev_max_sz = max_idx;
+			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+		}
+		// memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
+		for (unsigned i = 0;  i < max_idx;  ++i){
+			counts_arr[i] = -1;
+		}
+		for (unsigned i = 0;  i < arr_sz;  ++i){
+			++counts_arr[arr[i]];
+		}
+		uint32_t dupl_count = 0;
+		for (unsigned i = 0;  i < max_idx;  ++i){
+			dupl_count += counts_arr[i];
+		}
+		if (dupl_count != 0)
+			continue;
 		
 		bool must_continue = false;
 		for (unsigned i = 0;  i < avoids_sz;  ++i){
-			if ((((avoids[i] * val) & 0xffffffff) >> shiftby) < max_idx+1){
+			if ((((avoids[i] * val) & 0xffffffff) >> shiftby) <= max_idx){
 				must_continue = true;
 				break;
 			}
@@ -135,10 +133,8 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 		if (must_continue)
 			continue;
 		
-		if (max_idx < best){
-			best = max_idx;
-			printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
-		}
+		best = max_idx;
+		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
 	
 	if (best == UINT32_MAX)
