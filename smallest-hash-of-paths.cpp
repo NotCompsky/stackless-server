@@ -86,7 +86,7 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
 	uint32_t prev_max_sz = 1024;
-	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
 	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
