@@ -48,7 +48,7 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 		if (max_idx >= best)
 			continue;
 		
-		if (unlikely(max_idx > prev_max_sz)){
+		if (unlikely(max_idx >= prev_max_sz)){
 			free(counts_arr);
 			prev_max_sz = max_idx + 1;
 			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
@@ -105,7 +105,7 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 		if (max_idx >= best)
 			continue;
 		
-		if (unlikely(max_idx > prev_max_sz)){
+		if (unlikely(max_idx >= prev_max_sz)){
 			free(counts_arr);
 			prev_max_sz = max_idx + 1;
 			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
