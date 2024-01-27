@@ -25,7 +25,7 @@ def standardise_mimetype(mimetype:str, fp:str):
 		mimetype = "video/webm"
 	elif mimetype.startswith("image/vnd.microsoft.icon"):
 		mimetype = "image/x-icon"
-	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json","audio/mpeg","audio/webm","audio/m4a"):
+	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json","audio/mpeg","audio/webm","audio/m4a","image/x-icon"):
 		raise ValueError("Bad mimetype: "+mimetype)
 	if (mimetype == "text/plain") and fp.endswith(".js"):
 		mimetype = "application/javascript"
