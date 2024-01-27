@@ -285,19 +285,22 @@ showsiblingmenubtn.addEventListener("pointerdown", function(){
 
 showMessage("[Type HELP to show a list of commands]\n");
 
-getorpost("/allfiles.json", null, datastr => {
-	const dir2files = JSON.parse(datastr);
+getorpost("/all_files.json", null, datastr => {
+	const [tags,files] = JSON.parse(datastr);
 	let s = "";
-	for (let [dirname, thumbnail, files] of dir2files){
+	for (let [tagid, tagname] of Object.entries(tags)){
 		s += `<div><div class="dir_files_container_name">`;
-		if (thumbnail === ""){
-			s += `${dirname}`;
+		if (true){
+			s += tagname;
 		} else {
 			s += `<img src="${thumbnail}"></img>`;
 		}
 		s += `</div><div class="dir_files_container flexcontainer display-none">`;
-		for (let [title,filename,thumb] of files){
-			s += `<div class="dir_file flexitem" data-filename="${filename}"><img class="dir_file_thumb" src="${thumb}"></img><p class="title_over_sibling_img">${title}</p></div>`;
+		for (let i = 0;  i < files.length;  ++i){
+			const [fileid,thumb_str,tagids] = files[i];
+			if (tagids.includes(tagid|0)){
+				s += `<div class="dir_file flexitem" data-filename="${fileid.toString().padStart(4,'0')}"><img class="dir_file_thumb" src="${thumb_str}"></img><p class="title_over_sibling_img">TITLE</p></div>`;
+			}
 		}
 		s += "</div></div>";
 	}
