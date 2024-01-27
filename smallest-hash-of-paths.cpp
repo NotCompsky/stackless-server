@@ -23,18 +23,18 @@ uint64_t xorshift128plus(){
 
 extern "C"
 uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_sz,  const unsigned shiftby,  unsigned max_iterations){
-	uint32_t val = 0;
+	uint32_t best_val = 0;
 	uint32_t best = UINT32_MAX;
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
 	uint32_t prev_max_sz = 1024;
-	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
 	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
 		
-		val = (uint32_t)xorshift128plus();
+		const uint32_t val = (uint32_t)xorshift128plus();
 		
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
@@ -50,36 +50,34 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 		
 		if (unlikely(max_idx > prev_max_sz)){
 			free(counts_arr);
-			prev_max_sz = max_idx;
-			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+			prev_max_sz = max_idx + 1;
+			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
 		}
-		// memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
-		for (unsigned i = 0;  i < max_idx;  ++i){
-			counts_arr[i] = -1;
-		}
+		memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			++counts_arr[arr[i]];
 		}
-		uint32_t dupl_count = 0;
-		for (unsigned i = 0;  i < max_idx;  ++i){
-			dupl_count += counts_arr[i];
+		bool is_dupl = false;
+		for (unsigned i = 0;  i <= max_idx;  ++i){
+			if (counts_arr[i] > 1){
+				is_dupl = true;
+				break;
+			}
 		}
-		if (dupl_count != 0)
+		if (is_dupl)
 			continue;
 		
 		best = max_idx;
+		best_val = val;
 		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
 	
-	if (best == UINT32_MAX)
-		val = 0;
-	
-	return val;
+	return best_val;
 }
 
 extern "C"
 int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t* const avoids,  const unsigned arr_sz,  const unsigned avoids_sz,  const unsigned shiftby,  unsigned max_iterations){
-	uint32_t val = 0;
+	uint32_t best_val = 0;
 	uint32_t best = UINT32_MAX;
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
@@ -90,7 +88,7 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
 		
-		val = (uint32_t)xorshift128plus();
+		const uint32_t val = (uint32_t)xorshift128plus();
 		
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
@@ -106,21 +104,21 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 		
 		if (unlikely(max_idx > prev_max_sz)){
 			free(counts_arr);
-			prev_max_sz = max_idx;
-			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz));
+			prev_max_sz = max_idx + 1;
+			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
 		}
-		// memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
-		for (unsigned i = 0;  i < max_idx;  ++i){
-			counts_arr[i] = -1;
-		}
+		memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			++counts_arr[arr[i]];
 		}
-		uint32_t dupl_count = 0;
-		for (unsigned i = 0;  i < max_idx;  ++i){
-			dupl_count += counts_arr[i];
+		bool is_dupl = false;
+		for (unsigned i = 0;  i <= max_idx;  ++i){
+			if (counts_arr[i] > 1){
+				is_dupl = true;
+				break;
+			}
 		}
-		if (dupl_count != 0)
+		if (is_dupl)
 			continue;
 		
 		bool must_continue = false;
@@ -134,11 +132,9 @@ int finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint32_t*
 			continue;
 		
 		best = max_idx;
+		best_val = val;
 		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
 	
-	if (best == UINT32_MAX)
-		val = 0;
-	
-	return val;
+	return best_val;
 }
