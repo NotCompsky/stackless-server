@@ -4,3 +4,7 @@ default:
 
 server:
 	g++ main.cpp -std=c++23 -o server -lcrypto
+
+smallest-hash-of-paths.so:
+	g++ smallest-hash-of-paths.cpp -O3 -o smallest-hash-of-paths.so -shared -fPIC
+

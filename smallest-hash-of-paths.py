@@ -4,6 +4,15 @@
 
 import zlib
 from struct import unpack
+import ctypes
+import numpy as np
+
+
+clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/smallest-hash-of-paths.so")
+c_finding_0xedc72f12 = clib.finding_0xedc72f12
+c_finding_0xedc72f12.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint]
+c_finding_0xedc72f12_w_avoids = clib.finding_0xedc72f12_w_avoids
+c_finding_0xedc72f12_w_avoids.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 
 def standardise_mimetype(mimetype:str, fp:str):
 	if mimetype.startswith("text/html"):
@@ -29,8 +38,7 @@ def gzip_compress(contents:bytes):
 	return CO.compress(contents)+CO.flush()
 
 def h(x, c):
-	m = (x * c) % 2**32
-	return m >> 28
+	return ((x * c) % 2**32) >> 26
 
 def is_phf(h, inputs):
 	return len({h(x) for x in inputs}) == len(inputs)
@@ -43,7 +51,28 @@ def make_lut(h, inputs, answers):
 		lut[h(x)] = ans
 	return lut
 
-def finding_0xedc72f12(inputs:list, anti_inputs:list):
+def get_int_array_from_numpy_array(array):
+	contig_array = np.ascontiguousarray(array, dtype=np.uint32)
+	return contig_array.ctypes.data_as(ctypes.POINTER(ctypes.c_uint))
+
+def finding_0xedc72f12(inputs:list, shiftby:int):
+	return c_finding_0xedc72f12(
+		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
+		len(inputs),
+		shiftby,
+		10000
+	)
+
+def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list):
+	return c_finding_0xedc72f12_w_avoids(
+		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
+		get_int_array_from_numpy_array(np.array(anti_inputs, dtype=np.uint32)),
+		len(inputs),
+		len(anti_inputs),
+		26,
+		10000
+	)
+	
 	val:int = None
 	best = float('inf')
 	while best >= len(inputs):
@@ -94,6 +123,7 @@ if __name__ == "__main__":
 	parser.add_argument("--anti-inputs",default=[],action="append",help="Require that these 'anti-inputs' be mapped to numbers OUTSIDE the range")
 	
 	parser.add_argument("--multiplier", default=0, type=int, help="If you have already run this script")
+	parser.add_argument("--multiplier2", default=0, type=int)
 	parser.add_argument("--pack-files-to", help="For --dir. Create a single file that contains all files, ordered according to the resulting hash")
 	parser.add_argument("--write-hpp")
 	
@@ -141,23 +171,37 @@ if __name__ == "__main__":
 	inputs2:list = [get_path_id(x) for x in inputs2_paths]
 	anti_inputs:list = [get_path_id(x) for x in args.anti_inputs]
 	
-	print(inputs)
-	multiplier2:int = 0
+	shiftby2:int = 32
 	if len(inputs2) != 0:
-		multiplier2 = finding_0xedc72f12(inputs2, [])
+		while True:
+			shiftby2 -= 1
+			if (1 << (32-shiftby2)) > len(inputs2):
+				break
+		if args.multiplier2 == 0:
+			args.multiplier2 = finding_0xedc72f12(inputs2, shiftby2)
+	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
+	
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12(inputs, inputs2+anti_inputs)
-	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 28")
-	sorteds:list = sorted(zip(args.inputs, inputs, input_indx2fp), key=lambda x:((x[1]*args.multiplier) & 0xffffffff) >> 28)
+		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs)
+	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> 26 for path_id in inputs]
+	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 26")
+	sorteds:list = []
+	for i in range(max(inputs_mappedoutputs)+1):
+		indx:int = 0
+		try:
+			indx = inputs_mappedoutputs.index(i)
+		except ValueError:
+			pass
+		sorteds.append([args.inputs[indx], inputs[indx], input_indx2fp[indx]])
 	for path, path_id, fp in sorteds:
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}:\t{path_id}\t{json.dumps(path)}")
-	print(f"((path_id*{multiplier2}) & 0xffffffff) >> 28 // for unpackaged files")
-	for path, path_id in zip(inputs2_paths, inputs2):
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {((path_id*multiplier2) & 0xffffffff) >> 28}:{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}:\t{path_id}\t{json.dumps(path)}")
+	print(f"((path_id*{args.multiplier2}) & 0xffffffff) >> {shiftby2} // for unpackaged files")
+	for path, path_id in sorted(zip(inputs2_paths, inputs2), key=lambda x:((x[1]*args.multiplier2)&0xffffffff)>>shiftby2):
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	print("--anti-inputs:")
 	for path, path_id in zip(args.anti_inputs, anti_inputs):
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 28}: {((path_id*multiplier2) & 0xffffffff) >> 28}:{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	if args.pack_files_to is not None:
 		import magic
@@ -242,23 +286,32 @@ if __name__ == "__main__":
 		with open(args.write_hpp,"w") as f:
 			f.write(f"#define HASH1_FILEPATH {json.dumps(args.pack_files_to)}\n")
 			f.write(f"constexpr unsigned HASH1_MULTIPLIER = {args.multiplier};\n")
-			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {len(args.inputs)};\n")
+			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {max(inputs_mappedoutputs)+1};\n")
 			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
 			
 			if len(inputs2) == 0:
 				f.write("#define HASH2_IS_NONE\n")
 			else:
-				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {multiplier2};\n")
-				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {len(inputs2)};\n")
+				f.write(f"constexpr unsigned HASH2_shiftby = {shiftby2};\n")
+				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {args.multiplier2};\n")
+				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {max(inputs2_mappedoutputs)+1};\n")
 				f.write("""struct HASH2_indx2metadata_item {
 	const char* const fp;
 	const char* const mimetype;
 	const size_t fsz;
 };\n""")
 				s:str = ""
-				for fp, mimetype, fsz in zip(dir2_indx2fp, dir2_indx2mimetype, dir2_indx2fsz):
+				for i in range(max(inputs2_mappedoutputs)+1):
+					indx:int = 0
+					try:
+						indx = inputs2_mappedoutputs.index(i)
+					except ValueError:
+						pass
+					fp:str = dir2_indx2fp[indx]
+					mimetype:str = dir2_indx2mimetype[indx]
+					fsz:int = dir2_indx2fsz[indx]
 					s += f",{{{json.dumps(fp)}, {json.dumps(mimetype)}, {fsz}}}"
-				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{len(inputs2)}] = {{{s[1:]}}};\n")
+				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{max(inputs2_mappedoutputs)+1}] = {{{s[1:]}}};\n")
 			
 			for i, antiinput_val in enumerate(anti_inputs):
 				f.write(f"constexpr uint32_t HASH_ANTIINPUT_{i} = {antiinput_val};\n")

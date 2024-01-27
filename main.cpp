@@ -50,7 +50,7 @@ class HTTPResponseHandler {
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
 			// "GET /foobar\r\n" -> "GET " and "foob" as above and "path" respectively
 			const uint32_t path_id = reinterpret_cast<uint32_t*>(str+5)[0];
-			const uint32_t path_indx = ((path_id*HASH1_MULTIPLIER) & 0xffffffff) >> 28;
+			const uint32_t path_indx = ((path_id*HASH1_MULTIPLIER) & 0xffffffff) >> 26;
 			printf("[%.4s] %u -> %u\n", str+5, path_id, path_indx);
 			if (path_indx < HASH1_LIST_LENGTH){
 				const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
@@ -63,7 +63,7 @@ class HTTPResponseHandler {
 				}
 			} else {
 #ifndef HASH2_IS_NONE
-				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> 28;
+				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> HASH2_shiftby;
 				if (path_indx2 < HASH2_LIST_LENGTH){
 					
 					size_t from;
