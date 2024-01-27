@@ -72,6 +72,9 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
 	
+	free(arr);
+	free(counts_arr);
+	
 	return best_val;
 }
 
@@ -135,6 +138,9 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 		best_val = val;
 		printf("best max_indx==%u with multiplier %u (but desire max_indx==%u)\n", best, val, arr_sz-1);
 	} while ((likely(best >= arr_sz)) and (likely(--max_iterations != 0)));
+	
+	free(arr);
+	free(counts_arr);
 	
 	return best_val;
 }
