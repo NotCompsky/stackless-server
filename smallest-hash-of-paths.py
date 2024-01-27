@@ -180,7 +180,7 @@ if __name__ == "__main__":
 			if (1 << (32-shiftby2)) > len(inputs2):
 				break
 		if args.multiplier2 == 0:
-			args.multiplier2 = finding_0xedc72f12(inputs2, shiftby2)
+			args.multiplier2 = finding_0xedc72f12_w_avoids(inputs2, anti_inputs, shiftby2)
 			if args.multiplier2 == 0:
 				raise ValueError(f"Failed to find suitable multiplier2 for {len(inputs2)} inputs2, {shiftby2} shiftby")
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
@@ -189,6 +189,7 @@ if __name__ == "__main__":
 	while True:
 		shiftby1 -= 1
 		if (1 << (32-shiftby1)) > len(inputs):
+			shiftby1 -= 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 			break
 	if args.multiplier == 0:
 		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs, shiftby1)
@@ -206,6 +207,13 @@ if __name__ == "__main__":
 		sorteds.append([args.inputs[indx], inputs[indx], input_indx2fp[indx]])
 	for path, path_id, fp in sorteds:
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}:\t{path_id}\t{json.dumps(path)}")
+	is_errors:bool = False
+	for path, path_id in zip(args.inputs, inputs):
+		if path_id not in [x[1] for x in sorteds]:
+			is_errors = True
+			print(f"ERROR: input not included: {((path_id*args.multiplier) & 0xffffffff) >> shiftby1}:\t{path_id}\t{json.dumps(path)}")
+	if is_errors:
+		raise ValueError("Error")
 	print(f"((path_id*{args.multiplier2}) & 0xffffffff) >> {shiftby2} // for unpackaged files")
 	for path, path_id in sorted(zip(inputs2_paths, inputs2), key=lambda x:((x[1]*args.multiplier2)&0xffffffff)>>shiftby2):
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
