@@ -8,7 +8,7 @@ import ctypes
 import numpy as np
 
 
-clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/smallest-hash-of-paths.so")
+clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/libsmallesthashofpaths.so")
 c_finding_0xedc72f12 = clib.finding_0xedc72f12
 c_finding_0xedc72f12.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint]
 c_finding_0xedc72f12.restype = ctypes.c_uint

@@ -9,6 +9,8 @@ gen_hash_functions:
 server:
 	g++ main.cpp -std=c++23 -o server -lcrypto
 
-smallest-hash-of-paths.so:
-	g++ smallest-hash-of-paths.cpp -O3 -o smallest-hash-of-paths.so -shared -fPIC
 
+smallest-hash-of-paths.so:
+	g++ smallest-hash-of-paths.cpp -O3 -o libsmallesthashofpaths.so -shared -fPIC
+	export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:${PWD}"
+	g++ smallest-hash-of-paths.test.cpp -L. -lsmallesthashofpaths -g -osmallest-hash-of-paths.test -fsanitize=address # -fsanitize=address is necessary to avoid some weird ASan error (see https://stackoverflow.com/questions/59853730/asan-issue-with-asan-library-loading)
