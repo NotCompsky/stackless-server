@@ -11,8 +11,10 @@ import numpy as np
 clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/smallest-hash-of-paths.so")
 c_finding_0xedc72f12 = clib.finding_0xedc72f12
 c_finding_0xedc72f12.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint]
+c_finding_0xedc72f12.restype = ctypes.c_uint
 c_finding_0xedc72f12_w_avoids = clib.finding_0xedc72f12_w_avoids
 c_finding_0xedc72f12_w_avoids.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
+c_finding_0xedc72f12_w_avoids.restype = ctypes.c_uint
 
 def standardise_mimetype(mimetype:str, fp:str):
 	if mimetype.startswith("text/html"):
