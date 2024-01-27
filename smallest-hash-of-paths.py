@@ -10,11 +10,17 @@ def standardise_mimetype(mimetype:str, fp:str):
 		mimetype = "text/html"
 	elif mimetype.startswith("text/x-"):
 		mimetype = "text/plain"
-	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json"):
+	elif mimetype == "video/x-matroska":
+		mimetype = "video/webm"
+	elif mimetype.startswith("image/vnd.microsoft.icon"):
+		mimetype = "image/x-icon"
+	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json","audio/mpeg","audio/webm","audio/m4a"):
 		raise ValueError("Bad mimetype: "+mimetype)
 	if (mimetype == "text/plain") and fp.endswith(".js"):
 		mimetype = "application/javascript"
-	if (mimetype == "text/plain") and fp.endswith(".css"):
+	elif (mimetype == "text/plain") and fp.endswith(".json"):
+		mimetype = "application/json"
+	elif (mimetype == "text/plain") and fp.endswith(".css"):
 		mimetype = "text/css"
 	return mimetype
 
