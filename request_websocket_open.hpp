@@ -2,6 +2,17 @@
 #include "typedefs.hpp"
 #include "b64d.hpp"
 
+constexpr size_t websocketfirstresponse_sz = 97+28+2+27+2;
+static
+char websocketfirstresponse[websocketfirstresponse_sz+1] =
+	"HTTP/1.1 101 Switching Protocols\r\n"
+	"Upgrade: websocket\r\n"
+	"Connection: upgrade\r\n"
+	"Sec-WebSocket-Accept: ABCDEFGHIJKLMNOPQRSTUVWXYZ12\r\n"
+	"Sec-WebSocket-Version: 13\r\n" // length 27
+	"\r\n"
+;
+
 constexpr
 bool is_b64_char(const char c){
 	return ((c >= 'A') and (c <= 'Z')) or ((c >= 'a') and (c <= 'z')) or ((c >= '0') and (c <= '9')) or (c == '+') or (c == '/') or (c == '=');
@@ -128,18 +139,9 @@ bool is_b64_char(const char c){
 		static_assert(20 == SHA_DIGEST_LENGTH);
 		SHA1((unsigned char*)server_key_input, 60, sha1);
 		
-		constexpr size_t response_sz = 97+28+2+27+2;
-		char response[response_sz+1] =
-			"HTTP/1.1 101 Switching Protocols\r\n"
-			"Upgrade: websocket\r\n"
-			"Connection: upgrade\r\n"
-			"Sec-WebSocket-Accept: ABCDEFGHIJKLMNOPQRSTUVWXYZ12\r\n"
-			"Sec-WebSocket-Version: 13\r\n" // length 27
-			"\r\n"
-		;
-		base64_encode__length20(sha1, response+97);
+		base64_encode__length20(sha1, websocketfirstresponse+97);
 		websocket_client_ids.emplace_back(client_context->client_id);
 		printf("websocket_client_ids emplaced %u\n", client_context->client_id);
 		client_context->expecting_http = false;
-		return std::string_view(response, response_sz);
+		return std::string_view(websocketfirstresponse, websocketfirstresponse_sz);
 	}
