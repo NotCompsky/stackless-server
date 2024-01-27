@@ -62,7 +62,7 @@ def finding_0xedc72f12(inputs:list, shiftby:int):
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		len(inputs),
 		shiftby,
-		10000
+		100000000
 	)
 
 def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
@@ -71,8 +71,8 @@ def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
 		get_int_array_from_numpy_array(np.array(anti_inputs, dtype=np.uint32)),
 		len(inputs),
 		len(anti_inputs),
-		10000
 		shiftby,
+		100000000
 	)
 	
 	val:int = None
@@ -115,7 +115,7 @@ if __name__ == "__main__":
 	
 	parser = argparse.ArgumentParser()
 	
-	group1 = parser.add_argument_group('Model 2')
+	group1 = parser.add_argument_group('Model 1')
 	group1exclusive = group1.add_mutually_exclusive_group()
 	group1exclusive.add_argument("-i","--inputs",default=[],action="append")
 	group1exclusive.add_argument("--dir")
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 	
 	args = parser.parse_args()
 	
-	input_indx2fp:list = [None for x in args.inputs]
+	input_indx2fp:list = []
 	dir2_indx2fp:list = []
 	
 	if args.dir is not None:
