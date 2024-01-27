@@ -39,20 +39,6 @@ def gzip_compress(contents:bytes):
 	CO = zlib.compressobj(level=9, wbits=31)
 	return CO.compress(contents)+CO.flush()
 
-def h(x, c):
-	return ((x * c) % 2**32) >> shiftby1
-
-def is_phf(h, inputs):
-	return len({h(x) for x in inputs}) == len(inputs)
-
-def make_lut(h, inputs, answers):
-	# lookup table
-	assert is_phf(h, inputs)
-	lut = [0] * (1 + max(h(x) for x in inputs))
-	for (x, ans) in zip(inputs, answers):
-		lut[h(x)] = ans
-	return lut
-
 def get_int_array_from_numpy_array(array):
 	contig_array = np.ascontiguousarray(array, dtype=np.uint32)
 	return contig_array.ctypes.data_as(ctypes.POINTER(ctypes.c_uint))
@@ -74,23 +60,6 @@ def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
 		shiftby,
 		100000000
 	)
-	
-	val:int = None
-	best = float('inf')
-	while best >= len(inputs):
-		val = random.randrange(2**32)
-		max_idx = max(h(x, val) for x in inputs)
-		if max_idx < best and is_phf(lambda x: h(x, val), inputs):
-			rejected:bool = False
-			for n in anti_inputs:
-				if h(n, val) <= max_idx:
-					rejected = True
-					break
-			if rejected:
-				continue
-			print(max_idx, hex(val))
-			best = max_idx
-	return val
 
 def get_path_id(path:str):
 	b:bytes = path.encode()
