@@ -38,7 +38,7 @@ def gzip_compress(contents:bytes):
 	return CO.compress(contents)+CO.flush()
 
 def h(x, c):
-	return ((x * c) % 2**32) >> 26
+	return ((x * c) % 2**32) >> shiftby1
 
 def is_phf(h, inputs):
 	return len({h(x) for x in inputs}) == len(inputs)
@@ -63,14 +63,14 @@ def finding_0xedc72f12(inputs:list, shiftby:int):
 		10000
 	)
 
-def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list):
+def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
 	return c_finding_0xedc72f12_w_avoids(
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		get_int_array_from_numpy_array(np.array(anti_inputs, dtype=np.uint32)),
 		len(inputs),
 		len(anti_inputs),
-		26,
 		10000
+		shiftby,
 	)
 	
 	val:int = None
@@ -181,10 +181,15 @@ if __name__ == "__main__":
 			args.multiplier2 = finding_0xedc72f12(inputs2, shiftby2)
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
 	
+	shiftby1:int = 32
+	while True:
+		shiftby1 -= 1
+		if (1 << (32-shiftby1)) > len(inputs):
+			break
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs)
-	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> 26 for path_id in inputs]
-	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> 26")
+		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs, shiftby1)
+	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]
+	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> {shiftby1}")
 	sorteds:list = []
 	for i in range(max(inputs_mappedoutputs)+1):
 		indx:int = 0
@@ -194,14 +199,14 @@ if __name__ == "__main__":
 			pass
 		sorteds.append([args.inputs[indx], inputs[indx], input_indx2fp[indx]])
 	for path, path_id, fp in sorteds:
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}:\t{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}:\t{path_id}\t{json.dumps(path)}")
 	print(f"((path_id*{args.multiplier2}) & 0xffffffff) >> {shiftby2} // for unpackaged files")
 	for path, path_id in sorted(zip(inputs2_paths, inputs2), key=lambda x:((x[1]*args.multiplier2)&0xffffffff)>>shiftby2):
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	print("--anti-inputs:")
 	for path, path_id in zip(args.anti_inputs, anti_inputs):
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> 26}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	if args.pack_files_to is not None:
 		import magic
@@ -285,6 +290,7 @@ if __name__ == "__main__":
 		
 		with open(args.write_hpp,"w") as f:
 			f.write(f"#define HASH1_FILEPATH {json.dumps(args.pack_files_to)}\n")
+			f.write(f"constexpr unsigned HASH1_shiftby = {shiftby1};\n")
 			f.write(f"constexpr unsigned HASH1_MULTIPLIER = {args.multiplier};\n")
 			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {max(inputs_mappedoutputs)+1};\n")
 			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
