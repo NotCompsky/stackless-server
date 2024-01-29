@@ -31,14 +31,14 @@ uint32_t find_max(const uint32_t* const arr,  const uint32_t arr_sz){
 }
 
 uint32_t get_shiftby(const uint32_t outputs_sz){
-	uint32_t shiftby1 = 32;
+	uint32_t shiftby = 32;
 	while (true){
-		shiftby1 -= 1;
-		if ((1 << (32-shiftby1)) > outputs_sz){
+		shiftby -= 1;
+		if ((1 << (32-shiftby)) > outputs_sz){
 			break;
 		}
 	}
-	return shiftby1;
+	return shiftby;
 }
 
 extern "C"
