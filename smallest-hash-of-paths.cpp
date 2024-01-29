@@ -5,9 +5,10 @@
 #include "smallest-hash-of-paths.hpp"
 
 std::random_device rd;
-/* The state must be seeded so that it is not everywhere zero. */
-uint64_t s[2] = { (uint64_t(rd()) << 32) ^ (rd()),
-    (uint64_t(rd()) << 32) ^ (rd()) };
+const uint64_t s[2] = {
+	(uint64_t(rd()) << 32) ^ (rd()),
+	(uint64_t(rd()) << 32) ^ (rd())
+};
 
 uint64_t xorshift128plus(){
 	// TODO: Maybe possible to reduce to uint32_t
