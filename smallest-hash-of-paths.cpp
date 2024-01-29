@@ -1,8 +1,8 @@
-#include <cstdint>
 #include <random>
 #include <cstring> // memcpy
 #include <compsky/macros/likely.hpp>
 #include <cstdio>
+#include "smallest-hash-of-paths.hpp"
 
 std::random_device rd;
 /* The state must be seeded so that it is not everywhere zero. */
@@ -40,11 +40,7 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
 		}
 		
-		uint32_t max_idx = 0;
-		for (unsigned i = 0;  i < arr_sz;  ++i){
-			if (arr[i] > max_idx)
-				max_idx = arr[i];
-		}
+		const uint32_t max_idx = find_max(arr, arr_sz);
 		if (max_idx >= best)
 			continue;
 		
@@ -92,11 +88,7 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 			arr[i] = ((arr[i] * val) & 0xffffffff) >> shiftby;
 		}
 		
-		uint32_t max_idx = 0;
-		for (unsigned i = 0;  i < arr_sz;  ++i){
-			if (arr[i] > max_idx)
-				max_idx = arr[i];
-		}
+		const uint32_t max_idx = find_max(arr, arr_sz);
 		if (max_idx >= best)
 			continue;
 		
