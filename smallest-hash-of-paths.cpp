@@ -28,8 +28,8 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
-	uint32_t prev_max_sz = 1024;
-	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
+	const uint32_t max_idx_plus_1 = 1 << (32 - shiftby);
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(max_idx_plus_1*sizeof(uint32_t)));
 	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
@@ -48,12 +48,7 @@ uint32_t finding_0xedc72f12(const uint32_t* const arr_orig,  const unsigned arr_
 		if (max_idx >= best)
 			continue;
 		
-		if (unlikely(max_idx >= prev_max_sz)){
-			free(counts_arr);
-			prev_max_sz = max_idx + 1;
-			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
-		}
-		memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
+		memset(counts_arr, 0, max_idx_plus_1*sizeof(uint32_t));
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			++counts_arr[arr[i]];
 		}
@@ -85,8 +80,8 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 	
 	uint32_t* const arr = reinterpret_cast<uint32_t*>(malloc(arr_sz*sizeof(uint32_t)));
 	
-	uint32_t prev_max_sz = 1024;
-	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
+	const uint32_t max_idx_plus_1 = 1 << (32 - shiftby);
+	uint32_t* counts_arr = reinterpret_cast<uint32_t*>(malloc(max_idx_plus_1*sizeof(uint32_t)));
 	
 	do {
 		memcpy(arr, arr_orig, arr_sz*sizeof(uint32_t));
@@ -105,12 +100,7 @@ uint32_t finding_0xedc72f12_w_avoids(const uint32_t* const arr_orig,  const uint
 		if (max_idx >= best)
 			continue;
 		
-		if (unlikely(max_idx >= prev_max_sz)){
-			free(counts_arr);
-			prev_max_sz = max_idx + 1;
-			counts_arr = reinterpret_cast<uint32_t*>(malloc(prev_max_sz*sizeof(uint32_t)));
-		}
-		memset(counts_arr, 0, prev_max_sz*sizeof(uint32_t));
+		memset(counts_arr, 0, max_idx_plus_1*sizeof(uint32_t));
 		for (unsigned i = 0;  i < arr_sz;  ++i){
 			++counts_arr[arr[i]];
 		}
