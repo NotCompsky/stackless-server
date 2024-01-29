@@ -76,6 +76,14 @@ def get_path_id(path:str):
 		little_endian_u32 |= n
 	return little_endian_u32
 
+def get_shiftby(inputs_sz:int):
+	shiftby:int = 32
+	while True:
+		shiftby -= 1
+		if (1 << (32-shiftby)) > inputs_sz:
+			break
+	return shiftby
+
 if __name__ == "__main__":
 	import argparse
 	import random
@@ -142,24 +150,16 @@ if __name__ == "__main__":
 	inputs2:list = [get_path_id(x) for x in inputs2_paths]
 	anti_inputs:list = [get_path_id(x) for x in args.anti_inputs]
 	
-	shiftby2:int = 32
+	shiftby2:int = get_shiftby(len(inputs2))
 	if len(inputs2) != 0:
-		while True:
-			shiftby2 -= 1
-			if (1 << (32-shiftby2)) > len(inputs2):
-				break
 		if args.multiplier2 == 0:
 			args.multiplier2 = finding_0xedc72f12_w_avoids(inputs2, anti_inputs, shiftby2)
 			if args.multiplier2 == 0:
 				raise ValueError(f"Failed to find suitable multiplier2 for {len(inputs2)} inputs2, {shiftby2} shiftby")
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
 	
-	shiftby1:int = 32
-	while True:
-		shiftby1 -= 1
-		if (1 << (32-shiftby1)) > len(inputs):
-			shiftby1 -= 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
-			break
+	shiftby1:int = get_shiftby(len(inputs)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
+	
 	if args.multiplier == 0:
 		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs, shiftby1)
 		if args.multiplier == 0:
