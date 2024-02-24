@@ -146,14 +146,18 @@ if __name__ == "__main__":
 		if args.write_hpp is None:
 			raise ValueError("--pack-files-to requires --write-hpp (for safety)")
 	
+	for x in args.inputs:
+		if x.startswith("sta"):
+			raise ValueError("ERROR: Cannot have ANY `inputs` starting with \"sta\" due to \"GET /sta\" being prefix of `inputs2`")
+	
 	inputs:list = [get_path_id(x) for x in args.inputs]
 	inputs2:list = [get_path_id(x) for x in inputs2_paths]
 	anti_inputs:list = [get_path_id(x) for x in args.anti_inputs]
 	
-	shiftby2:int = get_shiftby(len(inputs2))
+	shiftby2:int = get_shiftby(len(inputs2)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	if len(inputs2) != 0:
 		if args.multiplier2 == 0:
-			args.multiplier2 = finding_0xedc72f12_w_avoids(inputs2, anti_inputs, shiftby2)
+			args.multiplier2 = finding_0xedc72f12(inputs2, shiftby2)
 			if args.multiplier2 == 0:
 				raise ValueError(f"Failed to find suitable multiplier2 for {len(inputs2)} inputs2, {shiftby2} shiftby")
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
@@ -161,7 +165,7 @@ if __name__ == "__main__":
 	shiftby1:int = get_shiftby(len(inputs)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12_w_avoids(inputs, inputs2+anti_inputs, shiftby1)
+		args.multiplier = finding_0xedc72f12_w_avoids(inputs, anti_inputs, shiftby1)
 		if args.multiplier == 0:
 			raise ValueError(f"Failed to find suitable multiplier1 for {len(inputs)} inputs, {shiftby1} shiftby, {len(inputs2+anti_inputs)} anti-inputs")
 	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]

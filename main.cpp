@@ -8,6 +8,7 @@
 #include <compsky/http/parse.hpp>
 #include <compsky/utils/ptrdiff.hpp>
 #include <signal.h>
+#include <bit> // for std::bit_cast
 #include "files/files.hpp"
 #include "server_nonhttp.hpp"
 #include "request_websocket_open.hpp"
@@ -24,6 +25,11 @@ std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 
 int packed_file_fd;
 char* server_buf;
+
+constexpr
+uint32_t uint32_value_of(const char(&s)[4]){
+	return std::bit_cast<std::uint32_t>(s);
+}
 
 class HTTPResponseHandler {
  public:
@@ -48,21 +54,11 @@ class HTTPResponseHandler {
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
-			// "GET /foobar\r\n" -> "GET " and "foob" as above and "path" respectively
-			const uint32_t path_id = reinterpret_cast<uint32_t*>(str+5)[0];
-			const uint32_t path_indx = ((path_id*HASH1_MULTIPLIER) & 0xffffffff) >> HASH1_shiftby;
-			printf("[%.4s] %u -> %u\n", str+5, path_id, path_indx);
-			if (path_indx < HASH1_LIST_LENGTH){
-				const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
-				const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
-				if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
-					const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
-					return std::string_view(server_buf, n_bytes_written);
-				} else {
-					return server_error;
-				}
-			} else {
+			constexpr const char prefix1[4] = {'/','s','t','a'};
+			if (reinterpret_cast<uint32_t*>(str)[1] == uint32_value_of(prefix1)){
+				// "GET /static/"
 #ifndef HASH2_IS_NONE
+				const uint32_t path_id = reinterpret_cast<uint32_t*>(str+12)[0];
 				const uint32_t path_indx2 = ((path_id*HASH2_MULTIPLIER) & 0xffffffff) >> HASH2_shiftby;
 				if (path_indx2 < HASH2_LIST_LENGTH){
 					
@@ -121,13 +117,31 @@ class HTTPResponseHandler {
 						close(fd);
 						return server_error;
 					}
-				} else if (path_id == HASH_ANTIINPUT_0){
-					return request_websocket_open(client_context, nullptr, headers);
 				} else {
 					[[unlikely]]
 					return not_found;
 				}
 #endif
+			} else {
+				// "GET /foobar\r\n" -> "GET " and "foob" as above and "path" respectively
+				const uint32_t path_id = reinterpret_cast<uint32_t*>(str+5)[0];
+				const uint32_t path_indx = ((path_id*HASH1_MULTIPLIER) & 0xffffffff) >> HASH1_shiftby;
+				printf("[%.4s] %u -> %u\n", str+5, path_id, path_indx);
+				
+				if (path_indx < HASH1_LIST_LENGTH){
+					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
+					const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
+					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
+						const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
+						return std::string_view(server_buf, n_bytes_written);
+					}
+				} else if (path_id == HASH_ANTIINPUT_0){
+					return request_websocket_open(client_context, nullptr, headers);
+				}
+				{
+					[[unlikely]]
+					return server_error;
+				}
 			}
 		}
 		
