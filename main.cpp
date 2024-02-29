@@ -104,14 +104,13 @@ class HTTPResponseHandler {
 							);
 						}
 						const ssize_t n_bytes_read = read(fd, server_itr, bytes_to_read);
+						close(fd);
 						if (unlikely(n_bytes_read != bytes_to_read)){
 							// TODO: Maybe read FIRST, then construct headers?
 							///server_itr = server_buf;
 							///compsky::asciify::asciify(server_itr, n_bytes_read, " == n_bytes_read != bytes_to_read == ", bytes_to_read, "; bytes_to_read1 == ", bytes_to_read1);
-							close(fd);
 							return server_error;
 						}
-						close(fd);
 						return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf)+n_bytes_read);
 					} else {
 						close(fd);
