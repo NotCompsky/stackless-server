@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet" href="styl.css" type="text/css"/>
+	<script src="rdpl.js"></script>
+	<title>Media Player</title>
+</head>
+<body class="fixedposition darktheme">
+<!--<a id="randymediaplayer_parent_btn" href="..">Parent</a>-->
+<button class="fixedposition" id="randymediaplayer_prev">Prev</button>
+<button class="fixedposition" id="randymediaplayer_next">Next</button>
+<div class="fixedposition" id="randymediaplayer_errcontainer"></div>
+<select class="fixedposition" id="randymediaplayer_filterselector">
+	<option value="0">None</option><option value="1">Image</option><option value="2">GIF</option><option value="3">Video</option><option value="4">Audio</option><option value="5">Video+Audio</option><option value="6">Video+GIF</option>
+</select>
+<select class="fixedposition" id="randymediaplayer_selector1" autocomplete="off"></select>
+<select class="fixedposition" id="randymediaplayer_selector2" autocomplete="off"></select>
+<select class="fixedposition" id="randymediaplayer_selector3" autocomplete="off"></select>
+<div class="fixedposition" id="randymediaplayer_add_tag_to_file_container">
+	<div id="randymediaplayer_filetagcontainer"></div>
+</div>
+<div id="randymediaplayer_container">
+	<video preload="none" class="fixedposition" id="randymediaplayer_media_video" controls loop><source id="randymediaplayer_media_video_source" src="data,"></source></video>
+	<audio preload="none" class="fixedposition" id="randymediaplayer_media_audio" controls loop><source id="randymediaplayer_media_audio_source" src="data,"></source></audio>
+</div>
+</body>
+</html>
