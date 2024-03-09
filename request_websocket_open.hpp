@@ -100,7 +100,9 @@ bool is_b64_char(const char c){
 		
 		if (
 			(not has_websocketupgrade_header) or
-			(websocketkey == nullptr)
+			(websocketkey == nullptr) or
+			(origin_header_start == nullptr) or
+			(hostname_start == nullptr) // NOTE: Not sure if required to be non-null?
 		){
 			return not_found;
 		}
