@@ -1,3 +1,5 @@
+#pragma once
+
 #include <openssl/sha.h>
 #include "typedefs.hpp"
 #include "b64d.hpp"
