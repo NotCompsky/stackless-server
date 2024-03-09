@@ -42,6 +42,9 @@ def finding_0xedc72f12(inputs:list, shiftby:int):
 	)
 
 def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
+	for x in anti_inputs:
+		if x in inputs:
+			raise ValueError(f"{x} in both `inputs` and `anti_inputs`")
 	return c_finding_0xedc72f12_w_avoids(
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		get_int_array_from_numpy_array(np.array(anti_inputs, dtype=np.uint32)),
