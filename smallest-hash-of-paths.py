@@ -112,6 +112,8 @@ if __name__ == "__main__":
 			if fname == "index.html":
 				input_indx2fp[args.inputs.index(" HTT")] = fp
 				continue
+			if fname.endswith(".kate-swp"):
+				continue
 			input_indx2fp.append(fp)
 			val:str = fname[:4]
 			if val in args.inputs:
@@ -186,6 +188,7 @@ if __name__ == "__main__":
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	if args.pack_files_to is not None:
+		import re
 		import magic
 		offset:int = 0
 		files__offsets_and_sizes:list = []
@@ -218,12 +221,17 @@ if __name__ == "__main__":
 					"x-content-type-options: nosniff\r\n"
 					"x-frame-options: SAMEORIGIN\r\n"
 					"referrer-policy: no-referrer\r\n"
+					"cache-control: max-age=2592000\r\n"
 					"feature-policy: geolocation 'none'; camera 'none'; microphone 'none'\r\n"
 					"connection: keep-alive\r\n"
 				)
+				dont_compress:bool = (path=="admi") # Pretend it was produced automatically, not static pre-compressed content
 				if mimetype == "text/html":
 					if path == "worl": # rpill
-						headers += "content-security-policy: default-src 'none'; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self';\r\n"
+						csp:str = re.search(b'''content="(default-src 'none';[^"]+)"''', contents).group(0).decode()
+						if not csp.endswith(";"):
+							csp += ";"
+						headers += "content-security-policy: "+csp+"\r\n"
 					else:
 						headers += "content-security-policy: default-src 'none'; connect-src 'self'; "
 						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
@@ -234,13 +242,28 @@ if __name__ == "__main__":
 							headers += "style-src 'self' 'unsafe-inline'; "
 						else:
 							headers += "style-src 'self'; "
-						headers += "img-src 'self'; media-src 'self';\r\n"
+						headers += "img-src 'self' data:; media-src 'self' data:;\r\n"
+						
+						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\">",b"<source type=\"\\1\" src=\"/static/\\2\">",contents)
+						contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
+						contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1);",contents)
+						
+						contents = contents.replace(b"\t",b"")
+						contents = contents.replace(b"\n",b"")
+				if mimetype in ("text/css",):
+					contents = contents.replace(b"\t",b"")
+					contents = contents.replace(b"\n",b"")
+					contents = re.sub(b"/[*](?:[^*]|[*][^/])*[*]/",b"",contents)
+					contents = contents.replace(b" {",b"{")
+					
+					contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
+					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1);",contents)
 				
-				contents_compressed:bytes = gzip_compress(contents)
-				
-				if len(contents_compressed) < len(contents)+10:
-					contents = contents_compressed
-					headers += "content-encoding: gzip\r\n"
+				if not dont_compress:
+					contents_compressed:bytes = gzip_compress(contents)
+					if len(contents_compressed) < len(contents)+10:
+						contents = contents_compressed
+						headers += "content-encoding: gzip\r\n"
 				
 				headers += "content-length: " + str(len(contents)) + "\r\n"
 				
