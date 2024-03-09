@@ -6,6 +6,7 @@ import zlib
 from struct import unpack
 import ctypes
 import numpy as np
+from mimetype_utils import guess_mimetype, standardise_mimetype
 
 
 clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/libsmallesthashofpaths.so")
@@ -16,24 +17,6 @@ c_finding_0xedc72f12_w_avoids = clib.finding_0xedc72f12_w_avoids
 c_finding_0xedc72f12_w_avoids.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 c_finding_0xedc72f12_w_avoids.restype = ctypes.c_uint
 
-def standardise_mimetype(mimetype:str, fp:str):
-	if mimetype.startswith("text/html"):
-		mimetype = "text/html"
-	elif mimetype.startswith("text/x-"):
-		mimetype = "text/plain"
-	elif mimetype == "video/x-matroska":
-		mimetype = "video/webm"
-	elif mimetype.startswith("image/vnd.microsoft.icon"):
-		mimetype = "image/x-icon"
-	if mimetype not in ("image/png","image/jpeg","video/mp4","video/webm","text/html","text/plain","application/json","audio/mpeg","audio/webm","audio/m4a","image/x-icon"):
-		raise ValueError("Bad mimetype: "+mimetype)
-	if (mimetype == "text/plain") and fp.endswith(".js"):
-		mimetype = "application/javascript"
-	elif (mimetype == "text/plain") and fp.endswith(".json"):
-		mimetype = "application/json"
-	elif (mimetype == "text/plain") and fp.endswith(".css"):
-		mimetype = "text/css"
-	return mimetype
 def str2cliststr(s:str):
 	r:str = "{"
 	for c in s:
@@ -211,8 +194,7 @@ if __name__ == "__main__":
 		dir2_indx2fsz:list = []
 		for fname in dir2_indx2fname:
 			fp = args.dir2 + "/" + fname
-			mimetype:str = magic.from_file(os.path.realpath(fp), mime=True)
-			mimetype = standardise_mimetype(mimetype, fp)
+			mimetype:str = guess_mimetype(fp)
 			dir2_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
 			dir2_indx2fsz.append(stat.st_size)

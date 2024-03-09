@@ -7,6 +7,7 @@ import json
 import magic
 import base64
 import os
+from mimetype_utils import guess_mimetype
 
 
 tagemdb = TagemDB(user_id=4)
@@ -71,7 +72,15 @@ for fileid in tagem_fileids:
 		contents:bytes = None
 		with open(thumb_fp,"rb") as f:
 			contents = f.read()
-		mimetype:str = magic.from_buffer(contents, mime=True)
+		mimetype:str = None
+		if thumb_fp.endswith(".jpg"):
+			mimetype = "image/jpeg"
+		elif thumb_fp.endswith(".webp"):
+			mimetype = "image/webp"
+		elif thumb_fp.endswith(".png"):
+			mimetype = "image/png"
+		else:
+			mimetype = magic.from_buffer(contents, mime=True)
 		if mimetype not in ("image/jpeg","image/webp","image/png"):
 			raise ValueError("mimetype is "+mimetype)
 		thumb_str = "data:"+mimetype+","+base64.encodebytes(contents).replace(b"\n",b"").decode()
