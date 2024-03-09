@@ -20,8 +20,13 @@
 	<div id="randymediaplayer_filetagcontainer"></div>
 </div>
 <div id="randymediaplayer_container">
-	<video preload="none" class="fixedposition" id="randymediaplayer_media_video" controls loop><source id="randymediaplayer_media_video_source" src="data,"></source></video>
-	<audio preload="none" class="fixedposition" id="randymediaplayer_media_audio" controls loop><source id="randymediaplayer_media_audio_source" src="data,"></source></audio>
+	<video preload="none" class="fixedposition" id="randymediaplayer_media_video" controls loop>
+		<source id="randymediaplayer_media_video_source" src="data:,"></source>
+		<track class="randymediaplayer_media_video_subtitles" label="English" kind="subtitles" srclang="en" src="data:," default>
+		<track class="randymediaplayer_media_video_subtitles" label="Deutsch" kind="subtitles" srclang="en" src="data:,">
+	</video>
+	<!-- <audio preload="none" class="fixedposition" id="randymediaplayer_media_audio" controls loop><source id="randymediaplayer_media_audio_source" src="data:,"></source></audio>-->
+	<!-- Browser only displays poster and subtitles for <video> tags, which can play audio - but <video> tags for some reason REFUSE to display controls, sometimes just specifically the volume controls, for audio!!!-->
 </div>
 </body>
 </html>

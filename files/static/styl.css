@@ -163,7 +163,9 @@
 	background: red;
 }
 .dir_files_container {}
-
+.chat_media_tag_thumbnail {
+	height:5em;
+}
 
 .unselectable {
 	-moz-user-select:-moz-none;
@@ -244,4 +246,27 @@
 }
 .contentlink:visited {
 	color:#727cb5;
+}
+
+
+
+
+/* Fake admin stuff to make hackers think there is an admin page */
+.admin__quickadminlink {
+  color:#99f!important;
+}
+.admin__quickadminlink:visited {
+  color:#00f!important;
+}
+
+.admin__bothoneypot {
+    display:none;
+}
+
+.admin__ok {
+    margin-left:5em;
+    background:green;
+}
+svg.adminiconbtn {
+  max-height:10vh;
 }

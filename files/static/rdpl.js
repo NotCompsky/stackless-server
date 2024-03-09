@@ -13,26 +13,29 @@ function getorpost(url, body, fn){
 }
 const filterfn = [
 	function(fileid){ return true; },
-	function(fileid){ return all_files[fileid][3].startsWith("image/"); },
-	function(fileid){ return all_files[fileid][3] === "image/gif"; },
-	function(fileid){ return all_files[fileid][3].startsWith("video/"); },
-	function(fileid){ return all_files[fileid][3].startsWith("audio/"); },
-	function(fileid){ return all_files[fileid][3].startsWith("video/") || all_files[fileid][3].startsWith("audio/"); },
-	function(fileid){ return all_files[fileid][3].startsWith("video/") || all_files[fileid][3]==="image/gif"; }
+	function(fileid){ return all_files__as_dict[fileid][3].startsWith("image/"); },
+	function(fileid){ return all_files__as_dict[fileid][3] === "image/gif"; },
+	function(fileid){ console.log(fileid, all_files__as_dict[fileid]); return all_files__as_dict[fileid][3].startsWith("video/"); },
+	function(fileid){ return all_files__as_dict[fileid][3].startsWith("audio/"); },
+	function(fileid){ return all_files__as_dict[fileid][3].startsWith("video/") || all_files__as_dict[fileid][3].startsWith("audio/"); },
+	function(fileid){ return all_files__as_dict[fileid][3].startsWith("video/") || all_files__as_dict[fileid][3]==="image/gif"; }
 ];
 
 
 var all_tags_id2name = null;
 var all_files = null;
+var all_files__as_dict = {};
 var all_tags_id2files = [];
+var tag2thumbnail = null;
 var introduction_to_each_category = null;
 
 var errcontainer = null;
 var container = null;
 var media_video = null;
-var media_audio = null;
+//var media_audio = null;
 var media_video_source = null;
-var media_audio_source = null;
+//var media_audio_source = null;
+var media_video_subtitles = null;
 var selector1 = null;
 var selector2 = null;
 var selector3 = null;
@@ -44,7 +47,7 @@ var shouldloop = 1;
 
 let html_indx = 0;
 let prev_html = [""];
-let prev_tag = [0,0,0];
+let prev_tag = [0,0,0,0];
 let next_direction = 1;
 let current_media_id = 0;
 let show_file_tags = true; // TODO
@@ -54,7 +57,7 @@ function throw_err(s){
 	throw Error(s);
 }
 function tagbtnclicked(e){
-	selector1.value = e.currentTarget.dataset.i;
+	selector1.value = (e.currentTarget.dataset.i|0) + 1;
 	get_new_media();
 }
 function shuffle(array, preset_first_n_elements){ // Fisher-Yates (aka Knuth) Shuffle
@@ -104,34 +107,61 @@ function rendermedia(){
 	if (ls[1].startsWith("image/")){
 			container.style.background = `url(${url})`;
 			media_video.style.display = "none";
-			media_audio.style.display = "none";
+			//media_audio.style.display = "none";
 			media_video.pause();
-			media_audio.pause();
-	} else if (ls[1].startsWith("video/")){
-			media_video_source.setAttribute("type", ls[1]);
-			media_video_source.setAttribute("src",  url);
-			media_video.playbackRate = $$$audio_playbackRate;
-			media_video.style.display = "unset";
-			media_audio.style.display = "none";
-			container.style.background = 'unset';
-			media_audio.pause();
-			media_video.load();
-			try {
-				media_video.play();
-			} catch(e){
-				console.log(e);
-			}
-	} else {
+			//media_audio.pause();
+	/*} else if (ls[1].startsWith("audio/")){
+			container.style.background = `url(${ls[2]})`;
 			media_audio_source.type = ls[1];
 			media_audio_source.src = url;
 			media_audio.playbackRate = $$$audio_playbackRate;
 			media_video.style.display = "none";
 			media_audio.style.display = "unset";
-			container.style.background = 'unset';
 			media_video.pause();
 			media_audio.load();
 			try {
 				media_audio.play();
+			} catch(e){
+				console.log(e);
+			}*/
+	} else {
+			/*for (let node of Array.from(media_video.getElementsByTagName("track"))){
+				node.remove();
+			}*/
+			const useds = [];
+			for (let i = 0;  i < ls[3].length;  ++i){
+				const [srclang,src] = ls[3][i];
+				useds.push(srclang);
+				const caption_node = media_video_subtitles[srclang]; //document.createElement("track");
+				//if (i === 0)
+				//	caption_node.default = "";
+				caption_node.src = src;
+				//caption_node.srclang = srclang;
+				//caption_node.kind = "subtitles";
+				//caption_node.label = {"en":"English","de":"Deutsch"}[srclang];
+				//media_video.appendChild(caption_node);
+			}
+			for (let i = 0;  i < media_video_subtitles.length;  ++i){
+				if (!useds.includes(i))
+					media_video_subtitles[i].src = "data:,";
+			}
+			
+			media_video_source.setAttribute("type", ls[1]);
+			media_video_source.setAttribute("src",  url);
+			if (ls[1].startsWith("audio/")){
+				const thumbnail = (typeof ls[2] === "number") ? tag2thumbnail[ls[2]] : ls[2];
+				media_video.poster = thumbnail;
+			} else {
+				media_video.setAttribute("poster", "data:,"); // but "" also doesnt seem to trigger rerquest
+			}
+			media_video.playbackRate = $$$audio_playbackRate;
+			media_video.style.display = "unset";
+			//media_audio.style.display = "none";
+			container.style.background = "unset";
+			//media_audio.pause();
+			media_video.load();
+			try {
+				media_video.play();
 			} catch(e){
 				console.log(e);
 			}
@@ -158,18 +188,20 @@ function get_new_media(){
 		prev_tag[3] = filterselector_value;
 	}
 	if (html_indx === prev_html.length-1){
-		const [tagid1,tagid2,NOT_tagid3,filterid] = prev_tag;
-		const ls = all_tags_id2files[tagid1]
-			.filter(x => ((    tagid2===0)||( all_tags_id2files[    tagid2].includes(x))))
-			.filter(x => ((NOT_tagid3===0)||(!all_tags_id2files[NOT_tagid3].includes(x))))
+		const [tagid1_plus1,tagid2_plus1,NOT_tagid3_plus1,filterid] = prev_tag;
+		const ls = all_tags_id2files[tagid1_plus1]
+			.filter(x => ((    tagid2_plus1===0)||( all_tags_id2files[    tagid2_plus1].includes(x))))
+			.filter(x => ((NOT_tagid3_plus1===0)||(!all_tags_id2files[NOT_tagid3_plus1].includes(x))))
 			.filter(filterfn[filterid])
 		;
 		let ls_offset = 0;
-		const intro_fileid = introduction_to_each_category[tagid1];
-		if (intro_fileid && ls.includes(intro_fileid)){
-			const indx = ls.indexOf(intro_fileid);
-			[ls[0], ls[indx]] = [ls[indx], ls[0]];
-			ls_offset = 1;
+		if (tagid1_plus1 !== 0){
+			const intro_fileid = introduction_to_each_category[tagid1_plus1-1];
+			if (intro_fileid && ls.includes(intro_fileid)){
+				const indx = ls.indexOf(intro_fileid);
+				[ls[0], ls[indx]] = [ls[indx], ls[0]];
+				ls_offset = 1;
+			}
 		}
 		shuffle(ls,ls_offset);
 		if (ls.length === 0){
@@ -179,7 +211,7 @@ function get_new_media(){
 			if (x !== prev_html[html_indx]){
 				for (let i = 0;  i < all_files.length;  ++i){
 					if (all_files[i][0] === x){
-						prev_html.push([all_files[i][0],all_files[i][3]]);
+						prev_html.push([all_files[i][0],all_files[i][3],all_files[i][1],all_files[i][4]]);
 					}
 				}
 			}
@@ -194,7 +226,7 @@ function get_new_media(){
 	}
 }
 function get_prev_media(){
-	if (html_indx !== 1){
+	if ((html_indx !== 1) && (html_indx !== 0)){
 		--html_indx;
 		rendermedia();
 	}
@@ -217,7 +249,7 @@ function $$$media_rate_changed(eventobj){
 function $$$media_volume_changed(eventobj){
 	$$$media_volume = eventobj.target.volume;
 	if (eventobj.currentTarget === media_video){
-		media_audio.volume = $$$media_volume;
+		// media_audio.volume = $$$media_volume;
 	} else {
 		media_video.volume = $$$media_volume;
 	}
@@ -231,9 +263,10 @@ document.getElementById("randymediaplayer_prev").addEventListener("pointerup", (
 errcontainer = document.getElementById("randymediaplayer_errcontainer");
 container = document.getElementById("randymediaplayer_container");
 media_video = document.getElementById("randymediaplayer_media_video");
-media_audio = document.getElementById("randymediaplayer_media_audio");
+//media_audio = document.getElementById("randymediaplayer_media_audio");
 media_video_source = document.getElementById("randymediaplayer_media_video_source");
-media_audio_source = document.getElementById("randymediaplayer_media_audio_source");
+//media_audio_source = document.getElementById("randymediaplayer_media_audio_source");
+media_video_subtitles = document.getElementsByClassName("randymediaplayer_media_video_subtitles");
 selector1 = document.getElementById("randymediaplayer_selector1");
 selector2 = document.getElementById("randymediaplayer_selector2");
 selector3 = document.getElementById("randymediaplayer_selector3");
@@ -246,37 +279,39 @@ errcontainer.addEventListener("pointerover", ()=>{
 nextbtn.addEventListener("pointerup", get_new_media);
 
 media_video_source.addEventListener("error", get_new_media);
-media_audio_source.addEventListener("error", get_new_media);
+//media_audio_source.addEventListener("error", get_new_media);
 media_video.addEventListener("ended", onmediaend);
 media_video.addEventListener("ratechange", $$$media_rate_changed);
 media_video.addEventListener("volumechange", $$$media_volume_changed);
-media_audio.addEventListener("ended", onmediaend);
-media_audio.addEventListener("ratechange", $$$media_rate_changed);
-media_audio.addEventListener("volumechange", $$$media_volume_changed);
+//media_audio.addEventListener("ended", onmediaend);
+//media_audio.addEventListener("ratechange", $$$media_rate_changed);
+//media_audio.addEventListener("volumechange", $$$media_volume_changed);
 
 
 getorpost("/all_files.json", null, datastr => {
-	const [tags,files,intros] = JSON.parse(datastr);
-	all_tags_id2name = tags;
-	all_files = files;
-	introduction_to_each_category = intros;
-	for (let i = 0;  i < tags.length;  ++i){
+	[all_tags_id2name,all_files,tag2thumbnail,introduction_to_each_category] = JSON.parse(datastr);
+	for (let i = 0;  i < all_tags_id2name.length+1;  ++i){
 		all_tags_id2files.push([]);
 	}
 	let s = "";
-	for (let [fileid, thumb, tagids] of files){
-		for (let tagid of tagids)
-			all_tags_id2files[tagid].push(fileid);
-		if (tagids.length === 0)
+	for (let i = 0;  i < all_files.length;  ++i){
+		const ls = all_files[i];
+		const fileid = ls[0];
+		all_files__as_dict[fileid] = ls;
+		all_tags_id2files[0].push(fileid);
+		for (let tagid of ls[2])
+			all_tags_id2files[tagid+1].push(fileid);
+		if (ls[2].length === 0)
 			console.warn("No tagids:", fileid);
 	}
-	let optionshtml = "";
-	let notoptionshtml = "";
-	for (let [tagid,tagname] of Object.entries(tags)){
-		optionshtml += `<option value="${tagid}">${tagname} [${all_tags_id2files[tagid].length}]</option>`;
-		notoptionshtml += `<option value="${tagid}">NOT ${tagname}</option>`;
+	let optionshtml = '';
+	let notoptionshtml = '';
+	for (let tagid = 0;  tagid < all_tags_id2name.length;  ++tagid){
+		const tagname = all_tags_id2name[tagid];
+		optionshtml += `<option value="${tagid+1}">${tagname} [${all_tags_id2files[tagid+1].length}]</option>`;
+		notoptionshtml += `<option value="${tagid+1}">NOT ${tagname}</option>`;
 	}
-	selector1.innerHTML = optionshtml;
+	selector1.innerHTML = `<option value="0">Shuffle all [${all_tags_id2files[0].length}]</option>` + optionshtml;
 	selector2.innerHTML = `<option value="0">(+Filter)</option>` + optionshtml;
 	selector3.innerHTML = `<option value="0">(-Filter)</option>` + notoptionshtml;
 	
@@ -284,7 +319,7 @@ getorpost("/all_files.json", null, datastr => {
 		[selector1.value, selector2.value, selector3.value, filterselector.value, shouldloop] = JSON.parse(document.location.hash.substr(1));
 		if (shouldloop === 0){
 			media_video.loop = false;
-			media_audio.loop = false;
+			//media_audio.loop = false;
 		}
 	}
 	selector1.addEventListener("change", get_new_media);
