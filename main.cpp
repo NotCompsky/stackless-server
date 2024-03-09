@@ -169,7 +169,7 @@ class HTTPResponseHandler {
 int main(const int argc,  const char* argv[]){
 	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	
-	if (unlikely(packed_file_fd == 0)){
+	if (unlikely(packed_file_fd == -1)){
 		return 1;
 	}
 	
