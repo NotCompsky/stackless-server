@@ -3,6 +3,7 @@
 #define COMPSKY_SERVER_NOFILEWRITES
 #define COMPSKY_SERVER_NOSENDMSG
 #define COMPSKY_SERVER_NOSENDFILE
+#define COMPSKY_SERVER_KTLS
 #include <compsky/server/server.hpp>
 #include <compsky/server/static_response.hpp>
 #include <compsky/http/parse.hpp>
@@ -13,6 +14,10 @@
 #include "server_nonhttp.hpp"
 #include "request_websocket_open.hpp"
 #include "typedefs.hpp"
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
+static_assert(OPENSSL_VERSION_MAJOR == 3, "Minimum OpenSSL version not met: major");
 
 #include <cstdio>
 
@@ -179,6 +184,38 @@ int main(const int argc,  const char* argv[]){
 	if (unlikely(server_buf == nullptr)){
 		return 1;
 	}
+	
+	
+	if (unlikely(SSL_library_init() != 1)){
+		fprintf(stderr, "SSL_library_init failed\n");
+		return 1;
+	}
+    OpenSSL_add_all_algorithms();
+    SSL_load_error_strings();
+	ERR_load_crypto_strings();
+
+    const SSL_METHOD* method = TLS_server_method();
+    Server::ssl_ctx = SSL_CTX_new(method);
+    if (Server::ssl_ctx == nullptr){
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS);
+	SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
+	// SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS_TX_ZEROCOPY_SENDFILE);
+    if (SSL_CTX_use_certificate_file(Server::ssl_ctx, "server.crt", SSL_FILETYPE_PEM) <= 0){
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    if (SSL_CTX_use_PrivateKey_file(Server::ssl_ctx, "server.key", SSL_FILETYPE_PEM) <= 0 ){
+        ERR_print_errors_fp(stderr);
+        return 1;
+    }
+    if (unlikely(not SSL_CTX_check_private_key(Server::ssl_ctx))){
+		fprintf(stderr, "Private key does not match the public key\n");
+		return 1;
+	}
+	
 	
 	signal(SIGPIPE, SIG_IGN); // see https://stackoverflow.com/questions/5730975/difference-in-handling-of-signals-in-unix for why use this vs sigprocmask - seems like sigprocmask just causes a queue of signals to build up
 	Server::max_req_buffer_sz_minus_1 = 500*1024; // NOTE: Size is arbitrary

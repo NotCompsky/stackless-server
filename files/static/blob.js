@@ -187,7 +187,7 @@ function ws__isConnected(){
 }
 function ws_connectToServer(){
 	if (!ws__isConnectedOrConnecting()){
-		const server_url = "ws://"+document.location.host+"/1/test/new";
+		const server_url = "wss://"+document.location.host+"/1/test/new"; // ws:// for insecure
 		ws = new WebSocket(server_url);
 		ws.onopen    = ws_onOpen;
 		ws.onclose   = ws_onClose;
