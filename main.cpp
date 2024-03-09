@@ -36,6 +36,10 @@ uint32_t uint32_value_of(const char(&s)[4]){
 	return std::bit_cast<std::uint32_t>(s);
 }
 
+constexpr
+uint32_t filepath__files_large_xxxx__prefix_len = 12;
+char filepath__files_large_xxxx[] = {'f','i','l','e','s','/','l','a','r','g','e','/',0,0,0,0,0};
+
 class HTTPResponseHandler {
  public:
 	bool keep_alive;
@@ -81,8 +85,9 @@ class HTTPResponseHandler {
 					
 					const size_t bytes_to_read1 = (rc == compsky::http::header::GetRangeHeaderResult::none) ? filestreaming__block_sz : ((to) ? (to - from) : filestreaming__stream_block_sz);
 					const size_t bytes_to_read  = (bytes_to_read1 > (metadata.fsz-from)) ? (metadata.fsz-from) : bytes_to_read1;
-					
-					const int fd = open(metadata.fp, O_NOATIME|O_RDONLY);
+										
+					memcpy(filepath__files_large_xxxx+filepath__files_large_xxxx__prefix_len, metadata.fileid, 4);
+					const int fd = open(filepath__files_large_xxxx, O_NOATIME|O_RDONLY);
 					if (likely(lseek(fd, from, SEEK_SET) == from)){
 						char* server_itr = server_buf;
 						if ((rc == compsky::http::header::GetRangeHeaderResult::none) and (bytes_to_read == metadata.fsz)){

@@ -34,6 +34,13 @@ def standardise_mimetype(mimetype:str, fp:str):
 	elif (mimetype == "text/plain") and fp.endswith(".css"):
 		mimetype = "text/css"
 	return mimetype
+def str2cliststr(s:str):
+	r:str = "{"
+	for c in s:
+		if (c == "'") or (c == "\\"):
+			c = "\\" + c
+		r += "'" + c + "',"
+	return r[:-1] + "}"
 
 def gzip_compress(contents:bytes):
 	CO = zlib.compressobj(level=9, wbits=31)
@@ -109,7 +116,7 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 	
 	input_indx2fp:list = []
-	dir2_indx2fp:list = []
+	dir2_indx2fname:list = []
 	
 	if args.dir is not None:
 		import os
@@ -134,7 +141,7 @@ if __name__ == "__main__":
 			fp:str = args.dir2 + "/" + fname
 			if os.path.isdir(fp):
 				continue
-			dir2_indx2fp.append(fp)
+			dir2_indx2fname.append(fname)
 			val:str = fname[:4]
 			if val in inputs2_paths:
 				raise ValueError("2 anti-files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
@@ -202,7 +209,8 @@ if __name__ == "__main__":
 		max_file_and_header_sz:int = 0
 		dir2_indx2mimetype:list = []
 		dir2_indx2fsz:list = []
-		for fp in dir2_indx2fp:
+		for fname in dir2_indx2fname:
+			fp = args.dir2 + "/" + fname
 			mimetype:str = magic.from_file(os.path.realpath(fp), mime=True)
 			mimetype = standardise_mimetype(mimetype, fp)
 			dir2_indx2mimetype.append(mimetype)
@@ -232,7 +240,7 @@ if __name__ == "__main__":
 					"connection: keep-alive\r\n"
 				)
 				if mimetype == "text/html":
-					if path == " /rp": # rpill
+					if path == "worl": # rpill
 						headers += "content-security-policy: default-src 'none'; connect-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self';\r\n"
 					else:
 						headers += "content-security-policy: default-src 'none'; connect-src 'self'; "
@@ -289,7 +297,7 @@ if __name__ == "__main__":
 				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {args.multiplier2};\n")
 				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {max(inputs2_mappedoutputs)+1};\n")
 				f.write("""struct HASH2_indx2metadata_item {
-	const char* const fp;
+	const char fileid[4];
 	const char* const mimetype;
 	const size_t fsz;
 };\n""")
@@ -300,10 +308,10 @@ if __name__ == "__main__":
 						indx = inputs2_mappedoutputs.index(i)
 					except ValueError:
 						pass
-					fp:str = dir2_indx2fp[indx]
+					fname:str = dir2_indx2fname[indx]
 					mimetype:str = dir2_indx2mimetype[indx]
 					fsz:int = dir2_indx2fsz[indx]
-					s += f",{{{json.dumps(fp)}, {json.dumps(mimetype)}, {fsz}}}"
+					s += f",{{{str2cliststr(fname)}, {json.dumps(mimetype)}, {fsz}}}"
 				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{max(inputs2_mappedoutputs)+1}] = {{{s[1:]}}};\n")
 			
 			for i, antiinput_val in enumerate(anti_inputs):
