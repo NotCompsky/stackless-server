@@ -1,4 +1,4 @@
-#define CACHE_CONTROL_HEADER "Cache-Control: max-age=" MAX_CACHE_AGE "\n"
+#define CACHE_CONTROL_HEADER "Cache-Control: max-age=2592000\r\n"
 
 #define COMPSKY_SERVER_NOFILEWRITES
 #define COMPSKY_SERVER_NOSENDMSG
@@ -87,6 +87,7 @@ class HTTPResponseHandler {
 								"Accept-Ranges: bytes\r\n"
 								"Content-Type: ", metadata.mimetype, "\r\n"
 								HEADER__CONNECTION_KEEP_ALIVE
+								CACHE_CONTROL_HEADER
 								// TODO: Surely content-range header should be here?
 								"Content-Length: ", metadata.fsz, "\r\n"
 								"\r\n"
@@ -99,6 +100,7 @@ class HTTPResponseHandler {
 								HEADER__CONNECTION_KEEP_ALIVE
 								"Content-Range: bytes ", from, '-', from + bytes_to_read - 1, '/', metadata.fsz, "\r\n"
 								// The minus one is because the range of n bytes is from zeroth byte to the (n-1)th byte
+								CACHE_CONTROL_HEADER
 								"Content-Length: ", bytes_to_read, "\r\n"
 								"\r\n"
 							);
