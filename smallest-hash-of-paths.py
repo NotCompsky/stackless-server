@@ -162,7 +162,7 @@ if __name__ == "__main__":
 	if args.multiplier == 0:
 		args.multiplier = finding_0xedc72f12_w_avoids(inputs, anti_inputs, shiftby1)
 		if args.multiplier == 0:
-			raise ValueError(f"Failed to find suitable multiplier1 for {len(inputs)} inputs, {shiftby1} shiftby, {len(inputs2+anti_inputs)} anti-inputs")
+			raise ValueError(f"Failed to find suitable multiplier1 for {len(inputs)} inputs, {shiftby1} shiftby, {len(anti_inputs)} anti-inputs")
 	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]
 	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> {shiftby1}")
 	sorteds:list = []
