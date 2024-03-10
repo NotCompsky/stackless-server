@@ -181,11 +181,14 @@ tagem_tagids__ordered_keys__including_hidden_tagids:list = tagem_tagids__ordered
 total_filesize:int = 0
 filesizes:list = []
 
+all_filepaths_added_to_server:list = []
+
 def fp_of_file_added_to_server(fp:str):
 	global total_filesize
 	fsz:int = os.stat(fp).st_size
 	filesizes.append((fsz,fp))
 	total_filesize += fsz
+	all_filepaths_added_to_server.append(fp)
 
 def set_symlink(linkat:str, linkto:str):
 	must_add_link:bool = True
@@ -374,6 +377,29 @@ for tagid, count in Counter(all_tags_associated_with_chosen_files).most_common(5
 	tagname:str = tagemdb.qry(f"SELECT name FROM tag WHERE id={tagid}")[0][0].decode()
 	print(f"Excluded tag associated with {count} chosen files: {tagid} {tagname}")
 
+
+prev_all_filepaths_added_to_server:list = None
+with open("prev_all_filepaths_added_to_server.json","r") as f:
+	prev_all_filepaths_added_to_server = json.load(f)
+
+browser_cache_is_different:bool = False
+for i in range(len(all_filepaths_added_to_server)):
+	if i == len(prev_all_filepaths_added_to_server):
+		break
+	if all_filepaths_added_to_server[i] != prev_all_filepaths_added_to_server[i]:
+		browser_cache_is_different = True
+		break
+
+browser_cache_version:int = 0
+with open("browser_cache_version.txt","r") as f:
+	browser_cache_version = int(f.read())
+
+if browser_cache_is_different:
+	browser_cache_version += 1
+	with open("browser_cache_version.txt","w") as f:
+		f.write(str(browser_cache_version))
+
+
 introduction_to_each_category = {tagem_tagids__ordered_keys.index(tagid):tagem_fileid2indx[fileid] for tagid,fileid in introduction_to_each_category.items() if (fileid in tagem_fileid2indx) and (tagid in tagem_tagids__ordered_keys)}
 with open("/home/vangelic/repos/compsky/static-and-chat-server/files/static/all_.json","w") as f:
 	json.dump([tagem_tagids__as_indices,fileid2associatedtags,tag2thumbnail,introduction_to_each_category],f,indent=None,separators=(",",":"))
@@ -383,3 +409,15 @@ for fsz,fp in sorted(filesizes,key=lambda x:x[0],reverse=True)[:50]:
 print(f"Total size of all files used by server: {total_filesize//(1024*1024)} MiB")
 for fileid in fileid2alternative_thumbnail:
 	print(f"ERROR: Failed to use alternative thumbnail for {fileid}")
+
+def escstr(s:str):
+	return s.replace("\\","\\\\").replace("\"","\\\"")
+
+if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev_all_filepaths_added_to_server)):
+	with open("prev_all_filepaths_added_to_server.json.new","w") as f:
+		json.dump(all_filepaths_added_to_server, f)
+	os.rename("prev_all_filepaths_added_to_server.json.new","prev_all_filepaths_added_to_server.json")
+	
+	with open("profile.largefiles.apparmor","w") as f:
+		for fp in all_filepaths_added_to_server:
+			f.write(f'"{escstr(fp)}" r,\n')

@@ -285,14 +285,15 @@ showsiblingmenubtn.addEventListener("pointerdown", function(){
 
 showMessage("[Type HELP to show a list of commands]\n");
 
-getorpost("/all_files.json", null, datastr => {
+getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
+	const global_version = MACRO__GLOBAL_VERSION;
 	const [tags,files,tag2thumbnail,_] = JSON.parse(datastr);
 	let s = "";
 	for (let [tagid, tagname] of Object.entries(tags)){
 		const categorythumb = tag2thumbnail[tagid];
 		s += `<div><div class="dir_files_container_name">`;
 		if (categorythumb !== undefined){
-			s += `<img class="chat_media_tag_thumbnail" src="${categorythumb}"></img>`;
+			s += `<img class="chat_media_tag_thumbnail" src="${categorythumb}?v=${global_version}"></img>`;
 		} else {
 			s += tagname;
 		}
@@ -301,7 +302,7 @@ getorpost("/all_files.json", null, datastr => {
 			const [fileid,thumb_str,tagids] = files[i];
 			if (tagids.includes(tagid|0)){
 				const realthumb = (typeof thumb_str === "number") ? tag2thumbnail[thumb_str] : thumb_str;
-				s += `<div class="dir_file flexitem" data-filename="${fileid.toString().padStart(4,'0')}"><img class="dir_file_thumb" src="${realthumb}"></img><p class="title_over_sibling_img">TITLE</p></div>`;
+				s += `<div class="dir_file flexitem" data-filename="${fileid.toString().padStart(4,'0')}?v=${global_version}"><img class="dir_file_thumb" src="${realthumb}?v=${global_version}"></img><p class="title_over_sibling_img">TITLE</p></div>`;
 			}
 		}
 		s += "</div></div>";

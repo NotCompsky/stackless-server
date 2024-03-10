@@ -7,6 +7,8 @@ from struct import unpack
 import ctypes
 import numpy as np
 from mimetype_utils import guess_mimetype, standardise_mimetype
+import hashlib
+import base64
 
 
 clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/libsmallesthashofpaths.so")
@@ -16,6 +18,12 @@ c_finding_0xedc72f12.restype = ctypes.c_uint
 c_finding_0xedc72f12_w_avoids = clib.finding_0xedc72f12_w_avoids
 c_finding_0xedc72f12_w_avoids.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 c_finding_0xedc72f12_w_avoids.restype = ctypes.c_uint
+
+def unretarded_b64_encode(b:bytes):
+	return base64.encodebytes(b).replace(b"\n",b"")
+
+def get_sha256_hash_in_b64_form(contents:bytes):
+	return unretarded_b64_encode(hashlib.sha256(contents).digest())
 
 def str2cliststr(s:str):
 	r:str = "{"
@@ -204,6 +212,9 @@ if __name__ == "__main__":
 			dir2_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
 			dir2_indx2fsz.append(stat.st_size)
+		browser_cache_version_cstr:int = 0
+		with open("browser_cache_version.txt","r") as f:
+			browser_cache_version_cstr = str(int(f.read())).encode()
 		with open(args.pack_files_to, "wb") as fw:
 			for path, path_id, fp in sorteds:
 				written_n_bytes:int = 0
@@ -237,22 +248,45 @@ if __name__ == "__main__":
 						headers += "content-security-policy: "+csp+"\r\n"
 					else:
 						headers += "content-security-policy: default-src 'none'; connect-src 'self'; "
-						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
-							headers += "script-src 'self' 'unsafe-inline'; "
-						else:
-							headers += "script-src 'self'; "
+						
+						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\">",b"<source type=\"\\1\" src=\"/static/\\2?v="+browser_cache_version_cstr+b"\">",contents)
+						contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
+						contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
+						
+						contents = contents.replace(b"\t",b"")
+						contents = contents.replace(b"\n",b"")
+						
 						if b"<style>" in contents:
 							headers += "style-src 'self' 'unsafe-inline'; "
 						else:
 							headers += "style-src 'self'; "
+						
+						# NOTE: Do not modify the contents after this, to avoid changing sha256 hashes
+						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
+							raise ValueError("Inline <script>")
+						elif b"<script src=\"" in contents:
+							headers += "script-src"
+							while True:
+								start_of_script_tag:int = contents.index(b"<script src=\"",0)
+								start_of_script_src:int = start_of_script_tag + len(b"<script src=\"")
+								end_of_jsfname:int = contents.index(b"\"",start_of_script_src)
+								end_of_script_tag:str = contents.index(b"</script>",start_of_script_tag)
+								jsfname:str = contents[start_of_script_src:end_of_jsfname]
+								associated_js:bytes = None
+								with open(b"files/js/"+jsfname,"rb") as f:
+									associated_js = f.read()
+								
+								associated_js = associated_js.replace(b"MACRO__ALL_FILES_JSON_PATH",b"/all_files.json?v="+browser_cache_version_cstr)
+								associated_js = associated_js.replace(b"MACRO__GLOBAL_VERSION",browser_cache_version_cstr)
+								
+								sha256hash_as_b64:bytes = get_sha256_hash_in_b64_form(associated_js)
+								contents = contents[0:start_of_script_tag] + b"<script integrity=\"sha256-"+sha256hash_as_b64+b"\">" + associated_js + contents[end_of_script_tag:]
+								headers += " 'sha256-"+sha256hash_as_b64.decode()+"'"
+								if b"<script src=\"" not in contents:
+									break
+							headers += "; "
+						
 						headers += "img-src 'self' data:; media-src 'self' data:;\r\n"
-						
-						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\">",b"<source type=\"\\1\" src=\"/static/\\2\">",contents)
-						contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
-						contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1);",contents)
-						
-						contents = contents.replace(b"\t",b"")
-						contents = contents.replace(b"\n",b"")
 				if mimetype in ("text/css",):
 					contents = contents.replace(b"\t",b"")
 					contents = contents.replace(b"\n",b"")
@@ -260,7 +294,7 @@ if __name__ == "__main__":
 					contents = contents.replace(b" {",b"{")
 					
 					contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
-					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1);",contents)
+					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
 				
 				if not dont_compress:
 					contents_compressed:bytes = gzip_compress(contents)

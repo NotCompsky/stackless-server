@@ -22,6 +22,7 @@ const filterfn = [
 ];
 
 
+const global_version = MACRO__GLOBAL_VERSION;
 var all_tags_id2name = null;
 var all_files = null;
 var all_files__as_dict = {};
@@ -93,7 +94,7 @@ function render_tags(){
 function rendermedia(){
 	const ls = prev_html[html_indx];
 	current_media_id = ls[0];
-	const url = "/static/" + current_media_id.toString().padStart(4,'0');
+	const url = "/static/" + current_media_id.toString().padStart(4,'0') + "?v=" + global_version;
 	if (ls[1] === "audio/m4a")
 		ls[1] = "audio/mp4"; // Fix for licensing issues
 	if (ls[1] === "video")
@@ -288,7 +289,7 @@ media_video.addEventListener("volumechange", $$$media_volume_changed);
 //media_audio.addEventListener("volumechange", $$$media_volume_changed);
 
 
-getorpost("/all_files.json", null, datastr => {
+getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
 	[all_tags_id2name,all_files,tag2thumbnail,introduction_to_each_category] = JSON.parse(datastr);
 	for (let i = 0;  i < all_tags_id2name.length+1;  ++i){
 		all_tags_id2files.push([]);
