@@ -64,6 +64,10 @@ std::string_view http_response__set_user_cookie__prefix(
 	"Location: /\r\n"
 	"Set-Cookie: u="
 );
+constexpr
+std::string_view http_response__set_user_cookie__postfix(
+	"; SameSite=Strict; Secure; HttpOnly\r\n\r\n"
+);
 constexpr unsigned secret_path_hash_len = 32;
 bool compare_secret_path_hashes(const char(&hash1)[secret_path_hash_len],  const char* const hash2){
 	const uint64_t* const a = reinterpret_cast<const uint64_t*>(hash1);
@@ -81,7 +85,7 @@ bool compare_secret_path_hashes(const char(&hash1)[secret_path_hash_len],  const
 		(a[3]==b[3])
 	);
 }
-char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + secret_path_hash_len + 4];
+char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + secret_path_hash_len + http_response__set_user_cookie__postfix.size()];
 
 constexpr
 uint32_t filepath__files_large_xxxx__prefix_len = 12;
@@ -276,7 +280,7 @@ class HTTPResponseHandler {
 							secret_path.hash,
 							secret_path_hash_len
 						);
-						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+secret_path_hash_len+4);
+						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+secret_path_hash_len+http_response__set_user_cookie__postfix.size());
 					}
 				}
 				{
@@ -426,8 +430,8 @@ int main(const int argc,  const char* argv[]){
 	);
 	memcpy(
 		http_response__set_user_cookie + http_response__set_user_cookie__prefix.size() + secret_path_hash_len,
-		"\r\n\r\n",
-		4
+		http_response__set_user_cookie__postfix.data(),
+		http_response__set_user_cookie__postfix.size()
 	);
 	
 	{
