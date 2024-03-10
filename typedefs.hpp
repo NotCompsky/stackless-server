@@ -11,30 +11,44 @@ class HTTPResponseHandler;
 class NonHTTPRequestHandler;
 typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 0, 60, 5> Server;
 
+#define SECURITY_HEADERS_EXCLUDING_CSP \
+	"Referrer-Policy: no-referrer\r\n" /* HEADER__SECURITY__NO_REFERRER */ \
+	"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n" /* preload list is centralised (hstspreload.org) for all major browsers, so avoid "; preload" */ \
+	"X-Content-Type-Options: nosniff\r\n" /* HEADER__SECURITY__NOSNIFF */ \
+	"X-Frame-Options: SAMEORIGIN\r\n" /* or DENY HEADER__SECURITY__NO_FOREIGN_IFRAME */ \
+	"X-Permitted-Cross-Domain-Policies: none\r\n" /* Controls whether Flash and Adobe Acrobat are allowed to load content from a different domain. */ \
+	"X-XSS-Protection: 1; mode=block\r\n" /* HEADER__SECURITY__XSS */ \
+	/* "Feature-Policy: geolocation 'none'; camera 'none'; microphone 'none'\r\n" // HEADER__SECURITY__FEATURE_POLICY */ \
+	/* TODO: "Expect-CT: max-age=86400, enforce\r\n" (expect a valid Signed Certificate Timestamp (SCT) for each certificate in the certificate chain, forcing any SSL certificate forgery to leave a 'paper trail' of logs AFAIK) */ \
+	/* NOTE: HPKP header has been deprecated, but it looked good */
+
 constexpr static const std::string_view not_found =
 	HEADER__RETURN_CODE__NOT_FOUND
-	HEADER__CONTENT_TYPE__TEXT
-	HEADER__CONNECTION_KEEP_ALIVE
-	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Connection: keep-alive\r\n"
 	"Content-Length: 9\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
 	"\r\n"
 	"Not Found"
 ;
 constexpr static const std::string_view server_error =
 	HEADER__RETURN_CODE__SERVER_ERR
-	HEADER__CONTENT_TYPE__TEXT
-	HEADER__CONNECTION_KEEP_ALIVE
-	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Connection: keep-alive\r\n"
 	"Content-Length: 12\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
 	"\r\n"
 	"Server error"
 ;
 constexpr static const std::string_view not_logged_in =
 	HEADER__RETURN_CODE__OK
-	"Content-Type: text/html\r\n"
-	HEADER__CONNECTION_KEEP_ALIVE
-	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Connection: keep-alive\r\n" // HEADER__CONNECTION_KEEP_ALIVE
 	"Content-Length: 63\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
 	"\r\n"
 	"<!DOCTYPE html>"
 	"<html>"

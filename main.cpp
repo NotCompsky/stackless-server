@@ -66,7 +66,9 @@ std::string_view http_response__set_user_cookie__prefix(
 );
 constexpr
 std::string_view http_response__set_user_cookie__postfix(
-	"; SameSite=Strict; Secure; HttpOnly\r\n\r\n"
+	"; SameSite=Strict; Secure; HttpOnly\r\n"
+	"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
+	"\r\n"
 );
 constexpr unsigned secret_path_hash_len = 32;
 bool compare_secret_path_hashes(const char(&hash1)[secret_path_hash_len],  const char* const hash2){
@@ -322,23 +324,26 @@ class HTTPResponseHandler {
 							compsky::asciify::asciify(server_itr,
 								"HTTP/1.1 200 OK\r\n"
 								"Accept-Ranges: bytes\r\n"
-								"Content-Type: ", metadata.mimetype, "\r\n"
-								HEADER__CONNECTION_KEEP_ALIVE
 								CACHE_CONTROL_HEADER
-								// TODO: Surely content-range header should be here?
+								HEADER__CONNECTION_KEEP_ALIVE
 								"Content-Length: ", metadata.fsz, "\r\n"
+								"Content-Type: ", metadata.mimetype, "\r\n"
+								"X-Frame-Options: DENY\r\n"
+								"X-Permitted-Cross-Domain-Policies: none\r\n" // prevents Adobe Acrobat from loading content from different domain
 								"\r\n"
 							);
 						} else {
 							compsky::asciify::asciify(server_itr,
 								"HTTP/1.1 206 Partial Content\r\n"
 								"Accept-Ranges: bytes\r\n"
-								"Content-Type: ", metadata.mimetype, "\r\n"
-								HEADER__CONNECTION_KEEP_ALIVE
-								"Content-Range: bytes ", from, '-', from + bytes_to_read - 1, '/', metadata.fsz, "\r\n"
-								// The minus one is because the range of n bytes is from zeroth byte to the (n-1)th byte
 								CACHE_CONTROL_HEADER
+								HEADER__CONNECTION_KEEP_ALIVE
 								"Content-Length: ", bytes_to_read, "\r\n"
+								"Content-Range: bytes ", from, '-', from + bytes_to_read - 1, '/', metadata.fsz, "\r\n"
+									// The minus one is because the range of n bytes is from zeroth byte to the (n-1)th byte
+								"Content-Type: ", metadata.mimetype, "\r\n"
+								"X-Frame-Options: DENY\r\n"
+								"X-Permitted-Cross-Domain-Policies: none\r\n" // prevents Adobe Acrobat from loading content from different domain
 								"\r\n"
 							);
 						}

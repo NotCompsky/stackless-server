@@ -230,14 +230,15 @@ if __name__ == "__main__":
 				
 				headers:str = (
 					"HTTP/1.1 200 OK\r\n"
-					"content-type: " + mimetype + "\r\n"
-					"x-xss-protection: 1; mode=block\r\n"
-					"x-content-type-options: nosniff\r\n"
-					"x-frame-options: SAMEORIGIN\r\n"
-					"referrer-policy: no-referrer\r\n"
-					"cache-control: max-age=2592000\r\n"
-					"feature-policy: geolocation 'none'; camera 'none'; microphone 'none'\r\n"
-					"connection: keep-alive\r\n"
+					"Cache-Control: max-age=2592000\r\n"
+					"Connection: keep-alive\r\n"
+					"Content-Type: " + mimetype + "\r\n"
+					"Referrer-Policy: no-referrer\r\n"
+					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
+					"X-Content-Type-Options: nosniff\r\n"
+					"X-Frame-Options: SAMEORIGIN\r\n"
+					"X-Permitted-Cross-Domain-Policies: none\r\n"
+					"X-XSS-Protection: 1; mode=block\r\n"
 				)
 				dont_compress:bool = (path=="admi") # Pretend it was produced automatically, not static pre-compressed content
 				if mimetype == "text/html":
