@@ -205,7 +205,7 @@ class HTTPResponseHandler {
 			if (reinterpret_cast<uint32_t*>(str+5)[0] != uint32_value_of(checkifprefix)){
 				[[likely]];
 				
-				unsigned user_id = 0;
+				unsigned user_indx = 0;
 				
 				char* headers_itr = str + 7; // "GET /\r\n"
 				char* cookies_startatspace = nullptr;
@@ -250,25 +250,25 @@ class HTTPResponseHandler {
 						
 						[[likely]]
 						
-						for (;  user_id < secret_path_values.size();  ++user_id){
-							const SecretPath& secret_path = secret_path_values[user_id];
+						for (;  user_indx < secret_path_values.size();  ++user_indx){
+							const SecretPath& secret_path = secret_path_values[user_indx];
 							if (compare_secret_path_hashes(secret_path.hash, secret_path_hash)){
 								break;
 							}
 						}
-						if (user_id == secret_path_values.size()){
+						if (user_indx == secret_path_values.size()){
 							[[unlikely]]
-							user_id = 0;
+							user_indx = 0;
 						}
 					}
 				}
 				
-				if (user_id == 0){
+				if (user_indx == 0){
 					return not_logged_in;
 				}
 			} else {
-				for (unsigned user_id = 0;  user_id < secret_path_values.size();  ++user_id){
-					const SecretPath& secret_path = secret_path_values[user_id];
+				for (unsigned user_indx = 0;  user_indx < secret_path_values.size();  ++user_indx){
+					const SecretPath& secret_path = secret_path_values[user_indx];
 					// "GET /use" is ignored
 					printf("secret_path.p1 %lu\n", secret_path.p1);
 					if (
