@@ -7,7 +7,10 @@ gen_hash_functions:
 	python3 smallest-hash-of-paths.py --dir files/static --dir2 files/large --pack-files-to files/static.pack --write-hpp files/files.hpp --anti-inputs "1/te"
 
 server:
-	c++ main.cpp -std=c++2b -o server -lcrypto -lssl
+	c++ main.cpp -std=c++2b -O3 -march=native -o server -s -lcrypto -lssl
+
+run-server:
+	./server 8103208574956883562
 
 
 smallest-hash-of-paths.so:

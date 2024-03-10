@@ -29,3 +29,17 @@ constexpr static const std::string_view server_error =
 	"\r\n"
 	"Server error"
 ;
+constexpr static const std::string_view not_logged_in =
+	HEADER__RETURN_CODE__OK
+	"Content-Type: text/html\r\n"
+	HEADER__CONNECTION_KEEP_ALIVE
+	HEADERS__PLAIN_TEXT_RESPONSE_SECURITY
+	"Content-Length: 63\r\n"
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<body>"
+		"<h1>Not logged in</h1>"
+	"</body>"
+	"</html>"
+;
