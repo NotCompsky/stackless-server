@@ -215,7 +215,7 @@ function ws__send(msg, is_cmd){
 	if ((msg !== null) && (ws__isConnected())){
 		ws.send(msg);
 		if (!is_cmd)
-			showMessage("You: "+msg+"\n");
+			showMessage("[Sending message: "+msg+"]\n");
 		hideerr();
 	}
 }
@@ -285,6 +285,12 @@ showsiblingmenubtn.addEventListener("pointerdown", function(){
 
 showMessage("[Type HELP to show a list of commands]\n");
 
+function standardise_thumbnail_url(url){
+	if (url.startsWith("data:"))
+		url = url + "?v=" + global_version;
+	return url;
+}
+
 getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
 	const global_version = MACRO__GLOBAL_VERSION;
 	const [tags,files,tag2thumbnail,_] = JSON.parse(datastr);
@@ -293,7 +299,7 @@ getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
 		const categorythumb = tag2thumbnail[tagid];
 		s += `<div><div class="dir_files_container_name">`;
 		if (categorythumb !== undefined){
-			s += `<img class="chat_media_tag_thumbnail" src="${categorythumb}?v=${global_version}"></img>`;
+			s += `<img class="chat_media_tag_thumbnail" src="${standardise_thumbnail_url(categorythumb)}"></img>`;
 		} else {
 			s += tagname;
 		}
@@ -302,7 +308,7 @@ getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
 			const [fileid,thumb_str,tagids] = files[i];
 			if (tagids.includes(tagid|0)){
 				const realthumb = (typeof thumb_str === "number") ? tag2thumbnail[thumb_str] : thumb_str;
-				s += `<div class="dir_file flexitem" data-filename="${fileid.toString().padStart(4,'0')}?v=${global_version}"><img class="dir_file_thumb" src="${realthumb}?v=${global_version}"></img><p class="title_over_sibling_img">TITLE</p></div>`;
+				s += `<div class="dir_file flexitem" data-filename="${fileid.toString().padStart(4,'0')}?v=${global_version}"><img class="dir_file_thumb" src="${standardise_thumbnail_url(realthumb)}"></img><p class="title_over_sibling_img">TITLE</p></div>`;
 			}
 		}
 		s += "</div></div>";
