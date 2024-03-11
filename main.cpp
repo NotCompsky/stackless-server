@@ -101,7 +101,6 @@ struct SecretPath {
 	char hash[secret_path_hash_len];
 	const uint32_t username_offset;
 	const uint16_t username_len;
-	const uint16_t user_id;
 	SecretPath(
 		const uint64_t seed,
 		const uint64_t _p1,
@@ -109,8 +108,7 @@ struct SecretPath {
 		const uint64_t _p3,
 		const uint64_t _p4,
 		const uint32_t _username_offset,
-		const uint16_t _username_len,
-		const uint16_t _user_id
+		const uint16_t _username_len
 	)
 	: p1(_p1)
 	, p2(_p2)
@@ -118,7 +116,6 @@ struct SecretPath {
 	, p4(_p4)
 	, username_offset(_username_offset)
 	, username_len(_username_len)
-	, user_id(_user_id)
 	{
 		uint64_t _hash1 = seed * p1;
 		uint64_t _hash2 = seed * p2;
@@ -501,8 +498,26 @@ int main(const int argc,  const char* argv[]){
 						const unsigned internal_username_len = compsky::utils::ptrdiff(start_of_external_username,start_of_secret_path) - 32 - 2;
 						const unsigned external_username_len = compsky::utils::ptrdiff(_buf+i,start_of_external_username);
 						
-						memcpy(all_usernames+all_usernames__indx, start_of_external_username, external_username_len);
-						const uint16_t user_id = 0; // TODO
+						unsigned already_exists_at_indx = 0;
+						for (;  already_exists_at_indx < secret_path_values.size();  ++already_exists_at_indx){
+							const SecretPath& _secret_path = secret_path_values[already_exists_at_indx];
+							if (_secret_path.username_len == external_username_len){
+								bool matches = true;
+								for (unsigned j = 0;  j < external_username_len;  ++j){
+									matches &= (all_usernames[_secret_path.username_offset + j] != start_of_external_username[j]);
+								}
+								if (matches)
+									break;
+							}
+						}
+						uint32_t str_offset;
+						if (already_exists_at_indx == secret_path_values.size()){
+							memcpy(all_usernames+all_usernames__indx, start_of_external_username, external_username_len);
+							str_offset = all_usernames__indx;
+							all_usernames__indx += external_username_len;
+						} else {
+							str_offset = secret_path_values[already_exists_at_indx].username_offset;
+						}
 						
 						const SecretPath& secret_path = secret_path_values.emplace_back(
 							seed,
@@ -510,12 +525,9 @@ int main(const int argc,  const char* argv[]){
 							uint64_value_of__ptr(start_of_secret_path+8),
 							uint64_value_of__ptr(start_of_secret_path+16),
 							uint64_value_of__ptr(start_of_secret_path+24),
-							all_usernames__indx,
-							external_username_len,
-							user_id
+							str_offset,
+							external_username_len
 						);
-						
-						all_usernames__indx += external_username_len;
 					}
 					eightchar_indx = 0;
 					start_of_secret_path = nullptr;
