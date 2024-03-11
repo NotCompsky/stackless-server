@@ -20,7 +20,7 @@ bool is_b64_char(const char c){
 	return ((c >= 'A') and (c <= 'Z')) or ((c >= 'a') and (c <= 'z')) or ((c >= '0') and (c <= '9')) or (c == '+') or (c == '/') or (c == '=');
 }
 
-	std::string_view request_websocket_open(Server::ClientContext* client_context,  char* s,  std::vector<char*>& headers){
+	std::string_view request_websocket_open(Server::ClientContext* client_context,  char* s,  std::vector<char*>& headers,  const uint16_t username_offset,  const uint16_t username_len){
 		
 		bool has_websocketupgrade_header = false;
 		char* websocketkey = nullptr;
@@ -144,8 +144,9 @@ bool is_b64_char(const char c){
 		SHA1((unsigned char*)server_key_input, 60, sha1);
 		
 		base64_encode__length20(sha1, websocketfirstresponse+97);
-		websocket_client_ids.emplace_back(client_context->client_id);
 		printf("websocket_client_ids emplaced %u\n", client_context->client_id);
+		websocket_client_ids.emplace_back(client_context->client_id); // TODO: Re-use spaces
+		websocket_client_metadatas.emplace_back(client_context->client_id, username_offset, username_len); // TODO: Re-use spaces
 		client_context->expecting_http = false;
 		return std::string_view(websocketfirstresponse, websocketfirstresponse_sz);
 	}

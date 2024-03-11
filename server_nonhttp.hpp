@@ -5,8 +5,27 @@
 #include <vector>
 #include "typedefs.hpp"
 
+struct WebsocketUserMetadata {
+	unsigned socket;
+	const uint16_t username_offset;
+	const uint16_t username_len;
+	WebsocketUserMetadata(
+		const unsigned _socket,
+		const uint16_t _username_offset,
+		const uint16_t _username_len
+	)
+	: socket(_socket)
+	, username_offset(_username_offset)
+	, username_len(_username_len)
+	{}
+};
+
+static
+std::vector<WebsocketUserMetadata> websocket_client_metadatas;
 static
 std::vector<unsigned> websocket_client_ids;
+
+char* all_usernames;
 
 
 class NonHTTPRequestHandler {
@@ -35,7 +54,7 @@ class NonHTTPRequestHandler {
 	}
 	
 	static
-	size_t decode_incoming_websocket_frame(Server::ClientContext* client_context,  char* const data,  const size_t data_sz){
+	size_t decode_incoming_websocket_frame(Server::ClientContext* client_context,  char* const data,  const size_t data_sz,  const uint16_t username_offset,  const uint16_t username_len){
 		if (data_sz < 2)
 			return 0;
 		if (data_sz+3 > Server::ClientContext::default_buf_sz)
@@ -90,9 +109,6 @@ class NonHTTPRequestHandler {
 		}
 		
 		{
-			const char* username = "Unknown"; // TODO: Assign username to each client
-			const size_t username_len = 7;
-			
 			response_buf[0] = data[0];
 			const uint64_t new_payload_length = payload_length;
 			const uint64_t new_payload_length__plus_username = payload_length + username_len + 2;
@@ -107,7 +123,7 @@ class NonHTTPRequestHandler {
 			} else {
 				response_buf[1] = new_payload_length__plus_username;
 			}
-			memcpy(response_buf+offset, username, username_len);
+			memcpy(response_buf+offset, all_usernames+username_offset, username_len);
 			offset += username_len;
 			response_buf[offset  ] = ':';
 			response_buf[offset+1] = ' ';
@@ -119,8 +135,10 @@ class NonHTTPRequestHandler {
 	
 	static
 	void handle_client_disconnect(Server::ClientContext* client_context){
-		for (unsigned i = 0;  i < websocket_client_ids.size();  ++i){
-			if (websocket_client_ids[i] == client_context->client_id){
+		for (unsigned i = 0;  i < websocket_client_metadatas.size();  ++i){
+			WebsocketUserMetadata& meta = websocket_client_metadatas[i];
+			if (meta.socket == client_context->client_id){
+				meta.socket = 0;
 				websocket_client_ids[i] = 0;
 			}
 		}
@@ -129,8 +147,20 @@ class NonHTTPRequestHandler {
 	static
 	std::string_view handle_request(Server::ClientContext* client_context,  std::vector<Server::LocalListenerContext>& local_listener_contexts,  char* request_content,  const size_t request_size,  std::vector<unsigned>** broadcast_to_client_ids,  bool* keep_alive){
 		*keep_alive = true;
-		const size_t decoded_msg_sz = decode_incoming_websocket_frame(client_context, request_content, request_size);
-		if (likely(decoded_msg_sz != 0)){
+		const WebsocketUserMetadata* meta = nullptr;
+		for (unsigned i = 0;  i < websocket_client_metadatas.size();  ++i){
+			meta = &websocket_client_metadatas[i];
+			if (meta->socket == client_context->client_id){
+				break;
+			}
+		}
+		size_t decoded_msg_sz = 0;
+		if (meta != nullptr){
+			[[likely]];
+			decoded_msg_sz = decode_incoming_websocket_frame(client_context, request_content, request_size, meta->username_offset, meta->username_len);
+		}
+		if (decoded_msg_sz != 0){
+			[[likely]]
 			*broadcast_to_client_ids = &websocket_client_ids;
 			return std::string_view(response_buf, decoded_msg_sz);
 		} else {

@@ -99,17 +99,26 @@ struct SecretPath {
 	const uint64_t p3;
 	const uint64_t p4;
 	char hash[secret_path_hash_len];
+	const uint32_t username_offset;
+	const uint16_t username_len;
+	const uint16_t user_id;
 	SecretPath(
 		const uint64_t seed,
 		const uint64_t _p1,
 		const uint64_t _p2,
 		const uint64_t _p3,
-		const uint64_t _p4
+		const uint64_t _p4,
+		const uint32_t _username_offset,
+		const uint16_t _username_len,
+		const uint16_t _user_id
 	)
 	: p1(_p1)
 	, p2(_p2)
 	, p3(_p3)
 	, p4(_p4)
+	, username_offset(_username_offset)
+	, username_len(_username_len)
+	, user_id(_user_id)
 	{
 		uint64_t _hash1 = seed * p1;
 		uint64_t _hash2 = seed * p2;
@@ -201,11 +210,11 @@ class HTTPResponseHandler {
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
+			unsigned user_indx = 0;
+			
 			constexpr const char checkifprefix[4] = {'u','s','e','r'};
 			if (reinterpret_cast<uint32_t*>(str+5)[0] != uint32_value_of(checkifprefix)){
 				[[likely]];
-				
-				unsigned user_indx = 0;
 				
 				char* headers_itr = str + 7; // "GET /\r\n"
 				char* cookies_startatspace = nullptr;
@@ -267,7 +276,7 @@ class HTTPResponseHandler {
 					return not_logged_in;
 				}
 			} else {
-				for (unsigned user_indx = 0;  user_indx < secret_path_values.size();  ++user_indx){
+				for (;  user_indx < secret_path_values.size();  ++user_indx){
 					const SecretPath& secret_path = secret_path_values[user_indx];
 					// "GET /use" is ignored
 					printf("secret_path.p1 %lu\n", secret_path.p1);
@@ -379,7 +388,7 @@ class HTTPResponseHandler {
 						return std::string_view(server_buf, n_bytes_written);
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
-					return request_websocket_open(client_context, nullptr, headers);
+					return request_websocket_open(client_context, nullptr, headers, secret_path_values[user_indx].username_offset, secret_path_values[user_indx].username_len);
 				}
 				{
 					[[unlikely]]
@@ -441,7 +450,11 @@ int main(const int argc,  const char* argv[]){
 	
 	{
 		const int secret_path_values_fd = open("secret_file_paths.txt", O_NOATIME|O_RDONLY);
-		if (secret_path_values_fd != -1){
+		if (secret_path_values_fd == -1){
+			[[unlikely]]
+			write(2, "Cannot open secret_file_paths.txt (thus cannot associate users with usernames etc)\n", 83);
+			return 1;
+		} else {
 			struct stat statbuf;
 			if (fstat(secret_path_values_fd, &statbuf) != 0){
 				[[unlikely]]
@@ -449,6 +462,14 @@ int main(const int argc,  const char* argv[]){
 				return 1;
 			}
 			const off_t fsz = statbuf.st_size;
+			
+			all_usernames = reinterpret_cast<char*>(malloc(fsz));
+			if (unlikely(all_usernames == nullptr)){
+				[[unlikely]]
+				write(2, "Cannot allocate memory\n", 23);
+				return 1;
+			}
+			
 			char* const _buf = reinterpret_cast<char*>(malloc(fsz));
 			if (read(secret_path_values_fd, _buf, fsz) != fsz){
 				[[unlikely]]
@@ -465,22 +486,46 @@ int main(const int argc,  const char* argv[]){
 				}
 			}
 			unsigned secret_path_values_indx = 0;
+			char* start_of_secret_path = nullptr;
+			char* start_of_external_username = nullptr;
+			unsigned all_usernames__indx = 0;
 			for (unsigned i = 0;  i < fsz;  ++i){
 				const char c = _buf[i];
 				if (c == '\n'){
-					eightchar_indx = 0;
-				} else if (c == ' '){
-					if (eightchar_indx == 32){
+					if (start_of_secret_path != nullptr){
+						if (start_of_external_username == nullptr){
+							[[unlikely]]
+							write(2, "ERROR: start_of_external_username is NULL but start_of_secret_path is not\n", 74);
+							return 1;
+						}
+						const unsigned internal_username_len = compsky::utils::ptrdiff(start_of_external_username,start_of_secret_path) - 32 - 2;
+						const unsigned external_username_len = compsky::utils::ptrdiff(_buf+i,start_of_external_username);
+						
+						memcpy(all_usernames+all_usernames__indx, start_of_external_username, external_username_len);
+						const uint16_t user_id = 0; // TODO
+						
 						const SecretPath& secret_path = secret_path_values.emplace_back(
 							seed,
-							uint64_value_of__ptr(_buf+i-32),
-							uint64_value_of__ptr(_buf+i-24),
-							uint64_value_of__ptr(_buf+i-16),
-							uint64_value_of__ptr(_buf+i-8)
+							uint64_value_of__ptr(start_of_secret_path),
+							uint64_value_of__ptr(start_of_secret_path+8),
+							uint64_value_of__ptr(start_of_secret_path+16),
+							uint64_value_of__ptr(start_of_secret_path+24),
+							all_usernames__indx,
+							external_username_len,
+							user_id
 						);
+						
+						all_usernames__indx += external_username_len;
+					}
+					eightchar_indx = 0;
+					start_of_secret_path = nullptr;
+					start_of_external_username = nullptr;
+				} else if (c == ' '){
+					if (eightchar_indx == 32){
+						start_of_secret_path = _buf+i-32;
 						++eightchar_indx;
 					} else if (eightchar_indx == 33){
-						// pass
+						start_of_external_username = _buf+i+1;
 					} else {
 						[[unlikely]]
 						write(2, "Secret path is not 32 bytes long\n", 33);
