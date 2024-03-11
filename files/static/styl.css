@@ -37,6 +37,25 @@
 }
 
 
+.dropdownmenu1 {
+	padding:1em;
+	background:#333;
+	border-radius:20px;
+}
+.dropdownmenu2 {
+	padding:0.5em;
+	background:#666;
+	border-radius:10px;
+}
+
+.wikipage {
+	
+}
+.wikipage_descr {
+	color:grey;
+}
+
+
 
 
 /* index.html */

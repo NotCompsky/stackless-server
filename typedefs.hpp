@@ -57,3 +57,23 @@ constexpr static const std::string_view not_logged_in =
 	"</body>"
 	"</html>"
 ;
+constexpr static const std::string_view wiki_page_not_found =
+	HEADER__RETURN_CODE__NOT_FOUND
+	"Connection: keep-alive\r\n"
+	"Content-Length: 122\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'self'; img-src 'self'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"Page not found, probably because the title contains special characters which I haven't bothered to code into my parser yet"
+;
+constexpr static const std::string_view wiki_page_error =
+	HEADER__RETURN_CODE__NOT_FOUND
+	"Connection: keep-alive\r\n"
+	"Content-Length: 55\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n"
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"Page exists but cannot be displayed due to software bug"
+;

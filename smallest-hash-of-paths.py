@@ -267,13 +267,13 @@ if __name__ == "__main__":
 							raise ValueError("Inline <script>")
 						elif b"<script src=\"" in contents:
 							headers += "script-src"
+							associated_js:bytes = None
 							while True:
 								start_of_script_tag:int = contents.index(b"<script src=\"",0)
 								start_of_script_src:int = start_of_script_tag + len(b"<script src=\"")
 								end_of_jsfname:int = contents.index(b"\"",start_of_script_src)
 								end_of_script_tag:str = contents.index(b"</script>",start_of_script_tag)
 								jsfname:str = contents[start_of_script_src:end_of_jsfname]
-								associated_js:bytes = None
 								with open(b"files/js/"+jsfname,"rb") as f:
 									associated_js = f.read()
 								
@@ -285,6 +285,10 @@ if __name__ == "__main__":
 								headers += " 'sha256-"+sha256hash_as_b64.decode()+"'"
 								if b"<script src=\"" not in contents:
 									break
+							
+							if b"WebAssembly.instantiate" in associated_js:
+								headers += " 'wasm-unsafe-eval'"
+							
 							headers += "; "
 						
 						headers += "img-src 'self' data:; media-src 'self' data:;\r\n"

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Wiki</title>
+	<link rel=stylesheet href="styl.css"></link>
+	<script src="wiki.html.js"></script>
+</head>
+<body class="darktheme">
+	<a href="..">Home</a>
+	<p id="showerr_node" class="display-none" id="errmsg"></p>
+	<details class="dropdownmenu1">
+		<summary>Menu</summary>
+		<details class="dropdownmenu2">
+			<summary>Read</summary>
+			<ul id="wikimenu">
+				<li><button id="wikipagecustom">Go to page...</button></li>
+				<li><a class="wikipage" href="#Operation_Blessing_International">Operation Blessing International<span class="wikipage_descr">Evangelical NGO as cover for mining operations by Pat Robinson</span></a></li>
+				<li><a class="wikipage" href="#Bielefeld_conspiracy">Bielefeld conspiracy</a></li>
+				<li><a class="wikipage" href="#Birds_Aren't_Real">Birds Aren't Real</a></li>
+				<li><a class="wikipage" href="#Operation_Ranch_Hand">Operation Ranch Hand</a></li>
+				<li><a class="wikipage" href="#Anti-Jewish_violence_in_Poland,_1944–1946">Anti-Jewish violence in Poland, 1944–1946</a></li>
+				<li><a class="wikipage" href="#Operation_Babylift">Operation Babylift</a></li>
+				<li><a class="wikipage" href="#Bojinka_plot">Bojinka plot</a></li>
+				<li><a class="wikipage" href="#Operation_Ore">Operation Ore</a></li>
+				<li><a class="wikipage" href="#Warrenton_Training_Center">Warrenton Training Center</a></li>
+				<li><a class="wikipage" href="#Brandy_Station_(CIA_facility)">Brandy Station (CIA facility)</a></li>
+				<li><a class="wikipage" href="#Room_641A">Room 641A</a></li>
+				<li><a class="wikipage" href="#Dropmire">Dropmire<span class="wikipage_descr">NSA surveillance of embassies</span></a></li>
+				<li><a class="wikipage" href="#RAF_Akrotiri">RAF Akrotiri</a></li>
+				<li><a class="wikipage" href="#Cabinet_noir">Cabinet noir</a></li>
+				<li><a class="wikipage" href="#33_Thomas_Street">33 Thomas Street</a></li>
+				<li><a class="wikipage" href="#Operation_Othona">Operation Othona</a></li>
+				<li><a class="wikipage" href="#Holmesburg_Prison">Holmesburg Prison</a></li>
+				<li><a class="wikipage" href="#Operation_Big_Buzz">Operation Big Buzz</a></li>
+				<li><a class="wikipage" href="#Operation_May_Day">Operation May Day</a></li>
+				<li><a class="wikipage" href="#Operation_Drop_Kick">Operation Drop Kick</a></li>
+				<li><a class="wikipage" href="#Karl-Heinz_Marbach">Karl-Heinz Marbach</a></li>
+				<li><a class="wikipage" href="#World_Elijah_Evangelical_Mission">World Elijah Evangelical Mission</a></li>
+				<li><a class="wikipage" href="#Elijah_Ten_Commandments_Stone_Kingdom">Elijah Ten Commandments Stone Kingdom</a></li>
+				<li><a class="wikipage" href="#Yellow_Sand_Society">Yellow Sand Society</a></li>
+				<li><a class="wikipage" href="#May_24,_1993,_PKK_attack">May 24, 1993, PKK attack</a></li>
+				<li><a class="wikipage" href="#Sabri_Yirmibeşoğlu">Sabri Yirmibeşoğlu</a></li>
+				<li><a class="wikipage" href="#Turgut_Özal">Turgut Özal<span class="wikipage_descr">neoliberal; but was killed by Turkish Gladio</span></a></li>
+				<li><a class="wikipage" href="#USS_Iowa_turret_explosion">USS Iowa turret explosion</a></li>
+				<li><a class="wikipage" href="#Operation_Anaconda">Operation Anaconda</a></li>
+				<li><a class="wikipage" href="#Omega_Special_Task_Force">Omega Special Task Force</a></li>
+				<li><a class="wikipage" href="#Jesse_Helms">Jesse Helms<span class="wikipage_descr">references to the CIA interfering in El Salvador elections in 1984</span></a></li>
+				<li><a class="wikipage" href="#Freddie_Woodruff">Freddie Woodruff</a></li>
+				<li><a class="wikipage" href="#Project_404">Project 404<span class="wikipage_descr">USAID cover for CIA mission in Laos during Vietnam War</span></a></li>
+				<li><a class="wikipage" href="#Neil_Albert_Salonen">Neil Albert Salonen<span class="wikipage_descr">President of the Unification Church of the United States</span></a></li>
+				<li><a class="wikipage" href="#SIL_International">SIL International</a></li>
+				<li><a class="wikipage" href="#1951_Pont-Saint-Esprit_mass_poisoning">1951 Pont-Saint-Esprit mass poisoning</a></li>
+				<li><a class="wikipage" href="#Raven_Forward_Air_Controllers">Raven Forward Air Controllers</a></li>
+				<li><a class="wikipage" href="#Association_for_Better_Living_and_Education">Association for Better Living and Education</a></li>
+				<li><a class="wikipage" href="#Applied_Scholastics">Applied Scholastics<span class="wikipage_descr">Scientology</span></a></li>
+				<li><a class="wikipage" href="#John_G._Merriman">John G. Merriman</a></li>
+				<li><a class="wikipage" href="#Ksawery_Wyrożemski">Ksawery Wyrożemski</a></li>
+				<li><a class="wikipage" href="#Hiroshi_Nemoto">Hiroshi Nemoto</a></li>
+				<li><a class="wikipage" href="#Zeena_Schreck">Zeena Schreck</a></li>
+				<li><a class="wikipage" href="#Nazanin_Boniadi">Nazanin Boniadi</a></li>
+				<li><a class="wikipage" href="#Temple_of_Set">Temple of Set</a></li>
+				<li><a class="wikipage" href="#Abigail_Thorn">Abigail Thorn</a></li>
+				<li><a class="wikipage" href="#Ronald_DeWolf">Ronald DeWolf<span class="wikipage_descr">Scientology critic (founder's son)</span></a></li>
+				<li><a class="wikipage" href="#The_Road_to_Total_Freedom">The Road to Total Freedom</a></li>
+				<li><a class="wikipage" href="#R2-45">R2-45<span class="wikipage_descr">Scientology assassinations</span></a></li>
+				<li><a class="wikipage" href="#Scientology_and_the_occult">Scientology and the occult</a></li>
+				<li><a class="wikipage" href="#Jamie_DeWolf">Jamie DeWolf<span class="wikipage_descr">Scientology founder's great-grandson</span></a></li>
+				<li><a class="wikipage" href="#New_Cult_Awareness_Network">New Cult Awareness Network<span class="wikipage_descr">Scientology front</span></a></li>
+				<li><a class="wikipage" href="#Korean_Air_Flight_858">Korean Air Flight 858</a></li>
+				<li><a class="wikipage" href="#SHISH">SHISH<span class="wikipage_descr">Albanian intel agency; it and CIA armed Macedonian terrorists in 2001</span></a></li>
+				<li><a class="wikipage" href="#X-file_scandal">X-file scandal</a></li>
+				<li><a class="wikipage" href="#IB_affair">IB affair</a></li>
+				<li><a class="wikipage" href="#Janez_Janša">Janez Janša</a></li>
+				<li><a class="wikipage" href="#2011_Slovenian_YouTube_incident">2011 Slovenian YouTube incident</a></li>
+				<li><a class="wikipage" href="#Innocence_of_Muslims">Innocence of Muslims</a></li>
+				<li><a class="wikipage" href="#Gunnar_Jarring">Gunnar Jarring</a></li>
+				<li><a class="wikipage" href="#War-responsibility_trials_in_Finland">War-responsibility trials in Finland</a></li>
+				<li><a class="wikipage" href="#Operation_Stella_Polaris">Operation Stella Polaris<span class="wikipage_descr">Finnish military intelligence chief Aladár Paasonen, who together with Reino Hallamaa had the main responsibility for the operation, worked with the American forces in Germany in the mid- '50s</span></a></li>
+				<li><a class="wikipage" href="#Gideon_Raff">Gideon Raff</a></li>
+				<li><a class="wikipage" href="#Ahmad_Salama_Mabruk">Ahmad Salama Mabruk</a></li>
+				<li><a class="wikipage" href="#2012_Benghazi_attack">2012 Benghazi attack</a></li>
+				<li><a class="wikipage" href="#Insurgency_in_Kosovo_(1995–1998)">Insurgency in Kosovo (1995–1998)</a></li>
+				<li><a class="wikipage" href="#GAL_(paramilitary_group)">GAL (paramilitary group)</a></li>
+				<li><a class="wikipage" href="#League_of_Saint_George">League of Saint George</a></li>
+				<li><a class="wikipage" href="#National_Socialist_Action_Party">National Socialist Action Party</a></li>
+				<li><a class="wikipage" href="#SS_Springfjord">SS Springfjord<span class="wikipage_descr">British boat napalmed and destroyed by CIA aircraft during Operation PBSuccess</span></a></li>
+				<li><a class="wikipage" href="#Duquesne_Spy_Ring">Duquesne Spy Ring</a></li>
+				<li><a class="wikipage" href="#Taksim_Square_massacre">Taksim Square massacre</a></li>
+				<li><a class="wikipage" href="#Fela_Kuti">Fela Kuti<span class="wikipage_descr">He further infuriated the political establishment by implicating ITT Corporation's vice-president, Moshood Abiola, and Obasanjo in the popular 25-minute political screed entitled "I.T.T. (International Thief-Thief</span></a></li>
+				<li><a class="wikipage" href="#ITT_Inc.">ITT Inc.</a></li>
+				<li><a class="wikipage" href="#Hideto_Tomabechi">Hideto Tomabechi<span class="wikipage_descr">says that the terrorist-cult Aum had access to CIA files (such as from its MKUltra brainwashing program) which they used to brainwash their followers</span></a></li>
+				<li><a class="wikipage" href="#Kidwelly_sex_cult">Kidwelly sex cult</a></li>
+				<li><a class="wikipage" href="#SEXINT">SEXINT</a></li>
+				<li><a class="wikipage" href="#FBI–King_suicide_letter">FBI–King suicide letter</a></li>
+				<li><a class="wikipage" href="#Capture_of_the_Tuapse">Capture of the Tuapse</a></li>
+				<li><a class="wikipage" href="#Burning_of_the_Spanish_Embassy_in_Guatemala">Burning of the Spanish Embassy in Guatemala</a></li>
+				<li><a class="wikipage" href="#Martha_Mendoza">Martha Mendoza</a></li>
+				<li><a class="wikipage" href="#Westminster_Foundation_for_Democracy">Westminster Foundation for Democracy</a></li>
+				<li><a class="wikipage" href="#Maria_Miller">Maria Miller</a></li>
+				<li><a class="wikipage" href="#David_Abrahams_(businessman)">David Abrahams (businessman)</a></li>
+				<li><a class="wikipage" href="#Harriet_Harman">Harriet Harman</a></li>
+				<li><a class="wikipage" href="#Conflict,_Stability_and_Security_Fund">Conflict, Stability and Security Fund</a></li>
+				<li><a class="wikipage" href="#Peter_Ricketts">Peter Ricketts</a></li>
+				<li><a class="wikipage" href="#International_Fellowship_of_Christians_and_Jews">International Fellowship of Christians and Jews</a></li>
+				<li><a class="wikipage" href="#Northern_Mariana_Islands">Northern Mariana Islands</a></li>
+				<li><a class="wikipage" href="#6_October_1976_massacre">6 October 1976 massacre</a></li>
+				<li><a class="wikipage" href="#1973_Thai_popular_uprising">1973 Thai popular uprising</a></li>
+				<li><a class="wikipage" href="#Serapis_Bey">Serapis Bey</a></li>
+				<li><a class="wikipage" href="#SUMKA">SUMKA</a></li>
+				<li><a class="wikipage" href="#Aria_Party">Aria Party</a></li>
+				<li><a class="wikipage" href="#Choi_Tae-min">Choi Tae-min</a></li>
+				<li><a class="wikipage" href="#Matsumoto_sarin_attack">Matsumoto sarin attack</a></li>
+				<li><a class="wikipage" href="#Sakamoto_family_murder">Sakamoto family murder</a></li>
+				<li><a class="wikipage" href="#Massimo_Introvigne">Massimo Introvigne</a></li>
+				<li><a class="wikipage" href="#April_2003_journalist_killings_by_the_United_States">April 2003 journalist killings by the United States</a></li>
+				<li><a class="wikipage" href="#Liberation_Army_of_Preševo,_Medveđa_and_Bujanovac">Liberation Army of Preševo, Medveđa and Bujanovac</a></li>
+				<li><a class="wikipage" href="#Ali_Ahmeti">Ali Ahmeti</a></li>
+				<li><a class="wikipage" href="#1981_protests_in_Kosovo">1981 protests in Kosovo</a></li>
+				<li><a class="wikipage" href="#Atomic_bombings_of_Hiroshima_and_Nagasaki">Atomic bombings of Hiroshima and Nagasaki</a></li>
+				<li><a class="wikipage" href="#William_R._Higgins">William R. Higgins</a></li>
+				<li><a class="wikipage" href="#Oktoberfest_bombing">Oktoberfest bombing</a></li>
+				<li><a class="wikipage" href="#Gundolf_Köhler">Gundolf Köhler</a></li>
+				<li><a class="wikipage" href="#Uwe_Behrendt">Uwe Behrendt</a></li>
+				<li><a class="wikipage" href="#Hepp-Kexel-Group">Hepp-Kexel-Group</a></li>
+				<li><a class="wikipage" href="#Luis_García_Meza">Luis García Meza</a></li>
+				<li><a class="wikipage" href="#Celso_Torrelio">Celso Torrelio</a></li>
+				<li><a class="wikipage" href="#Klaus_Barbie">Klaus Barbie</a></li>
+				<li><a class="wikipage" href="#Kish_Island">Kish Island</a></li>
+				<li><a class="wikipage" href="#1973_Hanafi_Muslim_massacre">1973 Hanafi Muslim massacre</a></li>
+				<li><a class="wikipage" href="#Hamaas_Abdul_Khaalis">Hamaas Abdul Khaalis</a></li>
+				<li><a class="wikipage" href="#Disappearance_of_Robert_Levinson">Disappearance of Robert Levinson</a></li>
+				<li><a class="wikipage" href="#Dawson_Trotman">Dawson Trotman</a></li>
+				<li><a class="wikipage" href="#Jerry_White_(Navigators)">Jerry White (Navigators)</a></li>
+				<li><a class="wikipage" href="#The_Navigators_(organization)">The Navigators (organization)</a></li>
+				<li><a class="wikipage" href="#Franklin_Graham">Franklin Graham</a></li>
+				<li><a class="wikipage" href="#Robert_Pierce">Robert Pierce</a></li>
+				<li><a class="wikipage" href="#Ogaden_War">Ogaden War</a></li>
+				<li><a class="wikipage" href="#Isaaq_genocide">Isaaq genocide</a></li>
+				<li><a class="wikipage" href="#Ken_Isaacs_(executive)">Ken Isaacs (executive)</a></li>
+				<li><a class="wikipage" href="#Kent_Brantly">Kent Brantly</a></li>
+				<li><a class="wikipage" href="#2013_Pakistani_general_election">2013 Pakistani general election</a></li>
+				<li><a class="wikipage" href="#1965_Pakistani_presidential_election">1965 Pakistani presidential election</a></li>
+				<li><a class="wikipage" href="#Raymond_Allen_Davis_incident">Raymond Allen Davis incident</a></li>
+				<li><a class="wikipage" href="#World_Mission_Society_Church_of_God">World Mission Society Church of God</a></li>
+				<li><a class="wikipage" href="#Operation_Spectrum">Operation Spectrum</a></li>
+				<li><a class="wikipage" href="#Michael_Murphy_(author)">Michael Murphy (author)</a></li>
+				<li><a class="wikipage" href="#Assyria_and_Germany_in_Anglo-Israelism">Assyria and Germany in Anglo-Israelism</a></li>
+				<li><a class="wikipage" href="#Ambassador_College">Ambassador College</a></li>
+				<li><a class="wikipage" href="#Herbert_W._Armstrong">Herbert W. Armstrong</a></li>
+				<li><a class="wikipage" href="#Big_Sur">Big Sur</a></li>
+				<li><a class="wikipage" href="#Naval_Facility_Point_Sur">Naval Facility Point Sur</a></li>
+				<li><a class="wikipage" href="#Oscar_Janiger">Oscar Janiger</a></li>
+				<li><a class="wikipage" href="#NORTHAG_wartime_structure_in_1989">NORTHAG wartime structure in 1989</a></li>
+				<li><a class="wikipage" href="#Benoît_de_Bonvoisin">Benoît de Bonvoisin</a></li>
+				<li><a class="wikipage" href="#Chaïm_Nissim">Chaïm Nissim</a></li>
+				<li><a class="wikipage" href="#El_Sayyid_Nosair">El Sayyid Nosair</a></li>
+				<li><a class="wikipage" href="#Avishai_Raviv">Avishai Raviv</a></li>
+				<li><a class="wikipage" href="#Yigal_Amir">Yigal Amir</a></li>
+				<li><a class="wikipage" href="#Meir_Weinstein">Meir Weinstein</a></li>
+				<li><a class="wikipage" href="#Jewish_Defense_League">Jewish Defense League</a></li>
+				<li><a class="wikipage" href="#Cave_of_the_Patriarchs_massacre">Cave of the Patriarchs massacre</a></li>
+				<li><a class="wikipage" href="#Akal_Security">Akal Security</a></li>
+				<li><a class="wikipage" href="#Illegal_number">Illegal number</a></li>
+				<li><a class="wikipage" href="#Joan_Quigley">Joan Quigley</a></li>
+				<li><a class="wikipage" href="#Carroll_Righter">Carroll Righter</a></li>
+				<li><a class="wikipage" href="#Vupen">Vupen</a></li>
+				<li><a class="wikipage" href="#Zerodium">Zerodium</a></li>
+				<li><a class="wikipage" href="#Alan_Greenspan">Alan Greenspan</a></li>
+				<li><a class="wikipage" href="#Be_Inc.">Be Inc.</a></li>
+				<li><a class="wikipage" href="#Holden">Holden</a></li>
+				<li><a class="wikipage" href="#Omar_Bakri_Muhammad">Omar Bakri Muhammad</a></li>
+				<li><a class="wikipage" href="#Al-Muhajiroun">Al-Muhajiroun</a></li>
+				<li><a class="wikipage" href="#Wood_Green_ricin_plot">Wood Green ricin plot</a></li>
+				<li><a class="wikipage" href="#Base_and_superstructure">Base and superstructure</a></li>
+				<li><a class="wikipage" href="#Death_of_Ian_Tomlinson">Death of Ian Tomlinson</a></li>
+				<li><a class="wikipage" href="#Proclamation_No._216">Proclamation No. 216</a></li>
+				<li><a class="wikipage" href="#Proclamation_No._1081">Proclamation No. 1081</a></li>
+				<li><a class="wikipage" href="#Plaza_Miranda_bombing">Plaza Miranda bombing</a></li>
+				<li><a class="wikipage" href="#Macli-ing_Dulag">Macli-ing Dulag</a></li>
+				<li><a class="wikipage" href="#ABS-CBN_franchise_renewal_controversy">ABS-CBN franchise renewal controversy</a></li>
+				<li><a class="wikipage" href="#Martial_law_in_the_Philippines">Martial law in the Philippines</a></li>
+				<li><a class="wikipage" href="#Albert_Schaufelberger">Albert Schaufelberger</a></li>
+				<li><a class="wikipage" href="#Sabra_and_Shatila_massacre">Sabra and Shatila massacre</a></li>
+				<li><a class="wikipage" href="#Oleksandr_Peklushenko">Oleksandr Peklushenko</a></li>
+				<li><a class="wikipage" href="#Valentyna_Semenyuk-Samsonenko">Valentyna Semenyuk-Samsonenko</a></li>
+				<li><a class="wikipage" href="#Mykhailo_Chechetov">Mykhailo Chechetov</a></li>
+				<li><a class="wikipage" href="#Michael_Rubin">Michael Rubin</a></li>
+				<li><a class="wikipage" href="#Heartbreak_Ridge">Heartbreak Ridge</a></li>
+				<li><a class="wikipage" href="#Samson_Option">Samson Option</a></li>
+				<li><a class="wikipage" href="#Shireen_Abu_Akleh">Shireen Abu Akleh</a></li>
+				<li><a class="wikipage" href="#James_Miller_(filmmaker)">James Miller (filmmaker)</a></li>
+				<li><a class="wikipage" href="#Fadel_Shana'a">Fadel Shana'a</a></li>
+				<li><a class="wikipage" href="#Deaths_of_Simone_Camilli_and_Ali_Shehda_Abu_Afash">Deaths of Simone Camilli and Ali Shehda Abu Afash</a></li>
+				<li><a class="wikipage" href="#Sarah_Ashton-Cirillo">Sarah Ashton-Cirillo</a></li>
+				<li><a class="wikipage" href="#United_Nations_Partition_Plan_for_Palestine">United Nations Partition Plan for Palestine</a></li>
+				<li><a class="wikipage" href="#Neturei_Karta">Neturei Karta</a></li>
+				<li><a class="wikipage" href="#Lycamobile">Lycamobile</a></li>
+				<li><a class="wikipage" href="#Christabel_Pankhurst">Christabel Pankhurst</a></li>
+				<li><a class="wikipage" href="#Flint_sit-down_strike">Flint sit-down strike</a></li>
+				<li><a class="wikipage" href="#Black_Ships">Black Ships</a></li>
+				<li><a class="wikipage" href="#Japan–Korea_Treaty_of_1876">Japan–Korea Treaty of 1876</a></li>
+				<li><a class="wikipage" href="#United_States_expedition_to_Korea">United States expedition to Korea</a></li>
+				<li><a class="wikipage" href="#Yom_Kippur_War">Yom Kippur War</a></li>
+				<li><a class="wikipage" href="#Windscale_fire">Windscale fire</a></li>
+				<li><a class="wikipage" href="#J._B._Pritzker">J. B. Pritzker</a></li>
+				<li><a class="wikipage" href="#Hyon_Song-wol">Hyon Song-wol</a></li>
+				<li><a class="wikipage" href="#Mass_media_in_North_Korea">Mass media in North Korea</a></li>
+				<li><a class="wikipage" href="#Louis_Barthou">Louis Barthou</a></li>
+				<li><a class="wikipage" href="#Nabil_Karoui">Nabil Karoui</a></li>
+				<li><a class="wikipage" href="#Nessma_El_Jadida">Nessma El Jadida</a></li>
+				<li><a class="wikipage" href="#Economy_of_Tunisia">Economy of Tunisia</a></li>
+				<li><a class="wikipage" href="#Asabiyyah">Asabiyyah</a></li>
+				<li><a class="wikipage" href="#Hany_Farid">Hany Farid</a></li>
+				<li><a class="wikipage" href="#Alex_Stamos">Alex Stamos</a></li>
+				<li><a class="wikipage" href="#Megaupload">Megaupload</a></li>
+				<li><a class="wikipage" href="#Potemkin_village">Potemkin village</a></li>
+				<li><a class="wikipage" href="#Sokal_affair">Sokal affair<span class="wikipage_descr">1996 scholarly publishing sting accepted by an academic journal</span></a></li>
+				<li><a class="wikipage" href="#Mel_Reynolds">Mel Reynolds</a></li>
+				<li><a class="wikipage" href="#2014_Gaza_War_in_video_games">2014 Gaza War in video games</a></li>
+				<li><a class="wikipage" href="#Rashid_Rauf">Rashid Rauf</a></li>
+				<li><a class="wikipage" href="#Yehoshafat_Harkabi">Yehoshafat Harkabi</a></li>
+				<li><a class="wikipage" href="#Ahmed_Ajaj">Ahmed Ajaj</a></li>
+				<li><a class="wikipage" href="#Michael_Brescia">Michael Brescia</a></li>
+				<li><a class="wikipage" href="#SafeMoon">SafeMoon</a></li>
+				<li><a class="wikipage" href="#Jon_Minadeo_II">Jon Minadeo II</a></li>
+				<li><a class="wikipage" href="#Richard_Sharp_(BBC_chairman)">Richard Sharp (BBC chairman)</a></li>
+				<li><a class="wikipage" href="#Tim_Fortescue">Tim Fortescue</a></li>
+				<li><a class="wikipage" href="#Patrick_Rock">Patrick Rock</a></li>
+				<li><a class="wikipage" href="#Rudolf_Vrba">Rudolf Vrba<span class="wikipage_descr">what does this mean? confusing: Klein asked Vrba how he could function in the pleasant, provincial atmosphere of the University of British Columbia, where no one had any concept of what he had been through. Vrba told him about a colleague who had seen him in Lanzmann's film and asked whether what the film had discussed was true. Vrba replied: "I do not know. I was only an actor reciting my lines." "How strange," the colleague replied. "I didn't know that you were an actor. Why did they say that film was made without any actors?"</span></a></li>
+				<li><a class="wikipage" href="#George_Tuka">George Tuka</a></li>
+				<li><a class="wikipage" href="#Anton_Gerashchenko">Anton Gerashchenko</a></li>
+				<li><a class="wikipage" href="#Myrotvorets">Myrotvorets</a></li>
+				<li><a class="wikipage" href="#Sara_Khan_(activist)">Sara Khan (activist)</a></li>
+				<li><a class="wikipage" href="#Usman_Khan_(terrorist)">Usman Khan (terrorist)</a></li>
+				<li><a class="wikipage" href="#Imams_Online">Imams Online</a></li>
+				<li><a class="wikipage" href="#Vrede_Dairy_Project">Vrede Dairy Project</a></li>
+				<li><a class="wikipage" href="#Duduzane_Zuma">Duduzane Zuma</a></li>
+				<li><a class="wikipage" href="#Bell_Pottinger">Bell Pottinger</a></li>
+				<li><a class="wikipage" href="#Torat_Hamelekh">Torat Hamelekh</a></li>
+				<li><a class="wikipage" href="#Mordechai_Eliyahu">Mordechai Eliyahu</a></li>
+				<li><a class="wikipage" href="#Purim">Purim</a></li>
+				<li><a class="wikipage" href="#Apostasy_in_Judaism">Apostasy in Judaism</a></li>
+				<li><a class="wikipage" href="#Doron_Almog">Doron Almog</a></li>
+				<li><a class="wikipage" href="#Frank_Collin">Frank Collin</a></li>
+				<li><a class="wikipage" href="#Ezra_Levant">Ezra Levant</a></li>
+				<li><a class="wikipage" href="#Bruce_Edwards_Ivins">Bruce Edwards Ivins</a></li>
+				<li><a class="wikipage" href="#2001_anthrax_attacks">2001 anthrax attacks</a></li>
+				<li><a class="wikipage" href="#Mail_Isolation_Control_and_Tracking">Mail Isolation Control and Tracking</a></li>
+				<li><a class="wikipage" href="#Ali_Abdullah_Saleh">Ali Abdullah Saleh</a></li>
+				<li><a class="wikipage" href="#USS_Stark_incident">USS Stark incident</a></li>
+				<li><a class="wikipage" href="#Russell_Targ">Russell Targ</a></li>
+				<li><a class="wikipage" href="#Harold_E._Puthoff">Harold E. Puthoff</a></li>
+				<li><a class="wikipage" href="#Front_de_la_Jeunesse_(Belgium)">Front de la Jeunesse (Belgium)</a></li>
+				<li><a class="wikipage" href="#Steve_Schmidt">Steve Schmidt</a></li>
+				<li><a class="wikipage" href="#Edelman_(firm)">Edelman (firm)</a></li>
+				<li><a class="wikipage" href="#Daniel_J._Murphy">Daniel J. Murphy</a></li>
+				<li><a class="wikipage" href="#Roger_Clinton_Jr.">Roger Clinton Jr.</a></li>
+				<li><a class="wikipage" href="#Murder_of_Seth_Rich">Murder of Seth Rich</a></li>
+				<li><a class="wikipage" href="#Assassination_of_Hrant_Dink">Assassination of Hrant Dink</a></li>
+				<li><a class="wikipage" href="#Fourth_Anglo-Dutch_War">Fourth Anglo-Dutch War</a></li>
+				<li><a class="wikipage" href="#Trent_Affair">Trent Affair</a></li>
+				<li><a class="wikipage" href="#First_League_of_Armed_Neutrality">First League of Armed Neutrality</a></li>
+				<li><a class="wikipage" href="#Insys_Therapeutics">Insys Therapeutics<span class="wikipage_descr">opioid crisis</span></a></li>
+				<li><a class="wikipage" href="#Qwest">Qwest</a></li>
+				<li><a class="wikipage" href="#Joseph_Nacchio">Joseph Nacchio</a></li>
+				<li><a class="wikipage" href="#Mohammed_Dahlan">Mohammed Dahlan</a></li>
+				<li><a class="wikipage" href="#Warsaw_Ghetto">Warsaw Ghetto</a></li>
+				<li><a class="wikipage" href="#Judith_Miller">Judith Miller</a></li>
+				<li><a class="wikipage" href="#Ahmed_Chalabi">Ahmed Chalabi</a></li>
+				<li><a class="wikipage" href="#Jalal_Talabani">Jalal Talabani</a></li>
+				<li><a class="wikipage" href="#1996_cruise_missile_strikes_on_Iraq">1996 cruise missile strikes on Iraq</a></li>
+				<li><a class="wikipage" href="#Iraqi_Kurdish_Civil_War">Iraqi Kurdish Civil War</a></li>
+				<li><a class="wikipage" href="#Battle_of_Dakar">Battle of Dakar</a></li>
+				<li><a class="wikipage" href="#Attack_on_Mers-el-Kébir">Attack on Mers-el-Kébir</a></li>
+				<li><a class="wikipage" href="#Vichy_France">Vichy France</a></li>
+				<li><a class="wikipage" href="#Gurs_internment_camp">Gurs internment camp</a></li>
+				<li><a class="wikipage" href="#Omar_Mateen">Omar Mateen</a></li>
+				<li><a class="wikipage" href="#Necabettin_Ergenekon">Necabettin Ergenekon</a></li>
+				<li><a class="wikipage" href="#Special_Purpose_Police_Unit">Special Purpose Police Unit</a></li>
+				<li><a class="wikipage" href="#Uğur_Mumcu">Uğur Mumcu</a></li>
+				<li><a class="wikipage" href="#Ayhan_Çarkın">Ayhan Çarkın</a></li>
+				<li><a class="wikipage" href="#Pınarcık_massacre">Pınarcık massacre</a></li>
+				<li><a class="wikipage" href="#Ruzi_Nazar">Ruzi Nazar<span class="wikipage_descr">CIA agent</span></a></li>
+				<li><a class="wikipage" href="#El_Al_Flight_1862">El Al Flight 1862</a></li>
+				<li><a class="wikipage" href="#2004_Haitian_coup_d'état">2004 Haitian coup d'état</a></li>
+				<li><a class="wikipage" href="#Eastern_Aid">Eastern Aid</a></li>
+				<li><a class="wikipage" href="#USS_Greer">USS Greer</a></li>
+				<li><a class="wikipage" href="#MAUD_Committee">MAUD Committee</a></li>
+				<li><a class="wikipage" href="#Lend-Lease">Lend-Lease</a></li>
+				<li><a class="wikipage" href="#John_Loftus_(military_author)">John Loftus (military author)<span class="wikipage_descr">CIA-Nazi Belarus cooperation</span></a></li>
+				<li><a class="wikipage" href="#Safeguard_Defenders">Safeguard Defenders</a></li>
+				<li><a class="wikipage" href="#Montasser_el-Zayat">Montasser el-Zayat</a></li>
+				<li><a class="wikipage" href="#Marco_Tronchetti_Provera">Marco Tronchetti Provera</a></li>
+				<li><a class="wikipage" href="#Edward_Luttwak">Edward Luttwak</a></li>
+				<li><a class="wikipage" href="#Piero_Fassino">Piero Fassino</a></li>
+				<li><a class="wikipage" href="#Aldo_Brancher">Aldo Brancher</a></li>
+				<li><a class="wikipage" href="#Clemente_Mastella">Clemente Mastella</a></li>
+				<li><a class="wikipage" href="#Leopoldo_Pirelli">Leopoldo Pirelli</a></li>
+				<li><a class="wikipage" href="#Pirelli">Pirelli</a></li>
+				<li><a class="wikipage" href="#Bernadette_Meehan">Bernadette Meehan</a></li>
+				<li><a class="wikipage" href="#Nick_Berg">Nick Berg</a></li>
+				<li><a class="wikipage" href="#Jeff_Gannon">Jeff Gannon</a></li>
+				<li><a class="wikipage" href="#Donald_Vance">Donald Vance</a></li>
+				<li><a class="wikipage" href="#Shield_Group_Security">Shield Group Security</a></li>
+				<li><a class="wikipage" href="#Kim_Sun-il">Kim Sun-il</a></li>
+				<li><a class="wikipage" href="#Al-Masih_ad-Dajjal">Al-Masih ad-Dajjal<span class="wikipage_descr">Islamic version of the anti-Christ</span></a></li>
+				<li><a class="wikipage" href="#Adam_Yahiye_Gadahn">Adam Yahiye Gadahn</a></li>
+				<li><a class="wikipage" href="#Harkat-ul-Mujahideen">Harkat-ul-Mujahideen</a></li>
+				<li><a class="wikipage" href="#Battle_of_Vozuća">Battle of Vozuća</a></li>
+				<li><a class="wikipage" href="#Aimen_Dean">Aimen Dean</a></li>
+				<li><a class="wikipage" href="#Double_tap">Double tap</a></li>
+				<li><a class="wikipage" href="#July_12,_2007,_Baghdad_airstrike">July 12, 2007, Baghdad airstrike</a></li>
+				<li><a class="wikipage" href="#Dasht-i-Leili_massacre">Dasht-i-Leili massacre</a></li>
+				<li><a class="wikipage" href="#Front_for_the_Advancement_and_Progress_of_Haïti">Front for the Advancement and Progress of Haïti</a></li>
+				<li><a class="wikipage" href="#Emmanuel_Constant">Emmanuel Constant</a></li>
+				<li><a class="wikipage" href="#Earnest_James_Ujaama">Earnest James Ujaama</a></li>
+				<li><a class="wikipage" href="#Army_of_Mujahideen">Army of Mujahideen</a></li>
+				<li><a class="wikipage" href="#Syrian_Salvation_Government">Syrian Salvation Government</a></li>
+				<li><a class="wikipage" href="#Sanctuary_city">Sanctuary city</a></li>
+				<li><a class="wikipage" href="#Caesar_Syria_Civilian_Protection_Act">Caesar Syria Civilian Protection Act</a></li>
+				<li><a class="wikipage" href="#Mahmudiyah_rape_and_killings">Mahmudiyah rape and killings</a></li>
+				<li><a class="wikipage" href="#Killing_of_Tim_McLean">Killing of Tim McLean</a></li>
+				<li><a class="wikipage" href="#Tan_Ikram">Tan Ikram</a></li>
+				<li><a class="wikipage" href="#Fatherland_Front_(Austria)">Fatherland Front (Austria)</a></li>
+				<li><a class="wikipage" href="#Sanation">Sanation</a></li>
+				<li><a class="wikipage" href="#Boris_III_of_Bulgaria">Boris III of Bulgaria</a></li>
+				<li><a class="wikipage" href="#Zog_I_of_Albania">Zog I of Albania</a></li>
+				<li><a class="wikipage" href="#Konstantin_Päts">Konstantin Päts</a></li>
+				<li><a class="wikipage" href="#Ioannis_Metaxas">Ioannis Metaxas</a></li>
+				<li><a class="wikipage" href="#Miklós_Horthy">Miklós Horthy<span class="wikipage_descr">Hungarian pre-war dictator-ish leader</span></a></li>
+				<li><a class="wikipage" href="#Kārlis_Ulmanis">Kārlis Ulmanis<span class="wikipage_descr">Latvian pre-war dictator</span></a></li>
+				<li><a class="wikipage" href="#Antanas_Smetona">Antanas Smetona<span class="wikipage_descr">Lithuanian pre-war dictator</span></a></li>
+				<li><a class="wikipage" href="#Carol_II_of_Romania">Carol II of Romania<span class="wikipage_descr">pre-war dictator of Romania</span></a></li>
+				<li><a class="wikipage" href="#Development_Fund_for_Iraq">Development Fund for Iraq<span class="wikipage_descr">Development Fund for Iraq receives 95 percent of the government proceeds from Iraqi oil sales ... $8.8 billion of the US$23 billion of Iraqi money disbursed for DFI has not been accounted the use</span></a></li>
+				<li><a class="wikipage" href="#John_Granville_(diplomat)">John Granville (diplomat)</a></li>
+				<li><a class="wikipage" href="#Andreas_Maislinger">Andreas Maislinger</a></li>
+				<li><a class="wikipage" href="#Austrian_Service_Abroad">Austrian Service Abroad</a></li>
+				<li><a class="wikipage" href="#Richard_L._Walker">Richard L. Walker</a></li>
+				<li><a class="wikipage" href="#Lloyd_A._Free">Lloyd A. Free</a></li>
+				<li><a class="wikipage" href="#Andrews_McMeel_Syndication">Andrews McMeel Syndication</a></li>
+				<li><a class="wikipage" href="#Hadley_Cantril">Hadley Cantril</a></li>
+				<li><a class="wikipage" href="#Joint_Task_Force_Bravo">Joint Task Force Bravo</a></li>
+				<li><a class="wikipage" href="#Roger_Noriega">Roger Noriega</a></li>
+				<li><a class="wikipage" href="#Folke_Bernadotte">Folke Bernadotte</a></li>
+				<li><a class="wikipage" href="#Felix_Kersten">Felix Kersten</a></li>
+				<li><a class="wikipage" href="#Hunt_Museum">Hunt Museum</a></li>
+				<li><a class="wikipage" href="#William_Benton_(politician)">William Benton (politician)</a></li>
+				<li><a class="wikipage" href="#CIA_activities_in_Japan">CIA activities in Japan</a></li>
+				<li><a class="wikipage" href="#United_Press_International">United Press International</a></li>
+				<li><a class="wikipage" href="#Melvin_J._Lasky">Melvin J. Lasky</a></li>
+				<li><a class="wikipage" href="#Paris_Match">Paris Match</a></li>
+				<li><a class="wikipage" href="#The_Daily_Journal_(Venezuela)">The Daily Journal (Venezuela)</a></li>
+			</ul>
+		</details>
+		<summary>Menu</summary>
+		<details class="dropdownmenu2">
+			<summary>Skimmed</summary>
+			<ul id="wikimenu">
+				<li><a class="wikipage" href="#Black_helicopter">Black helicopter</a></li>
+				<li><a class="wikipage" href="#Black_helicopter_conspiracy_theory">Black helicopter conspiracy theory</a></li>
+				<li><a class="wikipage" href="#Fort_Terry">Fort Terry<span class="descr">biological warfare (Plum Island)</span></a></li>
+				<li><a class="wikipage" href="#Shirō_Ishii">Shirō Ishii<span class="descr">Japan's biological warfare (probably already covered in "Factories of Death")</span></a></li>
+				<li><a class="wikipage" href="#Khabarovsk_war_crimes_trials">Khabarovsk war crimes trials<span class="descr">Japan's biological warfare AND american propaganda</span></a></li>
+				<li><a class="wikipage" href="#Operation_Paperclip">Operation Paperclip</a></li>
+				<li><a class="wikipage" href="#Abu_Ghraib">Abu Ghraib</a></li>
+				<li><a class="wikipage" href="#Operation_TIPS">Operation TIPS<span class="descr">surveillance</span></a></li>
+				<li><a class="wikipage" href="#Project_Censored">Project Censored<span class="descr">media watchdog organisation; censorship, self-censorship, and propaganda in the mass media</span></a></li>
+				<li><a class="wikipage" href="#Berlin_Blockade">Berlin Blockade<span class="descr">maybe</span></a></li>
+				<li><a class="wikipage" href="#Erich_Traub">Erich Traub<span class="descr">Nazi bioweaponeer taken to America</span></a></li>
+				<li><a class="wikipage" href="#Operation_Provide_Comfort">Operation Provide Comfort<span class="descr">Kurds as pretext for "No Fly Zone" as pretext to invade Iraq in 1991</span></a></li>
+				<li><a class="wikipage" href="#Operation_Condor">Operation Condor<span class="descr">US assassination + torture in South America</span></a></li>
+				<li><a class="wikipage" href="#Environmental_issues_in_Vietnam">Environmental issues in Vietnam</a></li>
+				<li><a class="wikipage" href="#Effects_of_Agent_Orange_on_the_Vietnamese_people">Effects of Agent Orange on the Vietnamese people</a></li>
+				<li><a class="wikipage" href="#Project_Alpha_(hoax)">Project Alpha (hoax)<span class="descr">Parapsychologism, hoaxes, CIA</span></a></li>
+				<li><a class="wikipage" href="#Norman_Darbyshire">Norman Darbyshire<span class="descr">MI6: Operation AJAX + Muslim Brotherhood</span></a></li>
+				<li><a class="wikipage" href="#UNITA">UNITA<span class="descr">CIA aid during civil war</span></a></li>
+				<li><a class="wikipage" href="#Operation_Eagle's_Flight">Operation Eagle's Flight<span class="descr">Kosovo Liberation Army terrorism</span></a></li>
+				<li><a class="wikipage" href="#Cuban_Five">Cuban Five<span class="descr">CIA anti-Cuban terrorism</span></a></li>
+				<li><a class="wikipage" href="#Chemical_Corps">Chemical Corps</a></li>
+				<li><a class="wikipage" href="#Human_radiation_experiments">Human radiation experiments</a></li>
+				<li><a class="wikipage" href="#Human_experimentation_in_the_United_States">Human experimentation in the United States</a></li>
+				<li><a class="wikipage" href="#Unethical_human_experimentation_in_the_United_States">Unethical human experimentation in the United States</a></li>
+				<li><a class="wikipage" href="#United_States_and_weapons_of_mass_destruction">United States and weapons of mass destruction</a></li>
+				<li><a class="wikipage" href="#Anwar_Sadat">Anwar Sadat<span class="descr">pro-Israel anti-Soviet Egyptian president, 1970-81</span></a></li>
+				<li><a class="wikipage" href="#Operation_Dark_Winter">Operation Dark Winter<span class="descr">2001 simulated bio-terrorism attack on US</span></a></li>
+				<li><a class="wikipage" href="#Steven_Hatfill">Steven Hatfill<span class="descr">2001 anthrax attacks; partly used</span></a></li>
+				<li><a class="wikipage" href="#Taxi_to_the_Dark_Side">Taxi to the Dark Side<span class="descr">Movie about war crime in Iraq; it was censored by Discovery Channel</span></a></li>
+				<li><a class="wikipage" href="#Timothy_Butz">Timothy Butz<span class="descr">US Air Force intel agent turned whistleblower</span></a></li>
+				<li><a class="wikipage" href="#Guru_Jagat">Guru Jagat<span class="descr">Strawman conspiracy theories; QAnon; yoga; New Age cults</span></a></li>
+				<li><a class="wikipage" href="#Sexual_abuse_by_yoga_gurus">Sexual abuse by yoga gurus<span class="descr">Yoga child abuse</span></a></li>
+				<li><a class="wikipage" href="#Epsilon_Team">Epsilon Team<span class="descr">Strawman conspiracy theory</span></a></li>
+				<li><a class="wikipage" href="#Lists_of_solved_missing_person_cases">Lists of solved missing person cases</a></li>
+				<li><a class="wikipage" href="#Strawman_theory">Strawman theory<span class="descr">Sovereign citizens; Strawman conspiracy theory (created by 4chan)</span></a></li>
+				<li><a class="wikipage" href="#Doğu_Çalışma_Grubu">Doğu Çalışma Grubu<span class="descr">Turkish Gladio (Stay-behind; Counter-Guerrilla)</span></a></li>
+				<li><a class="wikipage" href="#1993_alleged_Turkish_military_coup">1993 alleged Turkish military coup<span class="descr">Turkish Gladio (partly-used)</span></a></li>
+				<li><a class="wikipage" href="#JITEM">JITEM<span class="descr">Turkish Gladio</span></a></li>
+				<li><a class="wikipage" href="#Counter-Guerrilla">Counter-Guerrilla<span class="descr">Turkish Gladio</span></a></li>
+				<li><a class="wikipage" href="#Xishan_Society">Xishan Society<span class="descr">Chinese equivalent to the Bilderberg Group</span></a></li>
+				<li><a class="wikipage" href="#Collegiate_secret_societies_in_North_America">Collegiate secret societies in North America</a></li>
+				<li><a class="wikipage" href="#Italygate">Italygate<span class="descr">2020 election strawman conspiracy theory</span></a></li>
+				<li><a class="wikipage" href="#Late_Victorian_Holocausts">Late Victorian Holocausts</a></li>
+				<li><a class="wikipage" href="#Great_Famine_of_1876–1878">Great Famine of 1876–1878<span class="descr">India + British Empire</span></a></li>
+				<li><a class="wikipage" href="#Operation_Anaconda">Operation Anaconda<span class="descr">Used in rpill, but need to examine how to find similar articles where US war crimes are alluded to in a similar way, by finding Wiki pages which are linked externally to German news URLs</span></a></li>
+				<li><a class="wikipage" href="#Project_Mogul">Project Mogul<span class="descr">Roswell; also mentioned in reference to the 2023 China Balloons Madness</span></a></li>
+				<li><a class="wikipage" href="#United_States_invasion_of_Grenada">United States invasion of Grenada</a></li>
+				<li><a class="wikipage" href="#Operation_Tailwind">Operation Tailwind<span class="descr">America using Sarin Gas during Vietnam War</span></a></li>
+				<li><a class="wikipage" href="#Killing_of_Charles_Dean_and_Neil_Sharman">Killing of Charles Dean and Neil Sharman</a></li>
+				<li><a class="wikipage" href="#MAINWAY">MAINWAY<span class="descr">NSA mass surveillance of telephone calls</span></a></li>
+				<li><a class="wikipage" href="#Gustavo_Álvarez_Martínez">Gustavo Álvarez Martínez<span class="descr">Battalion 3-16; Honduran military leader with ties to CIA and death squads; Wiki page is cleaned of CIA references; see cached https://web.archive.org/web/20040701131154/http://atimes.com/atimes/Middle_East/FG01Ak02.html</span></a></li>
+				<li><a class="wikipage" href="#The_Fellowship_(Christian_organization)">The Fellowship (Christian organization)<span class="descr">Evangelical group with close ties to US government; ties to World Vision</span></a></li>
+				<li><a class="wikipage" href="#Efraín_Ríos_Montt">Efraín Ríos Montt<span class="descr">US-backed Guatemalan dictator 1982-3; death squads + atrocities</span></a></li>
+				<li><a class="wikipage" href="#John_M._Olin_Foundation">John M. Olin Foundation<span class="descr">HUGE Free Market charity used to launder money for the CIA</span></a></li>
+				<li><a class="wikipage" href="#Unification_Church">Unification Church<span class="descr">Links to President Bush, praise by Reagan, etc</span></a></li>
+				<li><a class="wikipage" href="#Unification_Church_of_the_United_States">Unification Church of the United States</a></li>
+				<li><a class="wikipage" href="#James_William_Lair">James William Lair<span class="descr">USAID and CIA in Laos</span></a></li>
+				<li><a class="wikipage" href="#Long_Tieng">Long Tieng<span class="descr">CIA in Laos</span></a></li>
+				<li><a class="wikipage" href="#Sam_Thong">Sam Thong<span class="descr">USAID near CIA in Laos</span></a></li>
+				<li><a class="wikipage" href="#Goran_Žugić">Goran Žugić<span class="descr">Montenegro, assassination, mafia, CIA</span></a></li>
+				<li><a class="wikipage" href="#Laotian_Civil_War">Laotian Civil War</a></li>
+				<li><a class="wikipage" href="#Sun_Myung_Moon">Sun Myung Moon<span class="descr">Unification Church leader</span></a></li>
+				<li><a class="wikipage" href="#1980_Camarate_air_crash">1980 Camarate air crash<span class="descr">CIA assassination of Portuguese prime minister via aircraft</span></a></li>
+				<li><a class="wikipage" href="#CIA_activities_in_Japan">CIA activities in Japan<span class="descr">done Kaji Wataru</span></a></li>
+				<li><a class="wikipage" href="#Transition_to_the_New_Order">Transition to the New Order<span class="descr">Indonesia 1966-7 - CIA, coups, massacres</span></a></li>
+				<li><a class="wikipage" href="#Assassination_of_Martin_Luther_King_Jr.">Assassination of Martin Luther King Jr.</a></li>
+				<li><a class="wikipage" href="#CO2_fertilization_effect">CO2 fertilization effect</a></li>
+				<li><a class="wikipage" href="#Effects_of_climate_change_on_agriculture">Effects of climate change on agriculture</a></li>
+				<li><a class="wikipage" href="#Suicide_Club_(secret_society)">Suicide Club (secret society)<span class="descr">Anarchists; Read into their infiltration of the Unification Church (written up in their Nooseletter)</span></a></li>
+				<li><a class="wikipage" href="#Universal_Church_of_the_Kingdom_of_God">Universal Church of the Kingdom of God<span class="descr">Major uproar in 2022 in Britain</span></a></li>
+				<li><a class="wikipage" href="#Air_America_(airline)">Air America (airline)<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Continental_Air_Services,_Inc">Continental Air Services, Inc<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Pacific_Corporation">Pacific Corporation<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Air_Asia_(Taiwan)">Air Asia (Taiwan)<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Evergreen_International_Airlines">Evergreen International Airlines<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Intermountain_Aviation">Intermountain Aviation<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Southern_Air_Transport">Southern Air Transport<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Rendition_aircraft">Rendition aircraft<span class="descr">CIA torture and fronts</span></a></li>
+				<li><a class="wikipage" href="#Aero_Contractors_(United_States)">Aero Contractors (United States)<span class="descr">CIA torture and fronts</span></a></li>
+				<li><a class="wikipage" href="#Premier_Executive_Transport_Services">Premier Executive Transport Services<span class="descr">CIA front</span></a></li>
+				<li><a class="wikipage" href="#Tepper_Aviation">Tepper Aviation<span class="descr">CIA front; arming UNITA rebels in Angola in 1980s and 90s</span></a></li>
+				<li><a class="wikipage" href="#Eglin_Air_Force_Base">Eglin Air Force Base</a></li>
+				<li><a class="wikipage" href="#Jeppesen">Jeppesen</a></li>
+				<li><a class="wikipage" href="#Vang_Pao">Vang Pao</a></li>
+				<li><a class="wikipage" href="#List_of_covert_sites_of_the_Laotian_Civil_War">List of covert sites of the Laotian Civil War</a></li>
+				<li><a class="wikipage" href="#1967_Opium_War">1967 Opium War<span class="descr">CIA-aligned drug smuggling</span></a></li>
+				<li><a class="wikipage" href="#Kajaki_Dam">Kajaki Dam<span class="descr">bombing target of the US Air Force during their attack on Afghanistan; when Russia attacked Ukrainian dam it was called 'war crime' by US social media and media</span></a></li>
+				<li><a class="wikipage" href="#Green_Gang">Green Gang<span class="descr">Chinese Buddhist secret society which smuggled opium; shared profits with KMT</span></a></li>
+				<li><a class="wikipage" href="#Industrial_espionage">Industrial espionage</a></li>
+				<li><a class="wikipage" href="#Contras">Contras</a></li>
+				<li><a class="wikipage" href="#Plan_Colombia">Plan Colombia<span class="descr">Death squads; The US Defense Department funded a two-year study which found that the use of the armed forces to interdict drugs coming into the United States would have minimal or no effect on cocaine traffic and might, in fact, raise the profits of cocaine cartels and manufacturers</span></a></li>
+				<li><a class="wikipage" href="#Richard_Grasso">Richard Grasso<span class="descr">"I invite members of the FARC to visit the New York Stock Exchange so that they can get to know the market personally". Some found the meeting inexplicable, considering the FARC supports anti-capitalist ideals</span></a></li>
+				<li><a class="wikipage" href="#Medellín_Cartel">Medellín Cartel<span class="descr">Medellín Cartel, Cali Cartel, Colombian military, Texas Petroleum, Colombian legislature, small industrialists, +wealthy cattle ranchers founded paramilitary MAS, a death squad which attacked workers unions</span></a></li>
+				<li><a class="wikipage" href="#Eugene_Hasenfus">Eugene Hasenfus<span class="descr">Iran-Contra (captured CIA pilot)</span></a></li>
+				<li><a class="wikipage" href="#Louis_Jolyon_West">Louis Jolyon West</a></li>
+				<li><a class="wikipage" href="#Allied_war_crimes_during_World_War_II">Allied war crimes during World War II</a></li>
+				<li><a class="wikipage" href="#Anti-communist_mass_killings">Anti-communist mass killings</a></li>
+				<li><a class="wikipage" href="#History_of_biological_warfare">History of biological warfare</a></li>
+				<li><a class="wikipage" href="#Operation_Blacklist_Forty">Operation Blacklist Forty<span class="descr">US occupation of Korea from 1945-1948</span></a></li>
+				<li><a class="wikipage" href="#List_of_nuclear_close_calls">List of nuclear close calls</a></li>
+				<li><a class="wikipage" href="#World_League_for_Freedom_and_Democracy">World League for Freedom and Democracy</a></li>
+				<li><a class="wikipage" href="#Longgang_Mosque">Longgang Mosque<span class="descr">brief mention of CIA (Civil Air Transport) moving KMT muslim forces</span></a></li>
+				<li><a class="wikipage" href="#Kuomintang_Islamic_insurgency">Kuomintang Islamic insurgency</a></li>
+				<li><a class="wikipage" href="#Cult">Cult</a></li>
+				<li><a class="wikipage" href="#The_Finders_(movement)">The Finders (movement)</a></li>
+				<li><a class="wikipage" href="#Manson_Family">Manson Family<span class="descr">especially drug trade</span></a></li>
+				<li><a class="wikipage" href="#Courage_Foundation">Courage Foundation<span class="descr">Organisation for the Prohibition of Chemical Weapons (OPCW) whistleblower about Syria</span></a></li>
+				<li><a class="wikipage" href="#Ingo_Swann">Ingo Swann<span class="descr">Strawman conspiracy theorist (Stargate remove viewing)</span></a></li>
+				<li><a class="wikipage" href="#Liz_Mullinar">Liz Mullinar<span class="descr">ritual child abuse</span></a></li>
+				<li><a class="wikipage" href="#Scientology_controversies">Scientology controversies</a></li>
+				<li><a class="wikipage" href="#Vault_7">Vault 7<span class="descr">CIA cyber hacking tools</span></a></li>
+				<li><a class="wikipage" href="#Saddam–al-Qaeda_conspiracy_theory">Saddam–al-Qaeda conspiracy theory</a></li>
+				<li><a class="wikipage" href="#Rationale_for_the_Iraq_War">Rationale for the Iraq War</a></li>
+				<li><a class="wikipage" href="#Assange_v_Swedish_Prosecution_Authority">Assange v Swedish Prosecution Authority</a></li>
+				<li><a class="wikipage" href="#Operation_Mass_Appeal">Operation Mass Appeal</a></li>
+				<li><a class="wikipage" href="#Gloria_Steinem">Gloria Steinem</a></li>
+				<li><a class="wikipage" href="#Anti-Germans_(political_current)">Anti-Germans (political current)</a></li>
+				<li><a class="wikipage" href="#Larry_Hsien_Ping_Lang">Larry Hsien Ping Lang<span class="descr">Economics + globalisation</span></a></li>
+				<li><a class="wikipage" href="#Bobby_Beausoleil">Bobby Beausoleil<span class="descr">Strawman conspiracy theory 'adenochrome'</span></a></li>
+				<li><a class="wikipage" href="#Thelema">Thelema<span class="descr">New religious movement founded by Aleister Crowley</span></a></li>
+				<li><a class="wikipage" href="#Joy_of_Satan_Ministries">Joy of Satan Ministries<span class="descr">synthesis of Theistic Satanism, Nazism, Gnostic Paganism, Western esotericism, UFO conspiracy theories and extraterrestrial beliefs</span></a></li>
+				<li><a class="wikipage" href="#Kerry_Bolton">Kerry Bolton<span class="descr">TODO: read thesis, titled "Dreamers of the Dark: Kerry Bolton and the Order of the Left Hand Path; a Case-study of a Satanic/Neo Nazi Synthesis",</span></a></li>
+				<li><a class="wikipage" href="#Criticism_of_TV_Globo">Criticism of TV Globo<span class="descr">Brazil TV monopoly</span></a></li>
+				<li><a class="wikipage" href="#Transcendental_Meditation_movement">Transcendental Meditation movement</a></li>
+				<li><a class="wikipage" href="#Office_of_Special_Affairs">Office of Special Affairs<span class="descr">Scientology secret service</span></a></li>
+				<li><a class="wikipage" href="#A_Piece_of_Blue_Sky">A Piece of Blue Sky<span class="descr">1990 book about Scientology</span></a></li>
+				<li><a class="wikipage" href="#Category:Books_critical_of_Scientology">Category:Books critical of Scientology</a></li>
+				<li><a class="wikipage" href="#Scientology_and_law">Scientology and law</a></li>
+				<li><a class="wikipage" href="#Corporate_Air_Services_HPF821">Corporate Air Services HPF821<span class="descr">Hasenfus' capture while delivering weapons to the Contras was first glimpse of the Iran-Contra scandal. First the CIA, Pentagon, State Department, and White House denied any connection to him</span></a></li>
+				<li><a class="wikipage" href="#Rehabilitation_Project_Force">Rehabilitation Project Force<span class="descr">Scientology Sea Org punishment</span></a></li>
+				<li><a class="wikipage" href="#OT_VIII">OT VIII<span class="descr">Scientology</span></a></li>
+				<li><a class="wikipage" href="#Paulette_Cooper">Paulette Cooper<span class="descr">Scientology critic; An affidavit by a former Scientologist alleges that in 1977 the church was plotting to assassinate Cooper</span></a></li>
+				<li><a class="wikipage" href="#Scientology_and_hypnosis">Scientology and hypnosis<span class="descr">Scientology founder L. Ron Hubbard was known to his associates in the late 1940s as a talented hypnotist</span></a></li>
+				<li><a class="wikipage" href="#Project_Chanology">Project Chanology<span class="descr">Scientology censorship of interview with Tom Cruise in 2008</span></a></li>
+				<li><a class="wikipage" href="#Censorship_by_Google">Censorship by Google<span class="descr">Particularly:  In February 2020, YouTube reportedly began censoring any content related to the novel coronavirus (SARS-CoV-2</span></a></li>
+				<li><a class="wikipage" href="#Kendrick_Moxon">Kendrick Moxon<span class="descr">Moxon provided false handwriting samples of GO operative Michael Meisner to the FBI</span></a></li>
+				<li><a class="wikipage" href="#State-sponsored_Internet_propaganda">State-sponsored Internet propaganda<span class="descr">Actually good article</span></a></li>
+				<li><a class="wikipage" href="#Vulkan_files_leak">Vulkan files leak<span class="descr">Essay topic [Pro-NATO]</span></a></li>
+				<li><a class="wikipage" href="#Political_prisoners_in_the_United_States">Political prisoners in the United States</a></li>
+				<li><a class="wikipage" href="#Air_India_Flight_182">Air India Flight 182<span class="descr">Canadian intelligence agencies screw-ups; mostly used I think</span></a></li>
+				<li><a class="wikipage" href="#Pan_Am_Flight_103">Pan Am Flight 103<span class="descr">Lockerbie bombing; mostly used I think</span></a></li>
+				<li><a class="wikipage" href="#List_of_-gate_scandals_and_controversies">List of -gate scandals and controversies</a></li>
+				<li><a class="wikipage" href="#Roh_Tae-woo">Roh Tae-woo<span class="descr">President of South Korea from 1988 to 1993</span></a></li>
+				<li><a class="wikipage" href="#Al-Qaeda_activities_in_Europe">Al-Qaeda activities in Europe</a></li>
+				<li><a class="wikipage" href="#Help:Wikitext">Help:Wikitext</a></li>
+				<li><a class="wikipage" href="#Category:Espionage_scandals_and_incidents">Category:Espionage scandals and incidents</a></li>
+				<li><a class="wikipage" href="#Category:Political_scandals_in_South_Korea">Category:Political scandals in South Korea</a></li>
+				<li><a class="wikipage" href="#Doris_Hopp">Doris Hopp<span class="descr">Swedish brothel scandal; Epstein-ish; censorship</span></a></li>
+				<li><a class="wikipage" href="#List_of_CIA_controversies">List of CIA controversies</a></li>
+				<li><a class="wikipage" href="#National_Defence_Radio_Establishment">National Defence Radio Establishment<span class="descr">Swedish signals intelligence agency</span></a></li>
+				<li><a class="wikipage" href="#2023_Albanian_local_elections">2023 Albanian local elections<span class="descr">Politicians bribed by secret service</span></a></li>
+				<li><a class="wikipage" href="#Death_of_Ben_Zygier">Death of Ben Zygier<span class="descr">Australian-Israeli spy</span></a></li>
+				<li><a class="wikipage" href="#Censorship_in_Israel">Censorship in Israel<span class="descr">Israeli censors the books and information Palestinians can read; Palestinian journalists banned from travelling abroad</span></a></li>
+				<li><a class="wikipage" href="#Hervé_Falciani">Hervé Falciani<span class="descr">leaked list of 130,000 suspected tax evaders with Swiss bank accounts</span></a></li>
+				<li><a class="wikipage" href="#Jewish_religious_terrorism">Jewish religious terrorism</a></li>
+				<li><a class="wikipage" href="#Mordechai_Vanunu">Mordechai Vanunu</a></li>
+				<li><a class="wikipage" href="#Nakam">Nakam</a></li>
+				<li><a class="wikipage" href="#Jundallah_(Iran)">Jundallah (Iran)</a></li>
+				<li><a class="wikipage" href="#Cultural_Marxism_conspiracy_theory">Cultural Marxism conspiracy theory<span class="descr">LaRouche theories, and Fidel Castro support</span></a></li>
+				<li><a class="wikipage" href="#James_C._Scott">James C. Scott<span class="descr">National Student Association work with CIA</span></a></li>
+				<li><a class="wikipage" href="#Gabriel_Rockhill">Gabriel Rockhill<span class="descr">written essays about CIA influence onFrankfurt School, Michel Foucault, and Slavoj Žižek</span></a></li>
+				<li><a class="wikipage" href="#Pier_Paolo_Pasolini">Pier Paolo Pasolini<span class="descr">writing on CIA-Mafia-Christian Democrats connections</span></a></li>
+				<li><a class="wikipage" href="#Andrew_Napolitano">Andrew Napolitano<span class="descr">former Central Intelligence Agency (CIA) officer Larry C. Johnson, who later told CNN that Napolitano had misrepresented the statements he made on an online discussion board. Johnson, citing two anonymous sources, claimed that the GCHQ was passing information on the Trump campaign to U.S. intelligence through a "back-channel", but stressed that the GCHQ did not "wiretap" Trump or his associates and that alleged information sharing by the GCHQ was not done at the direction of the Obama administration</span></a></li>
+				<li><a class="wikipage" href="#Batallón_Vasco_Español">Batallón Vasco Español</a></li>
+				<li><a class="wikipage" href="#Pierre_Goldman">Pierre Goldman</a></li>
+				<li><a class="wikipage" href="#Victor_Rothschild,_3rd_Baron_Rothschild">Victor Rothschild, 3rd Baron Rothschild<span class="descr">MI5 agent; Rothschild channelled funds to ''Encounter'', an intellectual magazine founded in 1953</span></a></li>
+				<li><a class="wikipage" href="#Conglomerate_discount">Conglomerate discount</a></li>
+				<li><a class="wikipage" href="#Robert_Parry_(journalist)">Robert Parry (journalist)<span class="descr">US House Admits Nazi Role in Ukraine]. ''Consortium News'', June 12, 2015. --- Associated Press had refused to publish the drug trafficking story, and only relented when its Spanish-language newswire service accidentally published a translation.[32] Barger and Parry continued to press their investigation of North even as most of the media declined to follow it up, eventually publishing a story in mid-1986, based on 24 sources, which led to a Congressional committee asking questions of North. After North denied the allegations, Barger was pushed out of the Associated Press, and Parry was unable to publish any further follow-ups to the story until after Eugene Hasenfus' plan-ups to the story until after [[Eugene Hasenfus]]' plane ([[Corporate Air Services HPF821]]) was shot down in Nicaragua in October 1986.&lt;ref name=rha /"&gt;{{Primary source inline|date=August 2019}} After finding out that his boss had been "conferring with [Oliver] North on a regular basis", Parry left AP in 1987 to join ''Newsweek</span></a></li>
+				<li><a class="wikipage" href="#CIA_involvement_in_Contra_cocaine_trafficking">CIA involvement in Contra cocaine trafficking</a></li>
+				<li><a class="wikipage" href="#Psychological_Operations_in_Guerrilla_Warfare">Psychological Operations in Guerrilla Warfare<span class="descr">CIA manual written for the Contras</span></a></li>
+				<li><a class="wikipage" href="#Origins_of_global_surveillance">Origins of global surveillance<span class="descr">ITT</span></a></li>
+				<li><a class="wikipage" href="#Margaret_Hassan">Margaret Hassan</a></li>
+				<li><a class="wikipage" href="#Yevgeny_Rodionov">Yevgeny Rodionov<span class="descr">POW killed by Chechens for refusing to convert to Islam</span></a></li>
+				<li><a class="wikipage" href="#Pim_Fortuyn">Pim Fortuyn</a></li>
+				<li><a class="wikipage" href="#Yakubu_Gowon">Yakubu Gowon<span class="descr">Nigeria's Cement armada affair</span></a></li>
+				<li><a class="wikipage" href="#United_States_and_state_terrorism">United States and state terrorism<span class="descr">deaths caused by non-state terrorism (3,668 deaths between 1968-80 as estimated by the CIA) is dwarfed by those from state terrorism in US-backed regimes such as Guatemala (150,000 killed, 50,000 missing during the Guatemalan Civil War)</span></a></li>
+				<li><a class="wikipage" href="#Saudi_Arabian_textbook_controversy">Saudi Arabian textbook controversy</a></li>
+				<li><a class="wikipage" href="#David_Frum">David Frum<span class="descr">David Frum, Bush Jr's speechwriter and Atlantic senior editor, spread conspiracy theory that images of injured Palestinians were fake and staged. coined phrase 'axis of evil'</span></a></li>
+				<li><a class="wikipage" href="#Pallywood">Pallywood<span class="descr">After the death of two Palestinian teenagers in Beitunia, Michael Oren and Israeli official spokesmen argued the video from a security camera was fake or manipulated and the teenagers had only pretended to be hit</span></a></li>
+				<li><a class="wikipage" href="#Human_rights_in_Saudi_Arabia">Human rights in Saudi Arabia</a></li>
+				<li><a class="wikipage" href="#Allegations_of_CIA_assistance_to_Osama_bin_Laden">Allegations of CIA assistance to Osama bin Laden</a></li>
+				<li><a class="wikipage" href="#Pakistan_and_state-sponsored_terrorism">Pakistan and state-sponsored terrorism</a></li>
+				<li><a class="wikipage" href="#Conspiracy_theories_about_the_overthrow_of_Mohammad_Reza_Pahlavi">Conspiracy theories about the overthrow of Mohammad Reza Pahlavi<span class="descr">Iran 1979 revolution</span></a></li>
+				<li><a class="wikipage" href="#Allegations_of_United_States_support_for_the_Khmer_Rouge">Allegations of United States support for the Khmer Rouge</a></li>
+				<li><a class="wikipage" href="#United_States_support_for_Iraq_during_the_Iran–Iraq_War">United States support for Iraq during the Iran–Iraq War</a></li>
+				<li><a class="wikipage" href="#GAL_(paramilitary_group)">GAL (paramilitary group)<span class="descr">Used in rpill, except for:  "Convicted GAL members" and "Similar groups" sections</span></a></li>
+				<li><a class="wikipage" href="#Esoteric_Nazism">Esoteric Nazism</a></li>
+				<li><a class="wikipage" href="#Fédération_d'action_nationale_et_européenne">Fédération d'action nationale et européenne</a></li>
+				<li><a class="wikipage" href="#Nuclei_Armati_Rivoluzionari">Nuclei Armati Rivoluzionari<span class="descr">Gladio</span></a></li>
+				<li><a class="wikipage" href="#Banda_della_Magliana">Banda della Magliana<span class="descr">Gladio</span></a></li>
+				<li><a class="wikipage" href="#La_Main_Rouge">La Main Rouge<span class="descr">French gov-operated death squad terrorism</span></a></li>
+				<li><a class="wikipage" href="#Propaganda_Due">Propaganda Due</a></li>
+				<li><a class="wikipage" href="#Fear,_uncertainty,_and_doubt">Fear, uncertainty, and doubt<span class="descr">PsyOps by corporations</span></a></li>
+				<li><a class="wikipage" href="#Westland_New_Post">Westland New Post</a></li>
+				<li><a class="wikipage" href="#Column_88">Column 88<span class="descr">British Gladio</span></a></li>
+				<li><a class="wikipage" href="#Order_of_Nine_Angles">Order of Nine Angles</a></li>
+				<li><a class="wikipage" href="#Atomwaffen_Division">Atomwaffen Division</a></li>
+				<li><a class="wikipage" href="#Greek_junta">Greek junta</a></li>
+				<li><a class="wikipage" href="#Armed,_far-right_organizations_in_Italy">Armed, far-right organizations in Italy</a></li>
+				<li><a class="wikipage" href="#Grey_Wolves_(organization)">Grey Wolves (organization)</a></li>
+				<li><a class="wikipage" href="#La_Luz_del_Mundo">La Luz del Mundo<span class="descr">Cult</span></a></li>
+				<li><a class="wikipage" href="#Telford_child_sexual_exploitation_scandal">Telford child sexual exploitation scandal<span class="descr">Pakistani rape gangs</span></a></li>
+				<li><a class="wikipage" href="#Oxford_child_sex_abuse_ring">Oxford child sex abuse ring</a></li>
+				<li><a class="wikipage" href="#Rotherham_child_sexual_exploitation_scandal">Rotherham child sexual exploitation scandal</a></li>
+				<li><a class="wikipage" href="#Huddersfield_grooming_gang">Huddersfield grooming gang</a></li>
+				<li><a class="wikipage" href="#Rochdale_child_sex_abuse_ring">Rochdale child sex abuse ring<span class="descr">Interestingly downplays the numbers (doesnt mention thousands of victims). "A report by the deputy children's commissioner in 2012 said that 33% of child sex abuse by gangs in Britain was committed by British Asians, where Asians are 7% of the population, but concluded that it was "irresponsible" to dwell on the data"</span></a></li>
+				<li><a class="wikipage" href="#Peterborough_sex_abuse_case">Peterborough sex abuse case</a></li>
+				<li><a class="wikipage" href="#Bristol_child_sex_abuse_ring">Bristol child sex abuse ring<span class="descr">The headteacher expressed dismay at the way in which the perceived ethnicity of the offenders had harmed race relations in Bristol and described how it had been necessary to devote the month before the verdict to "redoubling our focus on combating racism".</span></a></li>
+				<li><a class="wikipage" href="#Newcastle_sex_abuse_ring">Newcastle sex abuse ring</a></li>
+				<li><a class="wikipage" href="#Paedophile_Information_Exchange">Paedophile Information Exchange</a></li>
+				<li><a class="wikipage" href="#Giving_Victims_a_Voice">Giving Victims a Voice<span class="descr">Report relating to the allegations of sexual abuse made against Jimmy Savile</span></a></li>
+				<li><a class="wikipage" href="#Child_sexual_abuse_in_the_United_Kingdom">Child sexual abuse in the United Kingdom</a></li>
+				<li><a class="wikipage" href="#Pai_Wan-hsiang">Pai Wan-hsiang<span class="descr">"China overseas secret police" but by Taiwan</span></a></li>
+				<li><a class="wikipage" href="#White_Terror_(Taiwan)">White Terror (Taiwan)</a></li>
+				<li><a class="wikipage" href="#February_28_incident">February 28 incident<span class="descr">228 Massacre, Taiwan (partly used)</span></a></li>
+				<li><a class="wikipage" href="#Nancy_Scheper-Hughes">Nancy Scheper-Hughes<span class="descr">Israeli organ trafficking</span></a></li>
+				<li><a class="wikipage" href="#List_of_federal_political_sex_scandals_in_the_United_States">List of federal political sex scandals in the United States</a></li>
+				<li><a class="wikipage" href="#Wikipedia:WikiProject_United_States_Government/Popular_pages">Wikipedia:WikiProject United States Government/Popular pages</a></li>
+				<li><a class="wikipage" href="#Jewish_Labour_Movement">Jewish Labour Movement</a></li>
+				<li><a class="wikipage" href="#Royal_United_Services_Institute">Royal United Services Institute</a></li>
+				<li><a class="wikipage" href="#Carl_Gershman">Carl Gershman</a></li>
+				<li><a class="wikipage" href="#Organisation_of_Ukrainian_Nationalists">Organisation of Ukrainian Nationalists</a></li>
+				<li><a class="wikipage" href="#Marc_Dutroux">Marc Dutroux</a></li>
+				<li><a class="wikipage" href="#Sachsensumpf">Sachsensumpf</a></li>
+				<li><a class="wikipage" href="#Westminster_paedophile_dossier">Westminster paedophile dossier</a></li>
+				<li><a class="wikipage" href="#Wikipedia:WikiProject_Sexology_and_sexuality/Popular_pages">Wikipedia:WikiProject Sexology and sexuality/Popular pages</a></li>
+				<li><a class="wikipage" href="#Sex_trafficking_in_the_United_States">Sex trafficking in the United States</a></li>
+				<li><a class="wikipage" href="#John_David_Norman">John David Norman<span class="descr">child sex trafficker and linked to serial killers Dean Corll and John Wayne Gacy</span></a></li>
+				<li><a class="wikipage" href="#Smith_Act_trials_of_Communist_Party_leaders">Smith Act trials of Communist Party leaders<span class="descr">"Show trials" if happend in Soviet Union</span></a></li>
+				<li><a class="wikipage" href="#Solidarity_(Polish_trade_union)">Solidarity (Polish trade union)<span class="descr">CIA links</span></a></li>
+				<li><a class="wikipage" href="#Rudolf_V._Perina">Rudolf V. Perina<span class="descr">His job was to help it develop into a successful, autonomous nation. It was one of the earliest to privatize land, helped by a major USAID project that completed under Perina: The US gave[32][4] over $50 million in assistance, the third highest amount given to a former Soviet republic, because of its cooperation and its efforts at reform</span></a></li>
+				<li><a class="wikipage" href="#Lynne_McTaggart">Lynne McTaggart<span class="descr">What Doctors Don't Tell You</span></a></li>
+				<li><a class="wikipage" href="#1980_murders_of_U.S._missionaries_in_El_Salvador">1980 murders of U.S. missionaries in El Salvador</a></li>
+				<li><a class="wikipage" href="#Censorship_in_the_United_States">Censorship in the United States</a></li>
+				<li><a class="wikipage" href="#Corruption_in_the_United_States">Corruption in the United States</a></li>
+				<li><a class="wikipage" href="#Contents_of_the_United_States_diplomatic_cables_leak">Contents of the United States diplomatic cables leak</a></li>
+				<li><a class="wikipage" href="#Contents_of_the_United_States_diplomatic_cables_leak_(Americas)">Contents of the United States diplomatic cables leak (Americas)</a></li>
+				<li><a class="wikipage" href="#Church_of_Eternal_Life">Church of Eternal Life<span class="descr">WHY IS THIS A REDIRECT??? 2016 Korean scandal</span></a></li>
+				<li><a class="wikipage" href="#Aum_Shinrikyo">Aum Shinrikyo</a></li>
+				<li><a class="wikipage" href="#2016–2017_South_Korean_protests">2016–2017 South Korean protests</a></li>
+				<li><a class="wikipage" href="#2016_South_Korean_political_scandal">2016 South Korean political scandal<span class="descr">reporter working for Chosun Broadcasting Company, who even cornered Choi and attempted to secure an interview, but his report was spiked by executives at the company</span></a></li>
+				<li><a class="wikipage" href="#United_States_Army_Special_Operations_Command">United States Army Special Operations Command</a></li>
+				<li><a class="wikipage" href="#United_States_special_operations_forces">United States special operations forces</a></li>
+				<li><a class="wikipage" href="#2001_anthrax_attacks">2001 anthrax attacks</a></li>
+				<li><a class="wikipage" href="#National_Liberation_Army_(Macedonia)">National Liberation Army (Macedonia)<span class="descr">Kosovo NATO-backed Albanian terrorists</span></a></li>
+				<li><a class="wikipage" href="#2001_insurgency_in_Macedonia">2001 insurgency in Macedonia</a></li>
+				<li><a class="wikipage" href="#Morten_Storm">Morten Storm</a></li>
+				<li><a class="wikipage" href="#National_Socialist_Underground">National Socialist Underground</a></li>
+				<li><a class="wikipage" href="#Albert_Hakim">Albert Hakim<span class="descr">Iran-Contra</span></a></li>
+				<li><a class="wikipage" href="#Richard_Secord">Richard Secord<span class="descr">Iran-Contra</span></a></li>
+				<li><a class="wikipage" href="#Stefano_Delle_Chiaie">Stefano Delle Chiaie<span class="descr">HUGE links to Operation Gladio in Italy, Turkey; and to Chile, Argentina, Bolivia</span></a></li>
+				<li><a class="wikipage" href="#Aginter_Press">Aginter Press<span class="descr">Operation Gladio: Portugal + Italy</span></a></li>
+				<li><a class="wikipage" href="#Yves_Guérin-Sérac">Yves Guérin-Sérac<span class="descr">Operation Gladio: Portugal</span></a></li>
+				<li><a class="wikipage" href="#Confidentiel">Confidentiel<span class="descr">Gladio (members)</span></a></li>
+				<li><a class="wikipage" href="#Ernesto_Milá">Ernesto Milá<span class="descr">Operation Gladio (Spain)</span></a></li>
+				<li><a class="wikipage" href="#Oleg_Gordievsky">Oleg Gordievsky<span class="descr">provocations:  Two of Gordievsky's most important contributions were averting a potential nuclear confrontation with the Soviet Union, when the Soviets misinterpreted the NATO exercise Able Archer 83 as a potential first strike,[79][9] and identifying Mikhail Gorbachev as the Soviet heir-apparent long before he came to prominence. Indeed, the information passed by Gordievsky became the first proof of how worried the Soviet leadership had become about the possibility of a NATO nuclear first strike.[80] </span></a></li>
+				<li><a class="wikipage" href="#Wallace_Fard_Muhammad">Wallace Fard Muhammad<span class="descr">Nation of Islam</span></a></li>
+				<li><a class="wikipage" href="#Zebra_murders">Zebra murders<span class="descr">Anti-white murders by black serial killers</span></a></li>
+				<li><a class="wikipage" href="#1977_Washington,_D.C.,_attack_and_hostage_taking">1977 Washington, D.C., attack and hostage taking<span class="descr">Nation of Islam</span></a></li>
+				<li><a class="wikipage" href="#Black_Mafia">Black Mafia</a></li>
+				<li><a class="wikipage" href="#Mimetic_theory">Mimetic theory<span class="descr">"Man is the creature who does not know what to desire, and he turns to others in order to make up his mind. We desire what others desire because we imitate their desires."</span></a></li>
+				<li><a class="wikipage" href="#Clipper_chip">Clipper chip<span class="descr">NSA backdoor proposal</span></a></li>
+				<li><a class="wikipage" href="#Hardware_backdoor">Hardware backdoor</a></li>
+				<li><a class="wikipage" href="#Trusted_Platform_Module">Trusted Platform Module</a></li>
+				<li><a class="wikipage" href="#National_Socialism_/_White_Power">National Socialism / White Power<span class="descr">Russian anti-gov terrorists involved in attacks on Russian territory during war</span></a></li>
+				<li><a class="wikipage" href="#Primorsky_Partisans">Primorsky Partisans<span class="descr">Terrorists who the 'Echo of Moscow' pro-West TV station broadcast support for</span></a></li>
+				<li><a class="wikipage" href="#Echo_of_Moscow">Echo of Moscow</a></li>
+				<li><a class="wikipage" href="#Michigan_State_University_Vietnam_Advisory_Group">Michigan State University Vietnam Advisory Group</a></li>
+				<li><a class="wikipage" href="#ATF_gunwalking_scandal">ATF gunwalking scandal<span class="descr">Hundreds of murders tied to these guns. President Obama invoked executive privilege for the 1st time in his presidency to withhold documents that "were not generated in the course of the conduct of Fast and Furious." In 2016, a federal court ruled that the records were not covered by privilege; a House lawsuit to try to recover the records was settled and the matter dropped in April 2019</span></a></li>
+				<li><a class="wikipage" href="#David_Berg">David Berg<span class="descr">Children of God/Family International</span></a></li>
+				<li><a class="wikipage" href="#Billy_Graham">Billy Graham<span class="descr">Extremely influential evangelist backed by US government. Bomb vietnam. Hate communism.</span></a></li>
+				<li><a class="wikipage" href="#The_Family:_The_Secret_Fundamentalism_at_the_Heart_of_American_Power">The Family: The Secret Fundamentalism at the Heart of American Power</a></li>
+				<li><a class="wikipage" href="#Siad_Barre">Siad Barre</a></li>
+				<li><a class="wikipage" href="#Fernando_Villavicencio">Fernando Villavicencio<span class="descr">In 2015, Cynthia Viteri and Villavicencio sent secret documents to WikiLeaks showing that Ecuador was using an Italian company to run a surveillance program that was spying a surveillance program that was spying on journalists and political enemies, in addition to spying on [[Julian Assange]] in the embassy. In 2018, The Guardian removed his name from the authorship of a fake news article claiming Manafort had met with Assange: cached https://twitter.com/wikileaks/status/1069670645586374658. 2 weeks before 2023 election he was assassinated, likely by a rival drug gang (he was connected to drug gangs) https://www.bloomberg.com/news/articles/2023-08-10/ecuador-presidential-candidate-villavicencio-shot-dead-expreso</span></a></li>
+				<li><a class="wikipage" href="#Attempted_assassination_of_Imran_Khan">Attempted assassination of Imran Khan</a></li>
+				<li><a class="wikipage" href="#Javier_Milei">Javier Milei</a></li>
+				<li><a class="wikipage" href="#David_Parker_Ray">David Parker Ray<span class="descr">BDSM serial torturer/killer and wife; no cult stuff but sex trafficking to Mexico</span></a></li>
+				<li><a class="wikipage" href="#Kent_R._Hill">Kent R. Hill</a></li>
+				<li><a class="wikipage" href="#Lonnie_Frisbee">Lonnie Frisbee<span class="descr">Gay anti-gay evangelist</span></a></li>
+				<li><a class="wikipage" href="#Operation_Lalang">Operation Lalang<span class="descr">Malaysia: Marked beginning of authoritarian rule. Police crackdown on "racial unrest" was excuse to crack down on political opponents</span></a></li>
+				<li><a class="wikipage" href="#CIA_activities_in_Syria">CIA activities in Syria</a></li>
+				<li><a class="wikipage" href="#Operation_Storm">Operation Storm<span class="descr">Croatian ethnic explusion of Serbs, 1995</span></a></li>
+				<li><a class="wikipage" href="#Abdul_Haris_Nasution">Abdul Haris Nasution<span class="descr">the revelation that the PRRI was given assistance by the United States, caused Sukarno to adopt an anti-American stance</span></a></li>
+				<li><a class="wikipage" href="#Franz_Josef_Strauss">Franz Josef Strauss</a></li>
+				<li><a class="wikipage" href="#Esalen_Institute">Esalen Institute</a></li>
+				<li><a class="wikipage" href="#Lindisfarne_Association">Lindisfarne Association</a></li>
+				<li><a class="wikipage" href="#Iguala_mass_kidnapping">Iguala mass kidnapping<span class="descr">Social democratic party in Mexico, and police, linked to drug cartel massacre of students</span></a></li>
+				<li><a class="wikipage" href="#Jaime_Sin">Jaime Sin<span class="descr">Forced philippine dictator Marcos to flee to america in 1986/7</span></a></li>
+				<li><a class="wikipage" href="#Jamaat-e-Islami_(Pakistan)">Jamaat-e-Islami (Pakistan)<span class="descr">linked to Hezbi Islami in Afghan War (Operation Cyclone)</span></a></li>
+				<li><a class="wikipage" href="#Jamaat-e-Islami">Jamaat-e-Islami<span class="descr">linked to Hezbi Islami in Afghan War (Operation Cyclone)</span></a></li>
+				<li><a class="wikipage" href="#Projekt-26">Projekt-26<span class="descr">Gladio</span></a></li>
+				<li><a class="wikipage" href="#Jeune_Europe">Jeune Europe<span class="descr">Based far-right group</span></a></li>
+				<li><a class="wikipage" href="#Brabant_killers">Brabant killers<span class="descr">Gladio</span></a></li>
+				<li><a class="wikipage" href="#Red_Army_Faction">Red Army Faction</a></li>
+				<li><a class="wikipage" href="#Belgian_stay-behind_network">Belgian stay-behind network<span class="descr">Gladio</span></a></li>
+				<li><a class="wikipage" href="#Mohamed_Atta's_alleged_Prague_connection">Mohamed Atta's alleged Prague connection</a></li>
+				<li><a class="wikipage" href="#Tobacco_industry_playbook">Tobacco industry playbook</a></li>
+				<li><a class="wikipage" href="#Operation_Shocker">Operation Shocker<span class="descr">supposed disinformation by America where they let a defector tell Soviet Union that America was continuing its nerve gas and bio-warfare research</span></a></li>
+				<li><a class="wikipage" href="#Yellow_rain">Yellow rain</a></li>
+				<li><a class="wikipage" href="#Habbush_letter">Habbush letter</a></li>
+				<li><a class="wikipage" href="#Information_Operations_Roadmap">Information Operations Roadmap<span class="descr">US military astroturfing in 2003</span></a></li>
+				<li><a class="wikipage" href="#The_Freedom_Fighter's_Manual">The Freedom Fighter's Manual<span class="descr">CIA terrorism manual; Contras</span></a></li>
+				<li><a class="wikipage" href="#Nehemiah_Levanon">Nehemiah Levanon<span class="descr">Bar was tasked specifically with encouraging the immigration of Soviet Jews to Israel and even received funding from the CIA to aid its cause</span></a></li>
+				<li><a class="wikipage" href="#Zionist_political_violence">Zionist political violence</a></li>
+				<li><a class="wikipage" href="#Dead_Internet_theory">Dead Internet theory</a></li>
+				<li><a class="wikipage" href="#Antonio_Gramsci">Antonio Gramsci<span class="descr">culture is the medium in which a socioeconomic system is sustained. This is why people criticize those who lavishly participate in something like American consumer culture. Obviously, it's impossible to just exist outside of a culture, but you can make steps to adjust your relationship with it -- and the criticism waged at Hasan here is that he doesn't.</span></a></li>
+				<li><a class="wikipage" href="#Inside_Job_(2010_film)">Inside Job (2010 film)<span class="descr">financial crisis</span></a></li>
+				<li><a class="wikipage" href="#Keir_Giles">Keir Giles</a></li>
+				<li><a class="wikipage" href="#Romana_Didulo">Romana Didulo<span class="descr">also:  http://localhost:8080/cached/https://www.reddit.com/r/canada/comments/1732gq9/sask_rcmp_sets_up_temporary_detachment_in/</span></a></li>
+				<li><a class="wikipage" href="#Nick_Fuentes">Nick Fuentes<span class="descr">Israel whining about Fuentes's 'horrifying rhetoric'</span></a></li>
+				<li><a class="wikipage" href="#Coalition_Provisional_Authority">Coalition Provisional Authority<span class="descr">TODO: Privatization of Iraq's economy</span></a></li>
+				<li><a class="wikipage" href="#Elliot_Schrage">Elliot Schrage</a></li>
+				<li><a class="wikipage" href="#Clearwater,_Florida">Clearwater, Florida<span class="descr">Scientology-controlled town</span></a></li>
+				<li><a class="wikipage" href="#Mahinda_Rajapaksa">Mahinda Rajapaksa<span class="descr">Sri Lankan president 2205-15; war crimes vs Tamil Tigers</span></a></li>
+				<li><a class="wikipage" href="#Alberta_Williams_King">Alberta Williams King<span class="descr">shot and killed in the church by 23-year-old Black Hebrew Israelite Marcus Wayne Chenault</span></a></li>
+				<li><a class="wikipage" href="#Deborah_Lipstadt">Deborah Lipstadt</a></li>
+				<li><a class="wikipage" href="#Institute_for_the_Study_of_War">Institute for the Study of War</a></li>
+				<li><a class="wikipage" href="#The_Israel_Lobby_and_U.S._Foreign_Policy">The Israel Lobby and U.S. Foreign Policy</a></li>
+				<li><a class="wikipage" href="#Tantura">Tantura<span class="descr">Massacre of over 200 Palestinians by Jewish terrorists</span></a></li>
+				<li><a class="wikipage" href="#The_Voyeurs">The Voyeurs<span class="descr">movie where bmwf couple spy on wmaf/wmwf couple having sex in apartment across from them</span></a></li>
+				<li><a class="wikipage" href="#Sarah_Falk">Sarah Falk<span class="descr">TODO: add Freshfields people to tagem (and add_person_tag__id entries for Freshfields)</span></a></li>
+				<li><a class="wikipage" href="#Anthony_Salz">Anthony Salz<span class="descr">TODO: tagem; trustee of the Scott Trust[21][6] which owns The Guardian newspaper</span></a></li>
+				<li><a class="wikipage" href="#Terry_Calvani">Terry Calvani<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Alma_Zadić">Alma Zadić<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Jan_Paulsson">Jan Paulsson<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Kenneth_I._Juster">Kenneth I. Juster<span class="descr">TODO: tagem !!!!!!</span></a></li>
+				<li><a class="wikipage" href="#Bim_Afolami">Bim Afolami<span class="descr">TODO: tagem; including Ditchley</span></a></li>
+				<li><a class="wikipage" href="#Hans_Eichel">Hans Eichel<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Goiânia_accident">Goiânia accident<span class="descr">TODO: discuss the importance of government in protecting communal goods, particularly dangerous-but-necessary things like radiotherapy sources</span></a></li>
+				<li><a class="wikipage" href="#Andriy_Parubiy">Andriy Parubiy<span class="descr">TODO: Nazi in Ukrainian politics; Wikipedia propaganda</span></a></li>
+				<li><a class="wikipage" href="#Judenrat">Judenrat<span class="descr">insult used against anti-Zionist Jews</span></a></li>
+				<li><a class="wikipage" href="#Victor_Ostrovsky">Victor Ostrovsky</a></li>
+				<li><a class="wikipage" href="#Hermes_Trismegistus">Hermes Trismegistus<span class="descr">Occultism;  "IDK, occultism is kind of a trap in that as interesting as it is to read Hermes Trismegistus everyone in that scene has terrible vibes or at least everyone I've interacted with. Like, all it takes is going to one black mass to realize you don't want to get caught dead there (I play in black metal bands and had a couple gigs where it was a combo show/black mass and it's cringier than you can imagine and would have ditched it if I wasn't getting paid to be there). Like, if someone talks about Magick with a k run in the other direction as fast as possible imo. It's essentially D&amp;D nerds who believe they actually have mystical powers."</span></a></li>
+				<li><a class="wikipage" href="#Oriana_Fallaci">Oriana Fallaci</a></li>
+				<li><a class="wikipage" href="#NK_News">NK News<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Andrei_Lankov">Andrei Lankov<span class="descr">TODO: anti-North Korean propagandist</span></a></li>
+				<li><a class="wikipage" href="#Savings_and_loan_crisis">Savings and loan crisis<span class="descr">TODO: 1980s-90s: 'greatest financial crime in history' up to that point</span></a></li>
+				<li><a class="wikipage" href="#Diagnostic_and_Statistical_Manual_of_Mental_Disorders">Diagnostic and Statistical Manual of Mental Disorders<span class="descr">Criticism of DSM-5 by a big psychoanalysis guy (author of DSM-4?)</span></a></li>
+				<li><a class="wikipage" href="#Germany_Must_Perish!">Germany Must Perish!</a></li>
+				<li><a class="wikipage" href="#Ari_Ben-Menashe">Ari Ben-Menashe<span class="descr">Iran-Contra from Israel side</span></a></li>
+				<li><a class="wikipage" href="#Tunisian_Revolution">Tunisian Revolution</a></li>
+				<li><a class="wikipage" href="#Operation_Tunisia">Operation Tunisia</a></li>
+				<li><a class="wikipage" href="#Center_for_the_Defense_of_Free_Enterprise">Center for the Defense of Free Enterprise<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Henry_Liu">Henry Liu<span class="descr">KMT critic in America, who was assassinated by Taiwan</span></a></li>
+				<li><a class="wikipage" href="#969_Movement">969 Movement<span class="descr">Buddhist nationalist movement in Burma opposed to Islam: "Across South Asia, Muslims represent the phrase "In the Name of God, the Compassionate and Merciful" with the number 786, and businesses display the number to indicate that they are Muslim-owned. 969's proponents see this as a Muslim plot to conquer Burma in the 21st century, based on the premise that 7 plus 8 plus 6 is equal to 21. The number 969 is intended to be 786's cosmological opposite"</span></a></li>
+				<li><a class="wikipage" href="#Zanj_Rebellion">Zanj Rebellion<span class="descr">a slave uprising by blacks against Arab slavers</span></a></li>
+				<li><a class="wikipage" href="#Timothy_D._Snyder">Timothy D. Snyder<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Marci_Shore">Marci Shore<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Loudness_war">Loudness war<span class="descr">Also: movies increasingly moving towards high contrast + dynamic range, because people increasingly watching movies on small screens in light rooms</span></a></li>
+				<li><a class="wikipage" href="#Firefighter_arson">Firefighter arson</a></li>
+				<li><a class="wikipage" href="#By_Way_of_Deception">By Way of Deception<span class="descr">Mossad</span></a></li>
+				<li><a class="wikipage" href="#Linda_Frum">Linda Frum<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Alloparenting">Alloparenting</a></li>
+				<li><a class="wikipage" href="#Ali_Mohamed_(double_agent)">Ali Mohamed (double agent)</a></li>
+				<li><a class="wikipage" href="#Thousand_Oaks_shooting">Thousand Oaks shooting<span class="descr">victims/survivors (as many as 60 people at the scene) linked to 2017 Las Vegas shooting</span></a></li>
+				<li><a class="wikipage" href="#2017_Las_Vegas_shooting">2017 Las Vegas shooting</a></li>
+				<li><a class="wikipage" href="#Sheryl_Sandberg">Sheryl Sandberg<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Praetorian_Guard">Praetorian Guard<span class="descr">Roman Empire's deep state</span></a></li>
+				<li><a class="wikipage" href="#Christopher_Hitchens">Christopher Hitchens<span class="descr">[His mother] was of Jewish origin (Christopher and his brother were 1/32 ethnically Jewish), something Hitchens discovered when he was 38; he came to identify as a Jew.</span></a></li>
+				<li><a class="wikipage" href="#Libyan_Arab_Airlines_Flight_114">Libyan Arab Airlines Flight 114<span class="descr">every known shootdown of an airliner by a state actor has been, on the weight of the evidence, an accident (with the possible exception of Libyan Arab Airlines flight 114</span></a></li>
+				<li><a class="wikipage" href="#Richard_Sharp_(BBC_chairman)">Richard Sharp (BBC chairman)<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Tim_Collins_(politician)">Tim Collins (politician)<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Edward_Llewellyn,_Baron_Llewellyn_of_Steep">Edward Llewellyn, Baron Llewellyn of Steep<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Bell_Pottinger">Bell Pottinger<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Steve_Hilton">Steve Hilton<span class="descr">character assassination due to SARS2 "conspiracy theory"</span></a></li>
+				<li><a class="wikipage" href="#Judy_Shalom_Nir-Mozes">Judy Shalom Nir-Mozes<span class="descr">TODO: tagem "she joined Rakib and George Soros in investing a reported $500 million in a 4G mobile venture in Brazil's Sao Paulo state"</span></a></li>
+				<li><a class="wikipage" href="#William_C._Patrick_III">William C. Patrick III</a></li>
+				<li><a class="wikipage" href="#Friends_of_Europe">Friends of Europe<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Marietje_Schaake">Marietje Schaake<span class="descr">TODO: tagem; including note about "Publeaks" probably being canary/controlled/glowie thing for whistleblowers</span></a></li>
+				<li><a class="wikipage" href="#Observer_Research_Foundation">Observer Research Foundation<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#AmeriCorps">AmeriCorps<span class="descr">AmeriCorps programs have been criticized as being exploitive of their volunteers, being "voluntourism,"[49][19] and serving to privatize or de-professionalize public services</span></a></li>
+				<li><a class="wikipage" href="#USS_Stark">USS Stark</a></li>
+				<li><a class="wikipage" href="#Cyber_Safety_Review_Board">Cyber Safety Review Board<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Dmitri_Alperovitch">Dmitri Alperovitch<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#CapitalG">CapitalG<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#George_Kurtz">George Kurtz<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#CrowdStrike">CrowdStrike<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Magic_Lantern_(software)">Magic Lantern (software)<span class="descr">FBI keylogging software that anti-virus software companies kept backdoor for</span></a></li>
+				<li><a class="wikipage" href="#Internet_Storm_Center">Internet Storm Center<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#SANS_Institute">SANS Institute<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Johannes_Ullrich">Johannes Ullrich<span class="descr">TODO: tagem (also member of ThreatSTOP)</span></a></li>
+				<li><a class="wikipage" href="#Consolidated_Intelligence_Center">Consolidated Intelligence Center</a></li>
+				<li><a class="wikipage" href="#South_Ossetia">South Ossetia<span class="descr">separatism; Cause of the 2008 Russo-Georgian War</span></a></li>
+				<li><a class="wikipage" href="#The_Emperor's_New_Clothes">The Emperor's New Clothes<span class="descr">no one believes, but everyone believes that everyone else believes</span></a></li>
+				<li><a class="wikipage" href="#Whitewater_controversy">Whitewater controversy<span class="descr">Bill Clinton corruption</span></a></li>
+				<li><a class="wikipage" href="#Suicide_of_Vince_Foster">Suicide of Vince Foster<span class="descr">Bill Clinton?</span></a></li>
+				<li><a class="wikipage" href="#White_House_travel_office_controversy">White House travel office controversy<span class="descr">Bill Clinton corruption</span></a></li>
+				<li><a class="wikipage" href="#White_House_FBI_files_controversy">White House FBI files controversy<span class="descr">Bill Clinton corruption/dirty tricks</span></a></li>
+				<li><a class="wikipage" href="#Troopergate_(Bill_Clinton)">Troopergate (Bill Clinton)<span class="descr">Bill Clinton sexual liaisons</span></a></li>
+				<li><a class="wikipage" href="#Operation_Independence">Operation Independence<span class="descr">Argentina dirty war with some American support</span></a></li>
+				<li><a class="wikipage" href="#Zacarias_Moussaoui">Zacarias Moussaoui<span class="descr">9/11: '20th hijacker'; Oklahoma flight school</span></a></li>
+				<li><a class="wikipage" href="#House_of_Nahyan">House of Nahyan</a></li>
+				<li><a class="wikipage" href="#Judith_Miller">Judith Miller<span class="descr">partially or mostly used. TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#1993_cruise_missile_strikes_on_Iraq">1993 cruise missile strikes on Iraq</a></li>
+				<li><a class="wikipage" href="#Shmuly_Yanklowitz">Shmuly Yanklowitz<span class="descr">Syrian war; woke Rabbi: 'Rabbis Urge Pelosi To Allow Vote on Bill That Would Sanction Assad Regime'</span></a></li>
+				<li><a class="wikipage" href="#G_factor_(psychometrics)">G factor (psychometrics)<span class="descr">intelligence</span></a></li>
+				<li><a class="wikipage" href="#Syrian_Democratic_Forces">Syrian Democratic Forces<span class="descr">"YPG was carrying out an ethnic cleansing of non-Kurdish populations"; and child soldiers</span></a></li>
+				<li><a class="wikipage" href="#Polycystic_ovary_syndrome">Polycystic ovary syndrome</a></li>
+				<li><a class="wikipage" href="#Ziverbey_Villa">Ziverbey Villa<span class="descr">Gladio torture centre in Turkey, used after the 1971 coup</span></a></li>
+				<li><a class="wikipage" href="#Turkish_occupation_of_northern_Syria">Turkish occupation of northern Syria</a></li>
+				<li><a class="wikipage" href="#Special_Warfare_Department">Special Warfare Department</a></li>
+				<li><a class="wikipage" href="#Stepan_Bandera">Stepan Bandera</a></li>
+				<li><a class="wikipage" href="#Yaroslav_Stetsko">Yaroslav Stetsko<span class="descr">Ukrainian ultra-nationalist leader of the OUN-B (</span></a></li>
+				<li><a class="wikipage" href="#El_Al_Flight_1862">El Al Flight 1862</a></li>
+				<li><a class="wikipage" href="#2004_Haitian_coup_d'état">2004 Haitian coup d'état<span class="descr">mostly used; but can refer to American claims of "irregularities that occurred in the election"</span></a></li>
+				<li><a class="wikipage" href="#Case_of_Drąsius_Kedys">Case of Drąsius Kedys</a></li>
+				<li><a class="wikipage" href="#Bolivia">Bolivia<span class="descr">coups</span></a></li>
+				<li><a class="wikipage" href="#Pujo_Committee">Pujo Committee</a></li>
+				<li><a class="wikipage" href="#Phoumi_Nosavan">Phoumi Nosavan<span class="descr">Laos war + CIA coups</span></a></li>
+				<li><a class="wikipage" href="#John_Loftus_(military_author)">John Loftus (military author)<span class="descr">CIA-Nazi Belarus cooperation</span></a></li>
+				<li><a class="wikipage" href="#Dave_Emory">Dave Emory</a></li>
+				<li><a class="wikipage" href="#Chinese_police_overseas_service_stations">Chinese police overseas service stations</a></li>
+				<li><a class="wikipage" href="#History_Commons">History Commons</a></li>
+				<li><a class="wikipage" href="#Egyptian_Islamic_Jihad">Egyptian Islamic Jihad</a></li>
+				<li><a class="wikipage" href="#Mani_pulite">Mani pulite<span class="descr">Italy corruption scandal in the 1990s</span></a></li>
+				<li><a class="wikipage" href="#Ted_Gunderson">Ted Gunderson<span class="descr">former FBI conspiracy theorist (including Franklin coverup)</span></a></li>
+				<li><a class="wikipage" href="#Andrew_Card">Andrew Card<span class="descr">TODO: tagem</span></a></li>
+				<li><a class="wikipage" href="#Proactive,_Preemptive_Operations_Group">Proactive, Preemptive Operations Group</a></li>
+				<li><a class="wikipage" href="#Censorship_of_YouTube">Censorship of YouTube</a></li>
+				<li><a class="wikipage" href="#Fabrizio_Quattrocchi">Fabrizio Quattrocchi<span class="descr">relate to Nick Berg's beheading (Iraq 2004)</span></a></li>
+				<li><a class="wikipage" href="#Camp_Liberty">Camp Liberty<span class="descr">People's Mujahedin of Iran (MEK)</span></a></li>
+				<li><a class="wikipage" href="#2022_Brazilian_general_election">2022 Brazilian general election</a></li>
+				<li><a class="wikipage" href="#Self-coup">Self-coup</a></li>
+				<li><a class="wikipage" href="#1964_Brazilian_coup_d'état">1964 Brazilian coup d'état</a></li>
+				<li><a class="wikipage" href="#2016–2022_Yemen_cholera_outbreak">2016–2022 Yemen cholera outbreak</a></li>
+				<li><a class="wikipage" href="#2020–2021_Belarusian_protests">2020–2021 Belarusian protests</a></li>
+				<li><a class="wikipage" href="#Nugan_Hand_Bank">Nugan Hand Bank<span class="descr">death of its founder Frank Nugan in the early hours of 27 January 1980</span></a></li>
+				<li><a class="wikipage" href="#Joel_C._Rosenberg">Joel C. Rosenberg<span class="descr">half-Jewish Christian who insists Christians must support Israel</span></a></li>
+				<li><a class="wikipage" href="#Pierre-Henri_Bunel">Pierre-Henri Bunel<span class="descr">"The truth is, there is no Islamic army or terrorist group called Al Qaida. And any informed intelligence officer knows this. But there is a propaganda campaign to make the public believe in the presence of an identified entity representing the 'devil' only in order to drive the TV watcher to accept a unified international leadership for a war against terrorism. The country behind this propaganda is the US . . ." -- Pierre-Henri Bunel </span></a></li>
+				<li><a class="wikipage" href="#National_Islamic_Movement_of_Afghanistan">National Islamic Movement of Afghanistan</a></li>
+				<li><a class="wikipage" href="#Battle_of_Qala-i-Jangi">Battle of Qala-i-Jangi<span class="descr">uprising of enemy combatants/prisoners-of-war - deadliest event for America in the invasion of Afghan!!!</span></a></li>
+				<li><a class="wikipage" href="#Jaka_Bizilj">Jaka Bizilj<span class="descr">2014: Bizilj invited Pussy Riot to the Olympic Games in Sochi and introduced them to Hollywood and Washington. 2020: he airlifted Alexei Navalny to Berlin after he was poisoned. 2023: initiated in The Hague the case of aggression against Vladimir Putin. 2024: Cinema for Peace supports Israel's war on Gaza;;;;;;http://localhost:8080/cached/https://katehon.com/en/article/cognitive-breakdown-navalny-hoax-american-imperialism-and-media-censorship;;;;;;http://localhost:8080/cached/https://www.theblogmire.com/the-disappearing-spy/</span></a></li>
+				<li><a class="wikipage" href="#Johnny_Micheal_Spann">Johnny Micheal Spann</a></li>
+				<li><a class="wikipage" href="#Haroon_Rashid_Aswat">Haroon Rashid Aswat</a></li>
+				<li><a class="wikipage" href="#Saajid_Badat">Saajid Badat<span class="descr">al-Qaeda shoe bomber</span></a></li>
+				<li><a class="wikipage" href="#Sulaiman_Abu_Ghaith">Sulaiman Abu Ghaith<span class="descr">al-Qaeda shoe bomber</span></a></li>
+				<li><a class="wikipage" href="#Malaysia_Airlines_Flight_370">Malaysia Airlines Flight 370</a></li>
+				<li><a class="wikipage" href="#Abu_Mohammad_al-Adnani">Abu Mohammad al-Adnani<span class="descr">official spokesman for ISIS</span></a></li>
+				<li><a class="wikipage" href="#Sham_Legion">Sham Legion</a></li>
+				<li><a class="wikipage" href="#The_Road_to_Fallujah">The Road to Fallujah<span class="descr">footage of Fallujah during American siege/assault</span></a></li>
+				<li><a class="wikipage" href="#Thích_Quảng_Đức">Thích Quảng Đức<span class="descr">South Vietnamese buddhist monks self-immolated (America ignores - contrast to when Tibetan monks to)</span></a></li>
+				<li><a class="wikipage" href="#Hijra_(South_Asia)">Hijra (South Asia)</a></li>
+				<li><a class="wikipage" href="#Guided_democracy">Guided democracy</a></li>
+				<li><a class="wikipage" href="#Robert_Stethem">Robert Stethem<span class="descr">US Navy's "Underwater Construction Team One"; stationed in Diego Garcia and Guam</span></a></li>
+				<li><a class="wikipage" href="#Whole_language">Whole language<span class="descr">consensus is that whole-language-based methods of reading instruction (e.g., teaching children to use context cues to guess the meaning of a printed word) are not as effective as phonics-based approaches</span></a></li>
+				<li><a class="wikipage" href="#Amir_Taheri">Amir Taheri</a></li>
+				<li><a class="wikipage" href="#Shamir's_secret_sharing">Shamir's secret sharing</a></li></ul>
+			</ul>
+		</details>
+	</details>
+	<div id="wikipagecontent"></div>
+</body>
+</html>

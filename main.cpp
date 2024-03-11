@@ -20,6 +20,8 @@
 #include "typedefs.hpp"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include "/home/vangelic/repos/compsky/bin/wikipedia/src/extract-page.hpp"
+#include "/home/vangelic/repos/compsky/bin/wikipedia/src/get-byte-offset-of-page-given-title.hpp"
 
 static_assert(OPENSSL_VERSION_MAJOR == 3, "Minimum OpenSSL version not met: major");
 
@@ -33,7 +35,13 @@ std::vector<Server::ClientContext> all_client_contexts;
 std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 
 int packed_file_fd;
+int enwiki_fd;
+int enwiki_archiveindices_fd;
 char* server_buf;
+char* extra_buf_1;
+char* extra_buf_2;
+constexpr unsigned extra_buf_1__sz = 1024*1024*10; // arbitrary
+constexpr unsigned extra_buf_2__sz = 1024*1024*10;
 
 constexpr
 uint32_t uint32_value_of(const char(&s)[4]){
@@ -299,6 +307,7 @@ class HTTPResponseHandler {
 			}
 			
 			constexpr const char prefix1[4] = {'/','s','t','a'};
+			constexpr const char wiki_prefix[4] = {'w','0','0','/'};
 			if (reinterpret_cast<uint32_t*>(str)[1] == uint32_value_of(prefix1)){
 				// "GET /static/"
 #ifndef HASH2_IS_NONE
@@ -386,6 +395,112 @@ class HTTPResponseHandler {
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
 					return request_websocket_open(client_context, nullptr, headers, secret_path_values[user_indx].username_offset, secret_path_values[user_indx].username_len);
+				} else if (path_id == uint32_value_of(wiki_prefix)){
+					constexpr char wikipathprefix[9] = {'G','E','T',' ','/','w','0','0','/'};
+					char* const title_requested = str + constexprstrlen(wikipathprefix);
+					unsigned title_requested_len = 0;
+					while(true){
+						const char c = title_requested[title_requested_len];
+						if ((c == ' ') or (c == '\0'))
+							break;
+						if (c == '_')
+							title_requested[title_requested_len] = ' ';
+						++title_requested_len;
+					}
+					
+					if (title_requested_len > 255){
+						[[unlikely]]
+						return wiki_page_not_found;
+					}
+					
+					constexpr uint32_t* const all_citation_urls = nullptr;
+					constexpr bool is_wikipedia = true;
+					constexpr bool extract_as_html = false;
+					
+					constexpr std::string_view wikipage_headers1(
+						HEADER__RETURN_CODE__OK
+						"Connection: keep-alive\r\n"
+						"Content-Length: "
+					);
+					constexpr std::string_view wikipage_headers2("\r\n"
+						"Content-Security-Policy: default-src 'none'\r\n"
+						"Content-Type: text/plain; charset=UTF-8\r\n"
+						SECURITY_HEADERS_EXCLUDING_CSP
+						"\r\n"
+					);
+					constexpr unsigned space_for_headers = wikipage_headers1.size() + 19 + wikipage_headers2.size();
+					
+					const compsky_wiki_extractor::OffsetAndPageid offset_and_pageid(compsky_wiki_extractor::get_byte_offset_and_pageid_given_title(
+						enwiki_archiveindices_fd,
+						title_requested,
+						title_requested_len,
+						extra_buf_1,
+						extra_buf_1__sz,
+						extra_buf_2,
+						is_wikipedia
+					));
+					if (unlikely(offset_and_pageid.pageid == nullptr))
+						return wiki_page_not_found;
+					const std::string_view wikipage_html_contents(compsky_wiki_extractor::process_file(
+						extra_buf_1,
+						extra_buf_2,
+						extra_buf_1__sz,
+						extra_buf_2__sz,
+						enwiki_fd,
+						server_buf+space_for_headers,
+						offset_and_pageid.pageid,
+						offset_and_pageid.offset,
+						all_citation_urls,
+						extract_as_html
+					));
+					if (unlikely(wikipage_html_contents.data()[0] == '\0')){
+						return wiki_page_error;
+					}
+					
+					char* _start_of_this_page = const_cast<char*>(wikipage_html_contents.data());
+					{
+						while(true){
+							if (
+								(_start_of_this_page[0] == '<') and
+								(_start_of_this_page[1] == 't') and
+								(_start_of_this_page[2] == 'e') and
+								(_start_of_this_page[3] == 'x') and
+								(_start_of_this_page[4] == 't') and
+								(_start_of_this_page[5] == ' ')
+							)
+								break;
+							++_start_of_this_page;
+						}
+						_start_of_this_page += 6;
+						while(*_start_of_this_page != '>')
+							++_start_of_this_page;
+						++_start_of_this_page;
+					}
+					
+					unsigned html_sz = wikipage_html_contents.size() - compsky::utils::ptrdiff(_start_of_this_page, wikipage_html_contents.data());
+					if (
+						(_start_of_this_page[html_sz-7] == '<') and
+						(_start_of_this_page[html_sz-6] == '/') and
+						(_start_of_this_page[html_sz-5] == 't') and
+						(_start_of_this_page[html_sz-4] == 'e') and
+						(_start_of_this_page[html_sz-3] == 'x') and
+						(_start_of_this_page[html_sz-2] == 't') and
+						(_start_of_this_page[html_sz-1] == '>')
+					)
+						html_sz -= 7;
+					
+					const char* const html_end = _start_of_this_page + wikipage_html_contents.size();
+					
+					char* server_itr = _start_of_this_page - wikipage_headers2.size();
+					memcpy(server_itr, wikipage_headers2.data(), wikipage_headers2.size());
+					do {
+						--server_itr;
+						server_itr[0] = '0' + (html_sz % 10);
+						html_sz /= 10;
+					} while(html_sz != 0);
+					server_itr -= wikipage_headers1.size();
+					memcpy(server_itr, wikipage_headers1.data(), wikipage_headers1.size());
+					return std::string_view(server_itr, compsky::utils::ptrdiff(html_end,server_itr));
 				}
 				{
 					[[unlikely]]
@@ -425,14 +540,23 @@ int main(const int argc,  const char* argv[]){
 	}
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[1]);
 	
-	if (unlikely(packed_file_fd == -1)){
+	enwiki_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2", O_NOATIME|O_RDONLY|O_LARGEFILE);
+	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
+	
+	if (unlikely((packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
+		write(2, "Failed to open packed_file or enwiki\n", 38);
 		return 1;
 	}
 	
 	server_buf = reinterpret_cast<char*>(malloc(server_buf_sz));
-	if (unlikely(server_buf == nullptr)){
+	extra_buf_1 = reinterpret_cast<char*>(malloc(extra_buf_1__sz));
+	extra_buf_2 = reinterpret_cast<char*>(malloc(extra_buf_2__sz));
+	if (unlikely((server_buf == nullptr) or (extra_buf_1 == nullptr) or (extra_buf_2 == nullptr))){
+		write(2, "Cannot allocate memory for main buffers\n", 41);
 		return 1;
 	}
+	
+	compsky_wiki_extractor::pages_articles_multistream_index_txt_offsetted_gz__init();
 	
 	memcpy(
 		http_response__set_user_cookie,

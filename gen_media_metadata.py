@@ -344,13 +344,7 @@ for fileid in tagem_fileids:
 	i += 1
 tag2thumbnail = {(0 if (key==0) else tagem_tagids__ordered_keys__including_hidden_tagids.index(key)):val for key,val in tag2thumbnail.items()}
 for (name,description,filepaths) in (
-	("Porn","'Porn' (funny cat photos)",("/media/vangelic/DATA/media/img/funny/cat1.jpg",)),
-	("Dictator's Playlist","",(
-		"/media/vangelic/DATA/static-server-files/youtube-AQVp9GxRlv0.mono.ogg",
-		"/media/vangelic/DATA/static-server-files/4883707.mono.opus",
-		"/media/vangelic/DATA/static-server-files/4883708.mono.opus",
-		"/media/vangelic/DATA/static-server-files/4895491.concatted.opus", # Created with https://trac.ffmpeg.org/wiki/Concatenate (splitting out middle part)
-	)),
+	,
 ):
 	tagindx:int = None
 	thumb_str:str = 0
