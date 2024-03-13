@@ -9,6 +9,7 @@ import numpy as np
 from mimetype_utils import guess_mimetype, standardise_mimetype
 import hashlib
 import base64
+from html import escape as html_escape
 
 
 clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/libsmallesthashofpaths.so")
@@ -198,6 +199,60 @@ if __name__ == "__main__":
 	for path, path_id in zip(args.anti_inputs, anti_inputs):
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
+	diary_entries_old:list = []
+	prev_diary_ids:list = []
+	diaryidchars:str = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
+	def make_random_diary_page_id():
+		while True:
+			idstr:str = ""
+			for i in range(4):
+				idstr += random.choice(diaryidchars)
+			if idstr not in prev_diary_ids:
+				prev_diary_ids.append(idstr)
+				return idstr
+	diary_multiplier:int = 0
+	diary_shiftby:int = 0
+	diary_fname2idstr:dict = None
+	diary_fname2idstr_modified:bool = False
+	diary_mappedoutputs:list = None
+	with open("files/diary_entries_fname2idstr.json","rb") as f:
+		diary_fname2idstr, diary_multiplier, diary_shiftby, diary_mappedoutputs = json.load(f)
+	for fname in sorted(os.listdir("files/diary_entries")):
+		fp:str = f"files/diary_entries/{fname}"
+		if os.path.isfile(fp):
+			idstr:str = diary_fname2idstr.get(fname)
+			if idstr is None:
+				idstr = make_random_diary_page_id()
+				diary_fname2idstr[fname] = idstr
+				diary_fname2idstr_modified = True
+			diary_entries_old.append([None,idstr,None,fp])
+	if diary_fname2idstr_modified:
+		diary_shiftby = get_shiftby(len(diary_entries_old)) - 1
+		diary_pathids:list = [get_path_id(ls[1]) for ls in diary_entries_old]
+		diary_multiplier = finding_0xedc72f12(diary_pathids, diary_shiftby)
+		if diary_multiplier == 0:
+			raise ValueError("Cannot find suitable diary_multiplier")
+		diary_mappedoutputs = [((pathid*diary_multiplier)&0xffffffff)>>diary_shiftby for pathid in diary_pathids]
+		with open("files/diary_entries_fname2idstr.json","w") as f:
+			json.dump([diary_fname2idstr,diary_multiplier,diary_shiftby,diary_mappedoutputs], f)
+	for i in range(len(diary_entries_old)):
+		if i==0:
+			diary_entries_old[i][0] = diary_entries_old[i][1]
+		else:
+			diary_entries_old[i][0] = diary_entries_old[i-1][1]
+		if i==len(diary_entries_old)-1:
+			diary_entries_old[i][2] = diary_entries_old[i][1]
+		else:
+			diary_entries_old[i][2] = diary_entries_old[i+1][1]
+	diary_entries:list = []
+	for i in range(max(diary_mappedoutputs)+1):
+		indx:int = 0
+		try:
+			indx = diary_mappedoutputs.index(i)
+		except ValueError:
+			pass
+		diary_entries.append(diary_entries_old[indx])
+	# diary_entries = [diary_entries[((get_path_id(ls[1])*diary_multiplier)&0xffffffff)>>diary_shiftby] for ls in diary_entries]
 	if args.pack_files_to is not None:
 		import re
 		import magic
@@ -215,41 +270,68 @@ if __name__ == "__main__":
 		browser_cache_version_cstr:int = 0
 		with open("browser_cache_version.txt","r") as f:
 			browser_cache_version_cstr = str(int(f.read())).encode()
+		files_to_pack:list = []
+		for path, path_id, fp in sorteds:
+			files_to_pack.append((False,(path=="admi"),(path=="worl"),fp,""))
+		for prev_idstr, idstr, next_idstr, fp in diary_entries:
+			files_to_pack.append((True,False,False,fp,prev_idstr+"\n"+next_idstr+"\n"))
 		with open(args.pack_files_to, "wb") as fw:
-			for path, path_id, fp in sorteds:
+			realname2aliasname:dict = {}
+			for is_diary, dont_compress, is_rpill, fp, content_prefix in files_to_pack:
+				# dont_compress allows us to pretend it was produced automatically, not static pre-compressed content
+				
 				written_n_bytes:int = 0
-				contents:bytes = b""
+				contents:bytes = None
 				with open(fp, "rb") as fr:
 					contents = fr.read()
 				
-				mimetype:str = magic.from_buffer(contents, mime=True)
+				mimetype:str = None
+				if is_diary:
+					mimetype = "text/plain"
+					new_contents:bytes = b""
+					def fn(m):
+						realname:str = m.group(1)
+						try:
+							return realname2aliasname[realname]
+						except KeyError:
+							realname2aliasname[realname] = b"Person"+str(len(realname2aliasname)).encode()
+					
+					for line in contents.split(b"\n"):
+						if line == b"":
+							continue
+						elif line.startswith(b"// "):
+							continue
+						elif line.startswith(b"# "):
+							line = b"<h2>" + line + b"</h2>"
+						elif line.startswith(b"## "):
+							line = b"<h3>" + line + b"</h3>"
+						else:
+							line = b"<div class=\"diary_paragraph\">" + html_escape(line.decode()).encode() + b"</div>"
+						new_contents += line
+					contents = new_contents
+					contents = re.sub(b"(?:DATE|HIDDEN_NOTE)[(][^()]+[)]", b"", contents)
+					contents = re.sub(b"NAME[(]([^()]+)[)]", fn, contents)
+					contents = re.sub(b"FAKE_CONTENT[(]([^()]+)[)]", b"\\1", contents)
+					contents = re.sub(b"HIDE_LOCATION[(]([^()]+)[)]", b"HIDDEN_LOCATION", contents)
+					contents = re.sub(b"CENSOR[(]([^()]+)[)]", b"CENSORED", contents)
+					contents = re.sub(b"CENSOR[(][(][(]([^()]+)[)][)][)]", b"CENSORED", contents)
+					contents = content_prefix.encode() + contents
+				if mimetype is None:
+					mimetype = magic.from_buffer(contents, mime=True)
 				if mimetype == "application/gzip":
 					contents = zlib.decompress(contents, wbits=31)
 					mimetype = magic.from_buffer(contents, mime=True)
 				mimetype = standardise_mimetype(mimetype, fp)
 				
-				headers:str = (
-					"HTTP/1.1 200 OK\r\n"
-					"Cache-Control: max-age=2592000\r\n"
-					"Connection: keep-alive\r\n"
-					"Content-Type: " + mimetype + "\r\n"
-					"Referrer-Policy: no-referrer\r\n"
-					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
-					"X-Content-Type-Options: nosniff\r\n"
-					"X-Frame-Options: SAMEORIGIN\r\n"
-					"X-Permitted-Cross-Domain-Policies: none\r\n"
-					"X-XSS-Protection: 1; mode=block\r\n"
-				)
-				dont_compress:bool = (path=="admi") # Pretend it was produced automatically, not static pre-compressed content
+				csp_header:str = "default-src 'none'"
 				if mimetype == "text/html":
-					if path == "worl": # rpill
+					mimetype = "text/html; charset=utf-8"
+					if is_rpill:
 						csp:str = re.search(b'''content="(default-src 'none';[^"]+)"''', contents).group(0).decode()
 						if not csp.endswith(";"):
 							csp += ";"
-						headers += "content-security-policy: "+csp+"\r\n"
+						csp_header = ""+csp
 					else:
-						headers += "content-security-policy: default-src 'none'; connect-src 'self'; "
-						
 						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\">",b"<source type=\"\\1\" src=\"/static/\\2?v="+browser_cache_version_cstr+b"\">",contents)
 						contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
 						contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
@@ -257,16 +339,17 @@ if __name__ == "__main__":
 						contents = contents.replace(b"\t",b"")
 						contents = contents.replace(b"\n",b"")
 						
+						csp_header += "; "
 						if b"<style>" in contents:
-							headers += "style-src 'self' 'unsafe-inline'; "
+							csp_header += "style-src 'self' 'unsafe-inline'; "
 						else:
-							headers += "style-src 'self'; "
+							csp_header += "style-src 'self'; "
 						
 						# NOTE: Do not modify the contents after this, to avoid changing sha256 hashes
 						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
 							raise ValueError("Inline <script>")
 						elif b"<script src=\"" in contents:
-							headers += "script-src"
+							csp_header += "script-src"
 							associated_js:bytes = None
 							while True:
 								start_of_script_tag:int = contents.index(b"<script src=\"",0)
@@ -282,16 +365,19 @@ if __name__ == "__main__":
 								
 								sha256hash_as_b64:bytes = get_sha256_hash_in_b64_form(associated_js)
 								contents = contents[0:start_of_script_tag] + b"<script integrity=\"sha256-"+sha256hash_as_b64+b"\">" + associated_js + contents[end_of_script_tag:]
-								headers += " 'sha256-"+sha256hash_as_b64.decode()+"'"
+								csp_header += " 'sha256-"+sha256hash_as_b64.decode()+"'"
 								if b"<script src=\"" not in contents:
 									break
 							
 							if b"WebAssembly.instantiate" in associated_js:
-								headers += " 'wasm-unsafe-eval'"
+								csp_header += " 'wasm-unsafe-eval'"
 							
-							headers += "; "
+							if b"fetch(" in associated_js:
+								csp_header += "; connect-src 'self'"
+							
+							csp_header += "; "
 						
-						headers += "img-src 'self' data:; media-src 'self' data:;\r\n"
+						csp_header += "img-src 'self' data:; media-src 'self' data:"
 				if mimetype in ("text/css",):
 					contents = contents.replace(b"\t",b"")
 					contents = contents.replace(b"\n",b"")
@@ -301,13 +387,28 @@ if __name__ == "__main__":
 					contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
 					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
 				
+				content_encoding_part:str = ""
 				if not dont_compress:
 					contents_compressed:bytes = gzip_compress(contents)
 					if len(contents_compressed) < len(contents)+10:
 						contents = contents_compressed
-						headers += "content-encoding: gzip\r\n"
+						content_encoding_part = "Content-Encoding: gzip\r\n"
 				
-				headers += "content-length: " + str(len(contents)) + "\r\n"
+				headers:str = (
+					"HTTP/1.1 200 OK\r\n"
+					"Cache-Control: max-age=2592000\r\n"
+					"Connection: keep-alive\r\n"
+					"" + content_encoding_part + ""
+					"Content-Length: " + str(len(contents)) + "\r\n"
+					"Content-Security-Policy: " + csp_header + "\r\n"
+					"Content-Type: " + mimetype + "\r\n"
+					"Referrer-Policy: no-referrer\r\n"
+					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
+					"X-Content-Type-Options: nosniff\r\n"
+					"X-Frame-Options: SAMEORIGIN\r\n"
+					"X-Permitted-Cross-Domain-Policies: none\r\n"
+					"X-XSS-Protection: 1; mode=block\r\n"
+				)
 				
 				contents = headers.encode() + b"\r\n" + contents
 				content_len:int = len(contents)
@@ -336,6 +437,11 @@ if __name__ == "__main__":
 			f.write(f"constexpr unsigned HASH1_MULTIPLIER = {args.multiplier};\n")
 			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {max(inputs_mappedoutputs)+1};\n")
 			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
+			
+			f.write(f"constexpr unsigned HASH1_METADATAS__DIARY_OFFSET = {len(sorteds)*2};\n")
+			f.write(f"constexpr uint32_t DIARY_MULTIPLIER = {diary_multiplier};\n")
+			f.write(f"constexpr unsigned DIARY_LIST_LENGTH = {max(diary_mappedoutputs)+1};\n")
+			f.write(f"constexpr uint32_t DIARY_SHIFTBY = {diary_shiftby};\n")
 			
 			if len(inputs2) == 0:
 				f.write("#define HASH2_IS_NONE\n")

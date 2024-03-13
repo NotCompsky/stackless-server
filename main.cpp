@@ -308,6 +308,7 @@ class HTTPResponseHandler {
 			
 			constexpr const char prefix1[4] = {'/','s','t','a'};
 			constexpr const char wiki_prefix[4] = {'w','0','0','/'};
+			constexpr const char diaryprefix[4] = {'d','0','0','/'};
 			if (reinterpret_cast<uint32_t*>(str)[1] == uint32_value_of(prefix1)){
 				// "GET /static/"
 #ifndef HASH2_IS_NONE
@@ -501,6 +502,21 @@ class HTTPResponseHandler {
 					server_itr -= wikipage_headers1.size();
 					memcpy(server_itr, wikipage_headers1.data(), wikipage_headers1.size());
 					return std::string_view(server_itr, compsky::utils::ptrdiff(html_end,server_itr));
+				} else if (path_id == uint32_value_of(diaryprefix)){
+					// "GET /d00/"<IDSTR>
+					const uint32_t diary_idstr = reinterpret_cast<uint32_t*>(str+9)[0];
+					const uint32_t diary_indx = ((diary_idstr * DIARY_MULTIPLIER) & 0xffffffff) >> DIARY_SHIFTBY;
+					
+					if (diary_indx < DIARY_LIST_LENGTH){
+						[[likely]];
+						const ssize_t offset = HASH1_METADATAS[HASH1_METADATAS__DIARY_OFFSET + 2*diary_indx+0];
+						const ssize_t fsize  = HASH1_METADATAS[HASH1_METADATAS__DIARY_OFFSET + 2*diary_indx+1];
+						
+						if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
+							const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
+							return std::string_view(server_buf, n_bytes_written);
+						}
+					}
 				}
 				{
 					[[unlikely]]
