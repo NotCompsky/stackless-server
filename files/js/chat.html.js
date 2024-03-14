@@ -220,9 +220,13 @@ function ws__send(msg, is_cmd){
 		hideerr();
 	}
 }
+const text_encoder = new TextEncoder();
 function send_onClick(){
 	const msg = sendMessage.value;
-	if (!ws__isConnectedOrConnecting()){
+	if (text_encoder.encode(msg).length > 900){
+		showerr("Message too long (maximum length of 900 bytes)");
+		// This is because a message longer than ~1024 bytes will be split into two messages, each probably being rejected due to mis-matched data_sz values
+	} else if (!ws__isConnectedOrConnecting()){
 		ws_onOpen_fn = send_onClick;
 		ws_connectToServer();
 	} else if (msg === ""){
