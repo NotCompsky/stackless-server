@@ -4,6 +4,7 @@ function on_media_error(obj){
 }
 
 var ws = null;
+const global_version = MACRO__GLOBAL_VERSION;
 const cmd_regexes = [
 	/^PAUSE$/,
 	/^(PLAY|PAUSE)(.*)@([0-9]+(?:[.][0-9]+)?)@([0-9]+(?:[.][0-9]+)?)$/,
@@ -292,7 +293,6 @@ function standardise_thumbnail_url(url){
 }
 
 getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
-	const global_version = MACRO__GLOBAL_VERSION;
 	const [tags,files,tag2thumbnail,_] = JSON.parse(datastr);
 	let s = "";
 	for (let [tagid, tagname] of Object.entries(tags)){
