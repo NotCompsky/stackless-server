@@ -63,16 +63,17 @@ class NonHTTPRequestHandler {
 		
 		// See the structure:  http://localhost:8080/cached/https://miro.medium.com/max/640/1%2ApGpSbWldRuvMV-dqZlPJ7g.webp
 		const bool is_final_msg_fragment = data[0] & 0x80;
-		if (unlikely(not is_final_msg_fragment))
+		if (unlikely(not is_final_msg_fragment)){
 			// TODO: Not implemented yet
+			client_context->n_bytes_read = 0;
 			return 0;
+		}
 		
 		// const bool is_rsv1 = data[0] & 0x40; // ignored; should be set to 0 by sender
 		// const bool is_rsv2 = data[0] & 0x20;
 		// const bool is_rsv3 = data[0] & 0x10;
 		const uint8_t opcode = data[0] & 0x0F; // 4 bits; indicates type of data (e.g. text, binary, control)
 		const bool is_masked = data[1] & 0x80;
-		data[1] &= 0x7f; // set is_masked bit to false, ready for response
 		uint64_t payload_length = data[1] & 0x7F;
 		int offset = 2;
 		if (payload_length == 126){
@@ -89,8 +90,15 @@ class NonHTTPRequestHandler {
 		
 		if (data_sz != offset + 4*is_masked + payload_length){
 			printf("data_sz %lu  !=  %lu (%u + %u + %u)\n", data_sz, (uint64_t)(offset + 4*is_masked + payload_length), (unsigned)offset, (unsigned)(4*is_masked), (unsigned)payload_length);
+			if (data_sz > offset + 4*is_masked + payload_length){
+				// TODO: Process case where it has read two consecutive payloads
+				client_context->n_bytes_read = 0;
+				return 0;
+			}
 			return 0;
 		}
+		
+		data[1] &= 0x7f; // set is_masked bit to false, ready for response
 		
 		uint32_t masking_key;
 		uint32_t* payload_view;
@@ -115,6 +123,7 @@ class NonHTTPRequestHandler {
 			unsigned offset = 2;
 			if (new_payload_length__plus_username > (1 << 16)){
 				// TODO: Not implemented yet (needs hton64)
+				client_context->n_bytes_read = 0;
 				return 0;
 			} else if (new_payload_length__plus_username >= 126){
 				response_buf[1] = 126;
@@ -129,6 +138,8 @@ class NonHTTPRequestHandler {
 			response_buf[offset+1] = ' ';
 			offset += 2;
 			memcpy(response_buf+offset, payload, new_payload_length);
+			
+			client_context->n_bytes_read = 0;
 			return offset + new_payload_length;
 		}
 	}
@@ -160,7 +171,6 @@ class NonHTTPRequestHandler {
 			decoded_msg_sz = decode_incoming_websocket_frame(client_context, request_content, request_size, meta->username_offset, meta->username_len);
 		}
 		if (decoded_msg_sz != 0){
-			[[likely]]
 			*broadcast_to_client_ids = &websocket_client_ids;
 			return std::string_view(response_buf, decoded_msg_sz);
 		} else {

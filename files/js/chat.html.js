@@ -35,7 +35,7 @@ const cmd_fns     = [
 		view_video_core(match[1]);
 	},
 	function(match){
-		showMessage(`[Not implemented: Watching youtube ID ${match[0]}]\n`);
+		showMessage_raw(`[Not implemented: Watching youtube ID ${match[0]}]`);
 	},
 ];
 function everyone_view_video(relative_path){
@@ -139,8 +139,82 @@ function view_video_core(relative_path){
 	view_container.classList.remove("display-none");
 	//document.getElementById("view_video").addEventListener("timeupdate", $$$media_location_update); // TODO: Check if other people have desynced significantly
 }
+function showMessage_raw(msg){
+	const container = document.createElement("pre");
+	container.innerText = msg;
+	messages.appendChild(container);
+	messages.scrollTop = messages.scrollHeight - messages.clientHeight;
+}
+function showMessage_tmp(msg){
+	const container = document.createElement("pre");
+	container.innerText = msg;
+	container.classList.add("chat_tmpmsg");
+	messages.appendChild(container);
+	messages.scrollTop = messages.scrollHeight - messages.clientHeight;
+}
 function showMessage(msg){
-	messages.innerText += msg;
+	for (let node of Array.from(document.getElementsByClassName("chat_tmpmsg"))){
+		node.remove();
+	}
+	
+	const username_length = msg.indexOf(": ");
+	
+	const container = document.createElement("div");
+	
+	const username = document.createElement("span");
+	username.innerText = msg.substr(0, username_length+2);
+	username.classList.add("chat_username");
+	
+	const prefixtxt = document.createElement("span");
+	
+	container.appendChild(username);
+	container.appendChild(prefixtxt);
+	
+	msg = msg.substr(username_length+2);
+	
+	if (msg.length < 200){
+		prefixtxt.innerText = msg;
+	} else {
+		const longtext = document.createElement("div");
+		longtext.innerText = msg;
+		longtext.classList.add("display-none");
+		
+		prefixtxt.innerText = "Long message";
+		
+		const preview = document.createElement("span");
+		preview.innerText = msg.substr(0,100) + "..." + msg.substr(msg.length-100);
+		
+		const togglebtn = document.createElement("button");
+		togglebtn.innerText = "VIEW/HIDE";
+		togglebtn.addEventListener("pointerup", ()=>{
+			longtext.classList.toggle("display-none");
+			preview.classList.toggle("display-none");
+		});
+		
+		const downloadbtn = document.createElement("button");
+		downloadbtn.innerText = "Prepare download";
+		downloadbtn.addEventListener("pointerup", ()=>{
+			const blob = new Blob([text_encoder.encode(msg)], {type:"application/octet-stream"});
+			const bloburl = URL.createObjectURL(blob);
+			
+			const link = document.createElement("a");
+			link.href = bloburl;
+			link.download = "download";
+			link.innerText = "Download";
+			/*link.addEventListener("pointerup", ()=>{
+				URL.revokeObjectURL(bloburl); // frees memory
+				link.remove();
+			}); wont download if this is included */
+			container.insertBefore(link, preview);
+		});
+		
+		container.appendChild(togglebtn);
+		container.appendChild(downloadbtn);
+		container.appendChild(preview);
+		container.appendChild(longtext);
+	}
+	
+	messages.appendChild(container);
 	messages.scrollTop = messages.scrollHeight - messages.clientHeight;
 };
 var ws_onOpen_fn = null;
@@ -149,14 +223,14 @@ function ws_onOpen(){
 		ws.send(password);
 		console.log("Attempting to log in with password: "+password);
 	});*/
-	showMessage("[Connection opened]\n");
+	showMessage_raw("[Connection opened]");
 	if (ws_onOpen_fn !== null){
 		ws_onOpen_fn();
 		ws_onOpen_fn = null;
 	}
 }
 function ws_onClose(){
-	showMessage("[Connection closed - probably timed out]\n");
+	showMessage_raw("[Connection closed - probably timed out]");
 }
 function ws_onMsg(ev){
 	let fullmsg = ev.data;
@@ -175,7 +249,7 @@ function ws_onMsg(ev){
 		}
 	}
 	if (m === null)
-		showMessage(fullmsg+"\n");
+		showMessage(fullmsg);
 }
 function ws_onErr(ev){
 	showerr(`Cannot connect to server - please wait 10 seconds then try again, or contact administrator`);
@@ -207,7 +281,7 @@ function showerr(msg){
 function ws__send(msg, is_cmd){
 	switch(msg){
 		case "HELP":
-			showMessage("* HELP: Shows a list of commands\n* SEE https://youtu.be/videoID: Watch a youtube video\n");
+			showMessage_tmp("* HELP: Shows a list of commands\n* SEE https://youtu.be/videoID: Watch a youtube video");
 			msg = null;
 			break;
 		default:
@@ -216,16 +290,15 @@ function ws__send(msg, is_cmd){
 	if ((msg !== null) && (ws__isConnected())){
 		ws.send(msg);
 		if (!is_cmd)
-			showMessage("[Sending message: "+msg+"]\n");
+			showMessage_tmp("Sending: "+msg);
 		hideerr();
 	}
 }
 const text_encoder = new TextEncoder();
 function send_onClick(){
 	const msg = sendMessage.value;
-	if (text_encoder.encode(msg).length > 900){
-		showerr("Message too long (maximum length of 900 bytes)");
-		// This is because a message longer than ~1024 bytes will be split into two messages, each probably being rejected due to mis-matched data_sz values
+	if (text_encoder.encode(msg).length > 12000){
+		showerr("Your message is too long. Keep it below 12KB.");
 	} else if (!ws__isConnectedOrConnecting()){
 		ws_onOpen_fn = send_onClick;
 		ws_connectToServer();
@@ -288,7 +361,7 @@ showsiblingmenubtn.addEventListener("pointerdown", function(){
 	showsiblingmenubtn.nextElementSibling.classList.toggle("display-none");
 });
 
-showMessage("[Type HELP to show a list of commands]\n");
+showMessage_raw("[Type HELP to show a list of commands]");
 
 function standardise_thumbnail_url(url){
 	if (url.startsWith("data:"))
