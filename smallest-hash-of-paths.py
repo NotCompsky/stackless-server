@@ -342,8 +342,10 @@ if __name__ == "__main__":
 						csp_header += "; "
 						if b"<style>" in contents:
 							csp_header += "style-src 'self' 'unsafe-inline'; "
-						else:
+						elif b"<link rel=\"stylesheet" in contents:
 							csp_header += "style-src 'self'; "
+						
+						REQUIRES_CSP__MEDIA_SRC_BLOB:bool = False
 						
 						# NOTE: Do not modify the contents after this, to avoid changing sha256 hashes
 						if b"<script>" in contents: # NOTE: Does not account for sha256 attribute
@@ -363,6 +365,8 @@ if __name__ == "__main__":
 								associated_js = associated_js.replace(b"MACRO__ALL_FILES_JSON_PATH",b"/all_files.json?v="+browser_cache_version_cstr)
 								associated_js = associated_js.replace(b"MACRO__GLOBAL_VERSION",browser_cache_version_cstr)
 								
+								REQUIRES_CSP__MEDIA_SRC_BLOB = (b"REQUIRES_CSP__MEDIA_SRC_BLOB" in associated_js)
+								
 								sha256hash_as_b64:bytes = get_sha256_hash_in_b64_form(associated_js)
 								contents = contents[0:start_of_script_tag] + b"<script integrity=\"sha256-"+sha256hash_as_b64+b"\">" + associated_js + contents[end_of_script_tag:]
 								csp_header += " 'sha256-"+sha256hash_as_b64.decode()+"'"
@@ -378,6 +382,8 @@ if __name__ == "__main__":
 							csp_header += "; "
 						
 						csp_header += "img-src 'self' data:; media-src 'self' data:"
+						if REQUIRES_CSP__MEDIA_SRC_BLOB:
+							csp_header += " blob:"
 				if mimetype in ("text/css",):
 					contents = contents.replace(b"\t",b"")
 					contents = contents.replace(b"\n",b"")
