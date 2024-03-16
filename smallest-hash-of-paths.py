@@ -20,12 +20,16 @@ c_finding_0xedc72f12_w_avoids = clib.finding_0xedc72f12_w_avoids
 c_finding_0xedc72f12_w_avoids.argtypes = [ctypes.POINTER(ctypes.c_uint), ctypes.POINTER(ctypes.c_uint), ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 c_finding_0xedc72f12_w_avoids.restype = ctypes.c_uint
 
+def dblqt(s:str):
+	return s.replace('\\','\\\\').replace('"','\\"')
+
 def unretarded_b64_encode(b:bytes):
 	return base64.encodebytes(b).replace(b"\n",b"")
 
 def get_sha256_hash_in_b64_form(contents:bytes):
 	return unretarded_b64_encode(hashlib.sha256(contents).digest())
 
+'''
 def str2cliststr(s:str):
 	r:str = "{"
 	for c in s:
@@ -33,6 +37,7 @@ def str2cliststr(s:str):
 			c = "\\" + c
 		r += "'" + c + "',"
 	return r[:-1] + "}"
+'''
 
 def gzip_compress(contents:bytes):
 	CO = zlib.compressobj(level=9, wbits=31)
@@ -456,7 +461,7 @@ if __name__ == "__main__":
 				f.write(f"constexpr uint32_t HASH2_MULTIPLIER = {args.multiplier2};\n")
 				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {max(inputs2_mappedoutputs)+1};\n")
 				f.write("""struct HASH2_indx2metadata_item {
-	const char fileid[4];
+	const char* const filepath;
 	const char* const mimetype;
 	const size_t fsz;
 };\n""")
@@ -467,10 +472,10 @@ if __name__ == "__main__":
 						indx = inputs2_mappedoutputs.index(i)
 					except ValueError:
 						pass
-					fname:str = dir2_indx2fname[indx]
+					fpath:str = args.dir2 + "/" + dir2_indx2fname[indx]
 					mimetype:str = dir2_indx2mimetype[indx]
 					fsz:int = dir2_indx2fsz[indx]
-					s += f",{{{str2cliststr(fname)}, {json.dumps(mimetype)}, {fsz}}}"
+					s += f",{{\"{dblqt(os.path.realpath(fpath))}\", {json.dumps(mimetype)}, {fsz}}}"
 				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{max(inputs2_mappedoutputs)+1}] = {{{s[1:]}}};\n")
 			
 			for i, antiinput_val in enumerate(anti_inputs):
