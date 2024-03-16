@@ -440,7 +440,7 @@ if __name__ == "__main__":
 		with open(args.write_hpp,"w") as f:
 			f.write(f"#define HASH1_FILEPATH {json.dumps(args.pack_files_to)}\n")
 			f.write(f"constexpr unsigned HASH1_shiftby = {shiftby1};\n")
-			f.write(f"constexpr unsigned HASH1_MULTIPLIER = {args.multiplier};\n")
+			f.write(f"constexpr uint32_t HASH1_MULTIPLIER = {args.multiplier};\n")
 			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {max(inputs_mappedoutputs)+1};\n")
 			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
 			
@@ -453,7 +453,7 @@ if __name__ == "__main__":
 				f.write("#define HASH2_IS_NONE\n")
 			else:
 				f.write(f"constexpr unsigned HASH2_shiftby = {shiftby2};\n")
-				f.write(f"constexpr unsigned HASH2_MULTIPLIER = {args.multiplier2};\n")
+				f.write(f"constexpr uint32_t HASH2_MULTIPLIER = {args.multiplier2};\n")
 				f.write(f"constexpr unsigned HASH2_LIST_LENGTH = {max(inputs2_mappedoutputs)+1};\n")
 				f.write("""struct HASH2_indx2metadata_item {
 	const char fileid[4];
