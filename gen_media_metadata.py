@@ -7,8 +7,11 @@ import json
 import magic
 import base64
 import os
-from mimetype_utils import guess_mimetype, standardise_mimetype
+import mimetype_utils
 import re
+
+
+mimetype_utils.load_cached_mimetypes("cached_mimetypes.json")
 
 
 subtitle_langs:tuple = ("en","de")
@@ -330,8 +333,8 @@ for fileid in tagem_fileids:
 			raise ValueError(f"ERROR: mimetype is {mimetype} for {thumb_fp}")
 		thumb_str = "data:"+mimetype+";base64,"+base64.encodebytes(contents).replace(b"\n",b"").decode()
 	
-	file_mimetype:str = guess_mimetype(fp)
-	file_mimetype = standardise_mimetype(file_mimetype, fp)
+	file_mimetype:str = mimetype_utils.guess_mimetype(fp)
+	file_mimetype = mimetype_utils.standardise_mimetype(file_mimetype, fp)
 	
 	filtered_tagids:list = [x for x in tagids]
 	for a,b in remove_a_if_already_tagged_b:
@@ -370,8 +373,8 @@ for (name,description,filepaths) in (
 		tagindx = len(tagem_tagids__as_indices)
 		tagem_tagids__as_indices.append(name)
 	for fp in filepaths:
-		file_mimetype:str = guess_mimetype(fp)
-		file_mimetype = standardise_mimetype(file_mimetype, fp)
+		file_mimetype:str = mimetype_utils.guess_mimetype(fp)
+		file_mimetype = mimetype_utils.standardise_mimetype(file_mimetype, fp)
 		subtitles:list = []
 		fileid2associatedtags.append([i,thumb_str,[tagindx],file_mimetype,subtitles])
 		set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
@@ -430,3 +433,5 @@ if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev
 	with open("profile.largefiles.apparmor","w") as f:
 		for fp in all_filepaths_added_to_server:
 			f.write(f'"{escstr(fp)}" r,\n')
+
+mimetype_utils.save_cached_mimetypes("cached_mimetypes.json")

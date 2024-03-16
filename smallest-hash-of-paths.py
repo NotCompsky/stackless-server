@@ -6,10 +6,13 @@ import zlib
 from struct import unpack
 import ctypes
 import numpy as np
-from mimetype_utils import guess_mimetype, standardise_mimetype
+import mimetype_utils
 import hashlib
 import base64
 from html import escape as html_escape
+
+
+mimetype_utils.load_cached_mimetypes("cached_mimetypes.json")
 
 
 clib = ctypes.CDLL("/home/vangelic/repos/compsky/static-and-chat-server/libsmallesthashofpaths.so")
@@ -300,8 +303,8 @@ if __name__ == "__main__":
 		dir2_indx2fsz:list = []
 		for fname in dir2_indx2fname:
 			fp = args.dir2 + "/" + fname
-			mimetype:str = guess_mimetype(fp)
-			mimetype = standardise_mimetype(mimetype, fp)
+			mimetype:str = mimetype_utils.guess_mimetype(fp)
+			mimetype = mimetype_utils.standardise_mimetype(mimetype, fp)
 			dir2_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
 			dir2_indx2fsz.append(stat.st_size)
@@ -359,7 +362,7 @@ if __name__ == "__main__":
 				if mimetype == "application/gzip":
 					contents = zlib.decompress(contents, wbits=31)
 					mimetype = magic.from_buffer(contents, mime=True)
-				mimetype = standardise_mimetype(mimetype, fp)
+				mimetype = mimetype_utils.standardise_mimetype(mimetype, fp)
 				
 				csp_header:str = "default-src 'none'"
 				if mimetype == "text/html":
@@ -518,3 +521,5 @@ if __name__ == "__main__":
 		with open("files/all_large_files.txt","w") as f:
 			for fname in dir2_indx2fname:
 				f.write(args.dir2 + "/" + fname + "\n")
+	
+	mimetype_utils.save_cached_mimetypes("cached_mimetypes.json")

@@ -1,14 +1,36 @@
 import os
 import magic
+import json
 from pymediainfo import MediaInfo
 
+
+cached_mimetypes:dict = {}
+cached_mimetypes_modified:bool = False
+
+
+def load_cached_mimetypes(cache_fp:str):
+	if os.path.exists(cache_fp):
+		with open(cache_fp,"r") as f:
+			cached_mimetypes = json.load(f)
+
+def save_cached_mimetypes(cache_fp:str):
+	with open(cache_fp,"w") as f:
+		json.dump(cached_mimetypes, f)
 
 # Compression tips
 # AtomicParsley /path/to.mp4 --artwork file.jpg/file.png
 
 
 def guess_mimetype(fp:str):
+	global cached_mimetypes_modified
+	
 	realfp:str = os.path.realpath(fp)
+	last_modified:int = os.stat(fp).st_mtime
+	
+	cached_mimetype, cached_mtime = cached_mimetypes.get(fp,[None,0])
+	if cached_mtime == last_modified:
+		return cached_mimetype
+	
 	realfp_lower:str = realfp.lower()
 	mimetype:str = None
 	for (_endwith,_mimetype) in (
@@ -56,6 +78,8 @@ def guess_mimetype(fp:str):
 		mimetype = "video/webm"
 	if forced_to_guess:
 		print(f"Forced to guess mimetype for file: {realfp} ?=? {mimetype}")
+	cached_mimetypes[fp] = [mimetype, last_modified]
+	cached_mimetypes_modified = True
 	return mimetype
 
 
