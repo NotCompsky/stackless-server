@@ -7,7 +7,7 @@ import json
 import magic
 import base64
 import os
-from mimetype_utils import guess_mimetype
+from mimetype_utils import guess_mimetype, standardise_mimetype
 import re
 
 
@@ -318,6 +318,7 @@ for fileid in tagem_fileids:
 		thumb_str = "data:"+mimetype+";base64,"+base64.encodebytes(contents).replace(b"\n",b"").decode()
 	
 	file_mimetype:str = guess_mimetype(fp)
+	file_mimetype = standardise_mimetype(file_mimetype, fp)
 	
 	filtered_tagids:list = [x for x in tagids]
 	for a,b in remove_a_if_already_tagged_b:
@@ -357,6 +358,7 @@ for (name,description,filepaths) in (
 		tagem_tagids__as_indices.append(name)
 	for fp in filepaths:
 		file_mimetype:str = guess_mimetype(fp)
+		file_mimetype = standardise_mimetype(file_mimetype, fp)
 		subtitles:list = []
 		fileid2associatedtags.append([i,thumb_str,[tagindx],file_mimetype,subtitles])
 		set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)

@@ -301,6 +301,7 @@ if __name__ == "__main__":
 		for fname in dir2_indx2fname:
 			fp = args.dir2 + "/" + fname
 			mimetype:str = guess_mimetype(fp)
+			mimetype = standardise_mimetype(mimetype, fp)
 			dir2_indx2mimetype.append(mimetype)
 			stat = os.stat(fp)
 			dir2_indx2fsz.append(stat.st_size)
