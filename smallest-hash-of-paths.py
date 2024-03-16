@@ -515,3 +515,6 @@ if __name__ == "__main__":
 				f.write(f"constexpr uint32_t HASH_ANTIINPUT_{i} = {antiinput_val};\n")
 			
 			f.write(f"constexpr unsigned HASH1_max_file_and_header_sz = {max_file_and_header_sz};\n")
+		with open("files/all_large_files.txt","w") as f:
+			for fname in dir2_indx2fname:
+				f.write(args.dir2 + "/" + fname + "\n")

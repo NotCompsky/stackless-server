@@ -1,0 +1,64 @@
+# vim:syntax=apparmor
+# AppArmor policy for certspotter
+# ###AUTHOR###
+# ###COPYRIGHT###
+# ###COMMENT###
+
+#include <tunables/global>
+
+"/home/vangelic/repos/compsky/static-and-chat-server/server" {
+  # Raw Socket Permissions for 'keep alive'
+  network tcp,
+
+  # Capability Permissions for TCP protocol
+  capability net_bind_service,
+  capability net_raw,
+  
+  # TODO: Need `capability net_bind_service` to bind to 80 and 443?
+  
+  # libs
+  /lib/x86_64-linux-gnu/libcrypto.so.3 mr,
+  /lib/x86_64-linux-gnu/libssl.so.3 mr,
+  /lib/x86_64-linux-gnu/libstdc++.so.6 mr,
+  /lib/x86_64-linux-gnu/libstdc++.so.6.0.30 mr,
+  /lib/x86_64-linux-gnu/libm.so.6 mr,
+  /lib/x86_64-linux-gnu/libgcc_s.so.1 mr,
+  /lib/x86_64-linux-gnu/libc.so.6 mr,
+  /lib64/ld-linux-x86-64.so.2 mr,
+  /lib/x86_64-linux-gnu/libssl.so.3 mr,
+  /usr/local/lib/libbz2.so.1 mr,
+  /usr/local/lib/libbz2.so.1.0.9 mr,
+  /lib/x86_64-linux-gnu/libz.so.1 mr,
+  /lib/x86_64-linux-gnu/libz.so.1.2.11 mr,
+  # libs
+  /usr/lib/x86_64-linux-gnu/libcrypto.so.3 mr,
+  /usr/lib/x86_64-linux-gnu/libssl.so.3 mr,
+  /usr/lib/x86_64-linux-gnu/libstdc++.so.6 mr,
+  /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30 mr,
+  /usr/lib/x86_64-linux-gnu/libm.so.6 mr,
+  /usr/lib/x86_64-linux-gnu/libgcc_s.so.1 mr,
+  /usr/lib/x86_64-linux-gnu/libc.so.6 mr,
+  /usr/lib64/ld-linux-x86-64.so.2 mr,
+  /usr/lib/x86_64-linux-gnu/libssl.so.3 mr,
+  /usr/lib/x86_64-linux-gnu/libz.so.1 mr,
+  /usr/lib/x86_64-linux-gnu/libz.so.1.2.11 mr,
+  # libs
+  /etc/ld.so.cache r,
+  
+  # TLS
+  #  certs
+  /home/vangelic/repos/compsky/static-and-chat-server/server.crt r,
+  /home/vangelic/repos/compsky/static-and-chat-server/server.csr r,
+  /home/vangelic/repos/compsky/static-and-chat-server/server.key r,
+  #  openssl config
+  #   (TODO: didnt seem to cause server to not work without them!) but probably good to have:
+  /etc/ssl/openssl.cnf r,
+  
+  
+  #include "profile.largefiles.apparmor"
+  "/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2" r,
+  "/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz" r,
+  /home/vangelic/repos/compsky/static-and-chat-server/secret_file_paths.txt r,
+  /media/vangelic/DATA/tmp/static_webserver.pack r,
+  # TODO /path/to/logfile w,
+}
