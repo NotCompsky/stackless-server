@@ -47,19 +47,47 @@ def get_int_array_from_numpy_array(array):
 	contig_array = np.ascontiguousarray(array, dtype=np.uint32)
 	return contig_array.ctypes.data_as(ctypes.POINTER(ctypes.c_uint))
 
-def finding_0xedc72f12(inputs:list, shiftby:int):
-	return c_finding_0xedc72f12(
+def maybe_get_cached(cached_fp:str, inputs_sorted:list):
+	if os.path.exists(cached_fp):
+		cached_result:int = None
+		cached_inputs:list = None
+		with open(cached_fp,"r") as f:
+			cached_result, cached_inputs = json.load(f)
+		if len(cached_inputs) == len(inputs_sorted):
+			matched:bool = True
+			for i in range(len(inputs_sorted)):
+				matched &= (inputs_sorted[i] == cached_inputs[i])
+			if matched:
+				return cached_result
+	return 0
+
+def finding_0xedc72f12(idstr:str, inputs:list, shiftby:int):
+	cached_fp:str = f"finding_0xedc72f12.{idstr}.json"
+	inputs_sorted:list = sorted(inputs)
+	result:int = maybe_get_cached(cached_fp, inputs_sorted)
+	if result != 0:
+		return result
+	result = c_finding_0xedc72f12(
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		len(inputs),
 		shiftby,
 		100000000
 	)
+	if result != 0:
+		with open(cached_fp,"w") as f:
+			json.dump([result, inputs_sorted],  f)
+	return result
 
-def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
+def finding_0xedc72f12_w_avoids(idstr:str, inputs:list, anti_inputs:list, shiftby:int):
+	cached_fp:str = f"finding_0xedc72f12_w_avoids.{idstr}.json"
+	inputs_sorted:list = sorted(inputs) + [None] + sorted(anti_inputs)
+	result:int = maybe_get_cached(cached_fp, inputs_sorted)
+	if result != 0:
+		return result
 	for x in anti_inputs:
 		if x in inputs:
 			raise ValueError(f"{x} in both `inputs` and `anti_inputs`")
-	return c_finding_0xedc72f12_w_avoids(
+	result = c_finding_0xedc72f12_w_avoids(
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		get_int_array_from_numpy_array(np.array(anti_inputs, dtype=np.uint32)),
 		len(inputs),
@@ -67,6 +95,10 @@ def finding_0xedc72f12_w_avoids(inputs:list, anti_inputs:list, shiftby:int):
 		shiftby,
 		100000000
 	)
+	if result != 0:
+		with open(cached_fp,"w") as f:
+			json.dump([result, inputs_sorted],  f)
+	return result
 
 def get_path_id(path:str):
 	b:bytes = path.encode()
@@ -166,7 +198,7 @@ if __name__ == "__main__":
 	shiftby2:int = get_shiftby(len(inputs2)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	if len(inputs2) != 0:
 		if args.multiplier2 == 0:
-			args.multiplier2 = finding_0xedc72f12(inputs2, shiftby2)
+			args.multiplier2 = finding_0xedc72f12("multiplier2", inputs2, shiftby2)
 			if args.multiplier2 == 0:
 				raise ValueError(f"Failed to find suitable multiplier2 for {len(inputs2)} inputs2, {shiftby2} shiftby")
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
@@ -174,7 +206,7 @@ if __name__ == "__main__":
 	shiftby1:int = get_shiftby(len(inputs)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12_w_avoids(inputs, anti_inputs, shiftby1)
+		args.multiplier = finding_0xedc72f12_w_avoids("multiplier1", inputs, anti_inputs, shiftby1)
 		if args.multiplier == 0:
 			raise ValueError(f"Failed to find suitable multiplier1 for {len(inputs)} inputs, {shiftby1} shiftby, {len(anti_inputs)} anti-inputs")
 	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]
@@ -234,7 +266,7 @@ if __name__ == "__main__":
 	if diary_fname2idstr_modified:
 		diary_shiftby = get_shiftby(len(diary_entries_old)) - 1
 		diary_pathids:list = [get_path_id(ls[1]) for ls in diary_entries_old]
-		diary_multiplier = finding_0xedc72f12(diary_pathids, diary_shiftby)
+		diary_multiplier = finding_0xedc72f12("diary", diary_pathids, diary_shiftby)
 		if diary_multiplier == 0:
 			raise ValueError("Cannot find suitable diary_multiplier")
 		diary_mappedoutputs = [((pathid*diary_multiplier)&0xffffffff)>>diary_shiftby for pathid in diary_pathids]
