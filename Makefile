@@ -1,4 +1,4 @@
-default: gen_media_metadata gen_hash_functions server
+default: gen_media_metadata gen_hash_functions largefile_permissions server
 
 make-user:
 	# TODO: look at useradd's --selinux-user option, and SELinux's per-user restrictions (http://www.lurking-grue.org/writingselinuxpolicyHOWTO.html#userpol5.1)
@@ -14,9 +14,11 @@ gen_hash_functions:
 	sudo chown staticserver:staticserver /media/vangelic/DATA/tmp/static_webserver.pack
 	sudo chmod 400 /media/vangelic/DATA/tmp/static_webserver.pack
 	# NOTE: shouldn't be any need to do this, but apparently normal files refuse to be read by staticserver user without it. But benefit is that files aren't modified accidentally by other users.
-	while read -r fp; do
-		sudo chown staticserver:staticserver "${fp}"
-		sudo chmod 444 "${fp}"
+
+largefile_permissions:
+	while IFS= read -r fp; do \
+		sudo chown staticserver:staticserver "$$fp"; \
+		sudo chmod 444 "$$fp"; \
 	done < files/all_large_files.txt
 
 apparmor:
