@@ -30,6 +30,11 @@ def get_thumb_fp(fileid:int, tagids:list):
 			27221,1726479, # Vikings (use tag thumbnail)
 			
 			1526,1527,1528,27240,1532,1534,1720, # Santiano
+			
+			1973848, # Holding out for a hero (orchestral cover)
+			1973838, # Firework (orchestral cover)
+			
+			1746,1919276, # Spanish anthem
 			7177,7176,7175,7174,7173,7172,7171,7170,7169,7168,7167,7166,7165,7164,7163,7162,7161,7160,7159,7158,7157,7156,7155,7154,7153,7152,7151,7150,7149,7148,7147,7146,7145,7144,7143,7142, # Endless Space soundtrack
 			80899,1719645, # Medieval covers
 			3536811, # Retrowave (worse quality version of tag's cover image)
@@ -78,7 +83,7 @@ introduction_to_each_category:dict = {
 	743:1845, # Traditional Music -> Greensleeves orchestra
 	239898:1955972, # Weird song -> moo
 	1219:1847, # Progress Music Video -> Baba Yetu
-	239922:1936, # Dictator's Playlist -> European Superstate
+	239922:4895481, # Dictator's Playlist -> Angry German man (or 1936==European Superstate)
 	235314:4829650, # Anti-War Song -> Ich Bin Soldat
 }
 tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to be ordered
@@ -114,6 +119,7 @@ tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to 
 	3031:"European Language Song",
 	2494:"German Language Song",
 	2652:"French Language Song",
+	240031:"Spain",
 	5557:"Latin Song",
 	5507:"Yugoslavian Music Video",
 	237781:"German Pop Song",
@@ -226,6 +232,7 @@ fileid2alternative_thumbnail__process("/media/vangelic/DATA/static-server-files/
 print(f"Registered {len(fileid2alternative_thumbnail)} alternative thumbnails")
 tag2thumbnail:dict = {
 	0:"/DEFAULT.jpg",
+	240031:"/spain.jpg",
 	116236:"/retr.webp", # Retrowave
 	969:"/rome.webp",
 	239922:"/poli.webp", # police state
@@ -286,12 +293,18 @@ for fileid in tagem_fileids:
 		tagids.append(1219)
 	if fileid == 4900220: # Field of poppies piano
 		tagids.append(235314) # Anti-War Song
+	if fileid == 6722: # Dear White People
+		tagids = [239898] # weird songs
 	
 	all_tags_associated_with_chosen_files += tagids
 	thumb_fp:str = get_thumb_fp(fileid, tagids)
 	
 	thumb_str:str = 0
-	if thumb_fp is None:
+	if fileid == 1919273: # German anthem -> deutsch
+		thumb_str = tagem_tagids__ordered_keys__including_hidden_tagids.index(2494)
+	elif fileid == 1919275: # French anthem -> fren
+		thumb_str = tagem_tagids__ordered_keys__including_hidden_tagids.index(2652)
+	elif thumb_fp is None:
 		for tagid in tag2thumbnail:
 			if fileid == 1534:
 				print(tagid, tagid in tagids)
