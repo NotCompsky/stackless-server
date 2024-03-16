@@ -547,11 +547,12 @@ class HTTPResponseHandler {
 int main(const int argc,  const char* argv[]){
 	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	
-	if (argc != 2){
-		write(2, "USAGE: [seed]\n", 14);
+	if (argc != 3){
+		write(2, "USAGE: [port] [seed]\n", 14);
 		return 1;
 	}
-	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[1]);
+	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
+	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	
 	enwiki_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2", O_NOATIME|O_RDONLY|O_LARGEFILE);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
@@ -727,5 +728,5 @@ int main(const int argc,  const char* argv[]){
 	
 	signal(SIGPIPE, SIG_IGN); // see https://stackoverflow.com/questions/5730975/difference-in-handling-of-signals-in-unix for why use this vs sigprocmask - seems like sigprocmask just causes a queue of signals to build up
 	Server::max_req_buffer_sz_minus_1 = 500*1024; // NOTE: Size is arbitrary
-	Server::run(8090, INADDR_ANY, server_buf, all_client_contexts, EWOULDBLOCK_queue);
+	Server::run(listeningport, INADDR_ANY, server_buf, all_client_contexts, EWOULDBLOCK_queue);
 }

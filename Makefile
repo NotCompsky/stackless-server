@@ -10,7 +10,7 @@ server:
 	c++ main.cpp -std=c++2b -O3 -march=native -o server -s -lcrypto -lssl -lbz2 -lz
 
 run-server:
-	./server 8103208574956883562
+	./server 443 8103208574956883562
 
 
 smallest-hash-of-paths.so:
