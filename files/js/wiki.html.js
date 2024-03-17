@@ -19,6 +19,7 @@ var wikitext2html = function(str){
 
 
 var wasm_module_buf;
+var wikipagecontent;
 var errmsgcontainer;
 const text_encoder = new TextEncoder();
 const text_decoder = new TextDecoder();
@@ -44,7 +45,7 @@ function showwikipage(title){
 }
 
 document.addEventListener("DOMContentLoaded", ()=>{
-	const wikipagecontent = document.getElementById("wikipagecontent");
+	wikipagecontent = document.getElementById("wikipagecontent");
 	errmsgcontainer = document.getElementById("showerr_node");
 	
 	window.addEventListener("hashchange", e=>showwikipage(e.newURL.substr(e.newURL.indexOf("#")+1)));
