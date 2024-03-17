@@ -187,6 +187,14 @@ struct SecretPath {
 	}
 };
 std::vector<SecretPath> secret_path_values;
+char* expired_user_login_urls__metadata;
+int expired_user_login_urls_fd;
+void expire_user_login_url(const int expired_user_login_urls_fd,  const unsigned user_indx){
+	expired_user_login_urls__metadata[user_indx] = '1';
+	
+	lseek(expired_user_login_urls_fd, 0, SEEK_SET);
+	write(expired_user_login_urls_fd, expired_user_login_urls__metadata, secret_path_values.size());
+}
 
 
 
@@ -336,11 +344,15 @@ class HTTPResponseHandler {
 						(uint64_value_of__ptr(str+24) == secret_path.p3) and
 						(uint64_value_of__ptr(str+32) == secret_path.p4)
 					){
+						if (expired_user_login_urls__metadata[user_indx] == '1'){
+							return user_login_url_already_used;
+						}
 						memcpy(
 							http_response__set_user_cookie + http_response__set_user_cookie__prefix.size(),
 							secret_path.hash,
 							secret_path_hash_len
 						);
+						expire_user_login_url(expired_user_login_urls_fd, user_indx);
 						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+secret_path_hash_len+http_response__set_user_cookie__postfix.size());
 					}
 				}
@@ -602,10 +614,11 @@ int main(const int argc,  const char* argv[]){
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	
 	enwiki_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2", O_NOATIME|O_RDONLY|O_LARGEFILE);
+	expired_user_login_urls_fd = open("expired_user_login_urls.txt", O_NOATIME|O_RDWR);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
 	
-	if (unlikely((packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
-		write(2, "Failed to open packed_file or enwiki\n", 38);
+	if (unlikely((expired_user_login_urls_fd == -1) or (packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
+		write(2, "Failed to open expired_user_login_urls or packed_file or enwiki\n", 64);
 		return 1;
 	}
 	
@@ -737,6 +750,13 @@ int main(const int argc,  const char* argv[]){
 				}
 			}
 			free(_buf);
+			
+			expired_user_login_urls__metadata = reinterpret_cast<char*>(malloc(secret_path_values.size()));
+			if (read(expired_user_login_urls_fd, expired_user_login_urls__metadata, secret_path_values.size()) != secret_path_values.size()){
+				[[unlikely]]
+				write(2, "Error reading expired_user_login_urls\n", 38);
+				return 1;
+			}
 		}
 	}
 	

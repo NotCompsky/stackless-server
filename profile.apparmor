@@ -50,6 +50,7 @@
   /home/vangelic/repos/compsky/static-and-chat-server/server.crt r,
   /home/vangelic/repos/compsky/static-and-chat-server/server.csr r,
   /home/vangelic/repos/compsky/static-and-chat-server/server.key r,
+  /home/vangelic/repos/compsky/static-and-chat-server/expired_user_login_urls.txt rw,
   #  openssl config
   #   (TODO: didnt seem to cause server to not work without them!) but probably good to have:
   /etc/ssl/openssl.cnf r,
