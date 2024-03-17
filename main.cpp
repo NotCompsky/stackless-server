@@ -219,12 +219,58 @@ class HTTPResponseHandler {
 			if (reinterpret_cast<uint32_t*>(str+5)[0] != uint32_value_of(checkifprefix)){
 				[[likely]];
 				
-				char* headers_itr = str + 7; // "GET /\r\n"
+				constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
+				constexpr char hostname[11] = {'c','o','m','p','s','k','y','.','c','o','m'};
+				
+				{
+					char* hostname_startatspace = nullptr;
+					constexpr char hostnamefld[6] = {'H','o','s','t',':',' '};
+					const char* const headers_endish1 = body_content_start - constexprstrlen(hostnamefld) - constexprstrlen(hostname) - constexprstrlen(endofheaders);
+					char* headers_itr = str + 7; // "GET /\r\n"
+					while(headers_itr != headers_endish1){
+						if (
+							(headers_itr[0] == 'H') and
+							(headers_itr[1] == 'o') and
+							(headers_itr[2] == 's') and
+							(headers_itr[3] == 't') and
+							(headers_itr[4] == ':') and
+							(headers_itr[5] == ' ')
+						){
+							hostname_startatspace = headers_itr + 6;
+							break;
+						}
+						++headers_itr;
+					}
+					if (headers_itr == headers_endish1){
+						[[unlikely]]
+						return wrong_hostname;
+					} else {
+						if (not (
+							(hostname_startatspace[0] == hostname[0]) and
+							(hostname_startatspace[1] == hostname[1]) and
+							(hostname_startatspace[2] == hostname[2]) and
+							(hostname_startatspace[3] == hostname[3]) and
+							(hostname_startatspace[4] == hostname[4]) and
+							(hostname_startatspace[5] == hostname[5]) and
+							(hostname_startatspace[6] == hostname[6]) and
+							(hostname_startatspace[7] == hostname[7]) and
+							(hostname_startatspace[8] == hostname[8]) and
+							(hostname_startatspace[9] == hostname[9]) and
+							(hostname_startatspace[10]== hostname[10]) and
+							(hostname_startatspace[11]== '\r')
+						)){
+							[[unlikely]]
+							return wrong_hostname;
+						}
+					}
+				}
+				
+				{
 				char* cookies_startatspace = nullptr;
 				constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
-				constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
-				const char* const headers_endish = body_content_start - constexprstrlen(cookienamefld) - secret_path_hash_len - constexprstrlen(endofheaders);
-				while(headers_itr != headers_endish){
+				const char* const headers_endish2 = body_content_start - constexprstrlen(cookienamefld) - secret_path_hash_len - constexprstrlen(endofheaders);
+				char* headers_itr = str + 7; // "GET /\r\n"
+				while(headers_itr != headers_endish2){
 					if (
 						(headers_itr[0] == 'C') and
 						(headers_itr[1] == 'o') and
@@ -240,7 +286,7 @@ class HTTPResponseHandler {
 					}
 					++headers_itr;
 				}
-				if (headers_itr != headers_endish){
+				if (headers_itr != headers_endish2){
 					// NOTE: cookies_startatspace guaranteed != nullptr
 					
 					// "Cookie: " <- NOT after the space
@@ -273,6 +319,7 @@ class HTTPResponseHandler {
 							user_indx = 0;
 						}
 					}
+				}
 				}
 				
 				if (user_indx == 0){
