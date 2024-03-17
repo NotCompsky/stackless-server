@@ -47,7 +47,16 @@
 	background:#666;
 	border-radius:10px;
 }
+.dropdownmenu1_btn {
+	background:#222;
+	color:#fff;
+	border-radius:0.4em;
+}
 
+#wiki_dropdownmenu {
+	max-height:50vh;
+	overflow-y:scroll;
+}
 .wikipage {
 	
 }
@@ -103,6 +112,7 @@
 }
 .mainpagemenu_entry:hover {
 	background:#999;
+	opacity:0.5;
 }
 @media (orientation: landscape){
 	.mainpagemenu_entry {
@@ -112,8 +122,8 @@
 }
 @media (orientation: portrait){
 	.mainpagemenu_entry {
-		width:20vh;
-		height:20vh;
+		width:33.333vw;
+		height:33.333vw;
 	}
 }
 
@@ -215,6 +225,12 @@
 .dir_files_container {}
 .chat_media_tag_thumbnail {
 	height:5em;
+}
+.chat_username {
+	color:green;
+}
+.chat_tmpmsg {
+	color:yellow;
 }
 
 .unselectable {
