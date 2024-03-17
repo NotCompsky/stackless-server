@@ -42,18 +42,55 @@ constexpr static const std::string_view server_error =
 	"\r\n"
 	"Server error"
 ;
-constexpr static const std::string_view not_logged_in =
+constexpr static const std::string_view wrong_hostname =
+	HEADER__RETURN_CODE__SERVER_ERR
+	"Connection: keep-alive\r\n"
+	"Content-Length: 10\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"Wrong host"
+;
+constexpr static const std::string_view user_login_url_already_used =
 	HEADER__RETURN_CODE__OK
 	"Connection: keep-alive\r\n" // HEADER__CONNECTION_KEEP_ALIVE
-	"Content-Length: 63\r\n"
-	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Length: 288\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
 	"Content-Type: text/html; charset=UTF-8\r\n" \
 	SECURITY_HEADERS_EXCLUDING_CSP
 	"\r\n"
 	"<!DOCTYPE html>"
 	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>This user login was already used or has expired</h1>"
+		"<p>Please request a new link by contacting the website owner</p>"
+	"</body>"
+	"</html>"
+;
+constexpr static const std::string_view not_logged_in =
+	HEADER__RETURN_CODE__OK
+	"Connection: keep-alive\r\n" // HEADER__CONNECTION_KEEP_ALIVE
+	"Content-Length: 256\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
 	"<body>"
 		"<h1>Not logged in</h1>"
+		"<p>Please request a login link by contacting the website owner</p>"
 	"</body>"
 	"</html>"
 ;

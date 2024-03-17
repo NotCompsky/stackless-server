@@ -1,5 +1,8 @@
 default: gen_media_metadata gen_hash_functions largefile_permissions server
 
+user-cookie-hash-maker:
+	c++ make-hash.cpp -std=c++2a -o make-hash -Os
+
 make-user:
 	# TODO: look at useradd's --selinux-user option, and SELinux's per-user restrictions (http://www.lurking-grue.org/writingselinuxpolicyHOWTO.html#userpol5.1)
 	sudo useradd --expiredate '' --inactive -1 --user-group --no-create-home --system --shell /bin/false staticserver
