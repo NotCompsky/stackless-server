@@ -14,6 +14,7 @@
 #include <signal.h>
 #include <cstring> // for memcpy
 #include <bit> // for std::bit_cast
+#include "all_users.hpp"
 #include "files/files.hpp"
 #include "server_nonhttp.hpp"
 #include "request_websocket_open.hpp"
@@ -78,11 +79,11 @@ std::string_view http_response__set_user_cookie__postfix(
 	"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
 	"\r\n"
 );
-constexpr unsigned secret_path_hash_len = 32;
-bool compare_secret_path_hashes(const char(&hash1)[secret_path_hash_len],  const char* const hash2){
+template<unsigned hash1_sz>
+bool compare_secret_path_hashes(const char(&hash1)[hash1_sz],  const char* const hash2){
 	const uint64_t* const a = reinterpret_cast<const uint64_t*>(hash1);
 	const uint64_t* const b = reinterpret_cast<const uint64_t*>(hash2);
-	static_assert(secret_path_hash_len==32, "compare_secret_path_hashes assumes wrong secret_path_hash_len");
+	static_assert(hash1_sz==32, "compare_secret_path_hashes assumes wrong hash1_sz");
 	/*printf("%.32s vs %.32s\n", hash1, hash2);
 	printf("%lu vs %lu\n", a[0], b[0]);
 	printf("%lu vs %lu\n", a[1], b[1]);
@@ -95,105 +96,40 @@ bool compare_secret_path_hashes(const char(&hash1)[secret_path_hash_len],  const
 		(a[3]==b[3])
 	);
 }
-char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + secret_path_hash_len + http_response__set_user_cookie__postfix.size()];
+char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + user_cookie_len + http_response__set_user_cookie__postfix.size()];
 
 constexpr
 
 struct SecretPath {
-	const uint64_t p1;
-	const uint64_t p2;
-	const uint64_t p3;
-	const uint64_t p4;
-	char hash[secret_path_hash_len];
-	const uint32_t username_offset;
-	const uint16_t username_len;
+	char path[secret_path_hash_len];
+	const unsigned user_indx;
+	bool is_already_used;
 	SecretPath(
-		const uint64_t seed,
-		const uint64_t _p1,
-		const uint64_t _p2,
-		const uint64_t _p3,
-		const uint64_t _p4,
-		const uint32_t _username_offset,
-		const uint16_t _username_len
+		const char* const _path,
+		const bool _is_already_used,
+		const uint32_t _user_indx
 	)
-	: p1(_p1)
-	, p2(_p2)
-	, p3(_p3)
-	, p4(_p4)
-	, username_offset(_username_offset)
-	, username_len(_username_len)
+	: is_already_used(_is_already_used)
+	, user_indx(_user_indx)
 	{
-		uint64_t _hash1 = seed * p1;
-		uint64_t _hash2 = seed * p2;
-		uint64_t _hash3 = seed * p3;
-		uint64_t _hash4 = seed * p4;
-		for (unsigned i = 0;  i < 10;  ++i){
-			const unsigned n = _hash4&63;
-			if (n < 10)
-				hash[i] = '0' + n;
-			else if (n < 36)
-				hash[i] = 'a' + (n - 10);
-			else if (n < 62)
-				hash[i] = 'A' + (n - 36);
-			else if (n == 62)
-				hash[i] = '/';
-			else
-				hash[i] = '+';
-			_hash4 >>= 6;
-		}
-		for (unsigned i = 10;  i < 20;  ++i){
-			const unsigned n = _hash3&63;
-			if (n < 10)
-				hash[i] = '0' + n;
-			else if (n < 36)
-				hash[i] = 'a' + (n - 10);
-			else if (n < 62)
-				hash[i] = 'A' + (n - 36);
-			else if (n == 62)
-				hash[i] = '/';
-			else
-				hash[i] = '+';
-			_hash3 >>= 6;
-		}
-		for (unsigned i = 20;  i < 30;  ++i){
-			const unsigned n = _hash2&63;
-			if (n < 10)
-				hash[i] = '0' + n;
-			else if (n < 36)
-				hash[i] = 'a' + (n - 10);
-			else if (n < 62)
-				hash[i] = 'A' + (n - 36);
-			else if (n == 62)
-				hash[i] = '/';
-			else
-				hash[i] = '+';
-			_hash2 >>= 6;
-		}
-		for (unsigned i = 30;  i < secret_path_hash_len;  ++i){
-			const unsigned n = _hash2&63;
-			if (n < 10)
-				hash[i] = '0' + n;
-			else if (n < 36)
-				hash[i] = 'a' + (n - 10);
-			else if (n < 62)
-				hash[i] = 'A' + (n - 36);
-			else if (n == 62)
-				hash[i] = '/';
-			else
-				hash[i] = '+';
-			_hash2 >>= 6;
-		}
-		static_assert(secret_path_hash_len == 32, "secret_path_hash_len != 32");
+		memcpy(this->path, _path, secret_path_hash_len);
 	}
 };
 std::vector<SecretPath> secret_path_values;
-char* expired_user_login_urls__metadata;
-int expired_user_login_urls_fd;
-void expire_user_login_url(const int expired_user_login_urls_fd,  const unsigned user_indx){
-	expired_user_login_urls__metadata[user_indx] = '1';
+int secret_paths_fd;
+char* secret_paths__filecontents__buf;
+constexpr unsigned secret_paths__filecontents__line_length_inc_newline = secret_path_hash_len + 1 + 1 + 1 + 19 + 1;
+void expire_user_login_url(const int _secret_paths_fd,  const unsigned secret_path_indx){
+	const unsigned offset = secret_path_indx * secret_paths__filecontents__line_length_inc_newline;
 	
-	lseek(expired_user_login_urls_fd, 0, SEEK_SET);
-	write(expired_user_login_urls_fd, expired_user_login_urls__metadata, secret_path_values.size());
+	secret_paths__filecontents__buf[offset+secret_path_hash_len+1] = '1';
+	
+	lseek(_secret_paths_fd, 0, SEEK_SET);
+	const size_t nbytes = secret_path_values.size()*secret_paths__filecontents__line_length_inc_newline;
+	if (write(_secret_paths_fd, secret_paths__filecontents__buf, nbytes) != nbytes){
+		[[unlikely]]
+		fprintf(stderr, "ERROR: Failed to write to secret_paths.txt: %s\n", strerror(errno));
+	}
 }
 
 
@@ -221,7 +157,7 @@ class HTTPResponseHandler {
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
-			unsigned user_indx = 0;
+			unsigned user_indx = n_users;
 			
 			constexpr const char checkifprefix[4] = {'u','s','e','r'};
 			if (reinterpret_cast<uint32_t*>(str+5)[0] != uint32_value_of(checkifprefix)){
@@ -276,7 +212,7 @@ class HTTPResponseHandler {
 				{
 				char* cookies_startatspace = nullptr;
 				constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
-				const char* const headers_endish2 = body_content_start - constexprstrlen(cookienamefld) - secret_path_hash_len - constexprstrlen(endofheaders);
+				const char* const headers_endish2 = body_content_start - constexprstrlen(cookienamefld) - user_cookie_len - constexprstrlen(endofheaders);
 				char* headers_itr = str + 7; // "GET /\r\n"
 				while(headers_itr != headers_endish2){
 					if (
@@ -311,49 +247,43 @@ class HTTPResponseHandler {
 						++cookies_startatspace;
 					}
 					if (cookies_startatspace[2] != '\r'){
-						// NOTE: Guaranteed to be secret_path_hash_len safe-to-access characters here
-						const char* const secret_path_hash = cookies_startatspace + 3;
+						// NOTE: Guaranteed to be user_cookie_len safe-to-access characters here
+						const char* const user_cookie = cookies_startatspace + 3;
 						
 						[[likely]]
 						
-						for (;  user_indx < secret_path_values.size();  ++user_indx){
-							const SecretPath& secret_path = secret_path_values[user_indx];
-							if (compare_secret_path_hashes(secret_path.hash, secret_path_hash)){
+						for (user_indx = 0;  user_indx < n_users;  ++user_indx){
+							const User& user = all_users[user_indx];
+							if (compare_secret_path_hashes(user.hash, user_cookie)){
 								break;
 							}
 						}
-						if (user_indx == secret_path_values.size()){
-							[[unlikely]]
-							user_indx = 0;
+						if (user_indx == n_users){
+							[[unlikely]];
 						}
 					}
 				}
 				}
 				
-				if (user_indx == 0){
+				if (user_indx == n_users){
 					return not_logged_in;
 				}
 			} else {
-				for (;  user_indx < secret_path_values.size();  ++user_indx){
-					const SecretPath& secret_path = secret_path_values[user_indx];
+				for (unsigned secret_path_indx = 0;  secret_path_indx < secret_path_values.size();  ++secret_path_indx){
+					SecretPath& secret_path = secret_path_values[secret_path_indx];
 					// "GET /use" is ignored
-					printf("secret_path.p1 %lu\n", secret_path.p1);
-					if (
-						(uint64_value_of__ptr(str+8)  == secret_path.p1) and
-						(uint64_value_of__ptr(str+16) == secret_path.p2) and
-						(uint64_value_of__ptr(str+24) == secret_path.p3) and
-						(uint64_value_of__ptr(str+32) == secret_path.p4)
-					){
-						if (expired_user_login_urls__metadata[user_indx] == '1'){
+					if (compare_secret_path_hashes(secret_path.path, str+8)){
+						if (secret_path.is_already_used){
 							return user_login_url_already_used;
 						}
 						memcpy(
 							http_response__set_user_cookie + http_response__set_user_cookie__prefix.size(),
-							secret_path.hash,
-							secret_path_hash_len
+							all_users[secret_path.user_indx].hash,
+							user_cookie_len
 						);
-						expire_user_login_url(expired_user_login_urls_fd, user_indx);
-						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+secret_path_hash_len+http_response__set_user_cookie__postfix.size());
+						secret_path.is_already_used = true;
+						expire_user_login_url(secret_paths_fd, secret_path_indx);
+						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+user_cookie_len+http_response__set_user_cookie__postfix.size());
 					}
 				}
 				{
@@ -451,7 +381,7 @@ class HTTPResponseHandler {
 						return std::string_view(server_buf, n_bytes_written);
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
-					return request_websocket_open(client_context, nullptr, headers, secret_path_values[user_indx].username_offset, secret_path_values[user_indx].username_len);
+					return request_websocket_open(client_context, nullptr, headers, all_usernames[user_indx].offset, all_usernames[user_indx].length);
 				} else if (path_id == uint32_value_of(wiki_prefix)){
 					constexpr char wikipathprefix[9] = {'G','E','T',' ','/','w','0','0','/'};
 					char* const title_requested = str + constexprstrlen(wikipathprefix);
@@ -617,7 +547,52 @@ int main(const int argc,  const char* argv[]){
 	expired_user_login_urls_fd = open("expired_user_login_urls.txt", O_NOATIME|O_RDWR);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
 	
-	if (unlikely((expired_user_login_urls_fd == -1) or (packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
+	{
+		secret_paths_fd = open("secret_paths.txt", O_NOATIME|O_RDWR);
+		if (secret_paths_fd == -1){
+			[[unlikely]]
+			write(2, "Cannot open secret_paths.txt\n", 29);
+			return 1;
+		}
+		const off_t f_sz = lseek(secret_paths_fd, 0, SEEK_END);
+		constexpr unsigned line_length_inc_newline = secret_paths__filecontents__line_length_inc_newline;
+		if ((f_sz % line_length_inc_newline) != 0){
+			[[unlikely]]
+			write(2, "secret_paths.txt has wrong format (NOTE: vim automatically adds invisible newline on the end)\n", 94);
+			return 1;
+		}
+		secret_paths__filecontents__buf = reinterpret_cast<char*>(malloc(f_sz));
+		if (secret_paths__filecontents__buf == nullptr){
+			[[unlikely]]
+			write(2, "Cannot allocate memory\n", 23);
+			return 1;
+		}
+		lseek(secret_paths_fd, 0, SEEK_SET);
+		read(secret_paths_fd, secret_paths__filecontents__buf, f_sz);
+		
+		for (unsigned offset = 0;  offset != f_sz;  offset += line_length_inc_newline){
+			if (secret_paths__filecontents__buf[offset+line_length_inc_newline-1] != '\n'){
+				[[unlikely]]
+				fprintf(
+					stderr,
+					"secret_paths.txt: Expected newline at %u on line %u, but got '%c' '%c' '%c'\n",
+					offset+line_length_inc_newline,
+					offset/line_length_inc_newline,
+					secret_paths__filecontents__buf[offset+line_length_inc_newline-1],
+					secret_paths__filecontents__buf[offset+line_length_inc_newline],
+					secret_paths__filecontents__buf[offset+line_length_inc_newline+1]
+				);
+				return 1;
+			}
+			secret_path_values.emplace_back(
+				secret_paths__filecontents__buf+offset,
+				(secret_paths__filecontents__buf[offset+secret_path_hash_len+1]=='1'), 
+				a2n<uint64_t,const char*,false>(secret_paths__filecontents__buf+offset+secret_path_hash_len+3)
+			);
+		}
+	}
+	
+	if (unlikely((packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
 		write(2, "Failed to open expired_user_login_urls or packed_file or enwiki\n", 64);
 		return 1;
 	}
@@ -638,127 +613,11 @@ int main(const int argc,  const char* argv[]){
 		http_response__set_user_cookie__prefix.size()
 	);
 	memcpy(
-		http_response__set_user_cookie + http_response__set_user_cookie__prefix.size() + secret_path_hash_len,
+		http_response__set_user_cookie + http_response__set_user_cookie__prefix.size() + user_cookie_len,
 		http_response__set_user_cookie__postfix.data(),
 		http_response__set_user_cookie__postfix.size()
 	);
 	
-	{
-		const int secret_path_values_fd = open("secret_file_paths.txt", O_NOATIME|O_RDONLY);
-		if (secret_path_values_fd == -1){
-			[[unlikely]]
-			write(2, "Cannot open secret_file_paths.txt (thus cannot associate users with usernames etc)\n", 83);
-			return 1;
-		} else {
-			struct stat statbuf;
-			if (fstat(secret_path_values_fd, &statbuf) != 0){
-				[[unlikely]]
-				write(2, "fstat error on secret_file_paths.txt\n", 37);
-				return 1;
-			}
-			const off_t fsz = statbuf.st_size;
-			
-			all_usernames = reinterpret_cast<char*>(malloc(fsz));
-			if (unlikely(all_usernames == nullptr)){
-				[[unlikely]]
-				write(2, "Cannot allocate memory\n", 23);
-				return 1;
-			}
-			
-			char* const _buf = reinterpret_cast<char*>(malloc(fsz));
-			if (read(secret_path_values_fd, _buf, fsz) != fsz){
-				[[unlikely]]
-				write(2, "read error on secret_file_paths.txt\n", 36);
-				return 1;
-			}
-			close(secret_path_values_fd);
-			unsigned eightchar_indx = 0;
-			unsigned n_entries_upperbound = 0;
-			for (unsigned i = 0;  i < fsz;  ++i){
-				const char c = _buf[i];
-				if (c == '\n'){
-					++n_entries_upperbound;
-				}
-			}
-			unsigned secret_path_values_indx = 0;
-			char* start_of_secret_path = nullptr;
-			char* start_of_external_username = nullptr;
-			unsigned all_usernames__indx = 0;
-			for (unsigned i = 0;  i < fsz;  ++i){
-				const char c = _buf[i];
-				if (c == '\n'){
-					if (start_of_secret_path != nullptr){
-						if (start_of_external_username == nullptr){
-							[[unlikely]]
-							write(2, "ERROR: start_of_external_username is NULL but start_of_secret_path is not\n", 74);
-							return 1;
-						}
-						const unsigned internal_username_len = compsky::utils::ptrdiff(start_of_external_username,start_of_secret_path) - 32 - 2;
-						const unsigned external_username_len = compsky::utils::ptrdiff(_buf+i,start_of_external_username);
-						
-						unsigned already_exists_at_indx = 0;
-						for (;  already_exists_at_indx < secret_path_values.size();  ++already_exists_at_indx){
-							const SecretPath& _secret_path = secret_path_values[already_exists_at_indx];
-							if (_secret_path.username_len == external_username_len){
-								bool matches = true;
-								for (unsigned j = 0;  j < external_username_len;  ++j){
-									matches &= (all_usernames[_secret_path.username_offset + j] != start_of_external_username[j]);
-								}
-								if (matches)
-									break;
-							}
-						}
-						uint32_t str_offset;
-						if (already_exists_at_indx == secret_path_values.size()){
-							memcpy(all_usernames+all_usernames__indx, start_of_external_username, external_username_len);
-							str_offset = all_usernames__indx;
-							all_usernames__indx += external_username_len;
-						} else {
-							str_offset = secret_path_values[already_exists_at_indx].username_offset;
-						}
-						
-						const SecretPath& secret_path = secret_path_values.emplace_back(
-							seed,
-							uint64_value_of__ptr(start_of_secret_path),
-							uint64_value_of__ptr(start_of_secret_path+8),
-							uint64_value_of__ptr(start_of_secret_path+16),
-							uint64_value_of__ptr(start_of_secret_path+24),
-							str_offset,
-							external_username_len
-						);
-					}
-					eightchar_indx = 0;
-					start_of_secret_path = nullptr;
-					start_of_external_username = nullptr;
-				} else if (c == ' '){
-					if (eightchar_indx == 32){
-						start_of_secret_path = _buf+i-32;
-						++eightchar_indx;
-					} else if (eightchar_indx == 33){
-						start_of_external_username = _buf+i+1;
-					} else {
-						[[unlikely]]
-						write(2, "Secret path is not 32 bytes long\n", 33);
-						return 1;
-					}
-				} else if (eightchar_indx == 33){
-					// pass
-				} else if (c == '#'){
-					eightchar_indx = 33;
-				} else {
-					++eightchar_indx;
-				}
-			}
-			free(_buf);
-			
-			expired_user_login_urls__metadata = reinterpret_cast<char*>(malloc(secret_path_values.size()));
-			if (read(expired_user_login_urls_fd, expired_user_login_urls__metadata, secret_path_values.size()) != secret_path_values.size()){
-				[[unlikely]]
-				write(2, "Error reading expired_user_login_urls\n", 38);
-				return 1;
-			}
-		}
-	}
 	
 	
 	
