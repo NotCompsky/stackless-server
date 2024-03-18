@@ -75,8 +75,8 @@ std::string_view http_response__set_user_cookie__prefix(
 );
 constexpr
 std::string_view http_response__set_user_cookie__postfix(
-	"; SameSite=Strict; Secure; HttpOnly\r\n"
-	"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
+	"; max-age=31536000; SameSite=Strict; Secure; HttpOnly\r\n" // NOTE: Some browsers as Safari will not allow you to set a cookie expiration bigger than 1 week (for Javascript-created cookies not server-created cookies?)
+	"Strict-Transport-Security: max-age=31536000\r\n" // maybe: includeSubDomains
 	"\r\n"
 );
 template<unsigned hash1_sz>

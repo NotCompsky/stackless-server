@@ -450,7 +450,7 @@ if __name__ == "__main__":
 					"Content-Security-Policy: " + csp_header + "\r\n"
 					"Content-Type: " + mimetype + "\r\n"
 					"Referrer-Policy: no-referrer\r\n"
-					"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n"
+					"Strict-Transport-Security: max-age=31536000\r\n"
 					"X-Content-Type-Options: nosniff\r\n"
 					"X-Frame-Options: SAMEORIGIN\r\n"
 					"X-Permitted-Cross-Domain-Policies: none\r\n"

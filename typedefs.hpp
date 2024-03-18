@@ -13,7 +13,7 @@ typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HT
 
 #define SECURITY_HEADERS_EXCLUDING_CSP \
 	"Referrer-Policy: no-referrer\r\n" /* HEADER__SECURITY__NO_REFERRER */ \
-	"Strict-Transport-Security: max-age=31536000; includeSubDomains\r\n" /* preload list is centralised (hstspreload.org) for all major browsers, so avoid "; preload" */ \
+	"Strict-Transport-Security: max-age=31536000\r\n" /* preload list is centralised (hstspreload.org) for all major browsers, so avoid "; preload" */ \
 	"X-Content-Type-Options: nosniff\r\n" /* HEADER__SECURITY__NOSNIFF */ \
 	"X-Frame-Options: SAMEORIGIN\r\n" /* or DENY HEADER__SECURITY__NO_FOREIGN_IFRAME */ \
 	"X-Permitted-Cross-Domain-Policies: none\r\n" /* Controls whether Flash and Adobe Acrobat are allowed to load content from a different domain. */ \
