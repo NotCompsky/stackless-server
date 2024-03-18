@@ -173,7 +173,7 @@ class HTTPResponseHandler {
 					char* headers_itr = str + 7; // "GET /\r\n"
 					while(headers_itr != headers_endish1){
 						if (
-							(headers_itr[0] == 'H') and
+							((headers_itr[0] == 'H') or (headers_itr[0] == 'h')) and
 							(headers_itr[1] == 'o') and
 							(headers_itr[2] == 's') and
 							(headers_itr[3] == 't') and
@@ -216,7 +216,7 @@ class HTTPResponseHandler {
 				char* headers_itr = str + 7; // "GET /\r\n"
 				while(headers_itr != headers_endish2){
 					if (
-						(headers_itr[0] == 'C') and
+						((headers_itr[0] == 'C') or (headers_itr[0] == 'c')) and
 						(headers_itr[1] == 'o') and
 						(headers_itr[2] == 'o') and
 						(headers_itr[3] == 'k') and
