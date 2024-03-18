@@ -652,7 +652,10 @@ int main(const int argc,  const char* argv[]){
 	}
     
     SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS);
-	SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
+	
+	SSL_CTX_set_min_proto_version(Server::ssl_ctx, TLS1_3_VERSION);
+	SSL_CTX_set_max_proto_version(Server::ssl_ctx, TLS1_3_VERSION);
+	
 	// SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS_TX_ZEROCOPY_SENDFILE);
     if (SSL_CTX_use_certificate_file(Server::ssl_ctx, "server.crt", SSL_FILETYPE_PEM) <= 0){
         ERR_print_errors_fp(stderr);
