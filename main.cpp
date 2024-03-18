@@ -590,7 +590,7 @@ class HTTPResponseHandler {
 
 int main(const int argc,  const char* argv[]){
 	if (argc != 5){
-		write(2, "USAGE: [port] [seed] [openssl_ciphers] [enable_within_hours (HH-HH in GMT)]\n", 76);
+		write(2, "USAGE: [port] [seed] [openssl_ciphers] [enable_within_hours (HH-HH in GMT, 00-24 is always-on)]\n", 96);
 		return 1;
 	}
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
@@ -616,9 +616,9 @@ int main(const int argc,  const char* argv[]){
 		
 		if (
 			(ennable_server_after_hour < 0) or
-			(ennable_server_after_hour > 23) or
+			(ennable_server_after_hour > 24) or
 			(disable_server_after_hour < 0) or
-			(disable_server_after_hour > 23)
+			(disable_server_after_hour > 24)
 		){
 			[[unlikely]]
 			//printf("Invalid time: %i - %i\n", ennable_server_after_hour, disable_server_after_hour);
