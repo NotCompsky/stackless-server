@@ -611,8 +611,8 @@ int main(const int argc,  const char* argv[]){
 			return 1;
 		}
 		
-		const int ennable_server_after_hour = a2n<int,const char*,false>(hh_hh);
-		const int disable_server_after_hour = a2n<int,const char*,false>(hh_hh+3);
+		const int ennable_server_after_hour = 10*(hh_hh[0]-'0') + (hh_hh[1]-'0');
+		const int disable_server_after_hour = 10*(hh_hh[3]-'0') + (hh_hh[4]-'0');
 		
 		if (
 			(ennable_server_after_hour < 0) or
