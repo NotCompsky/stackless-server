@@ -534,8 +534,6 @@ class HTTPResponseHandler {
 };
 
 int main(const int argc,  const char* argv[]){
-	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
-	
 	if (argc != 3){
 		write(2, "USAGE: [port] [seed]\n", 14);
 		return 1;
@@ -543,8 +541,8 @@ int main(const int argc,  const char* argv[]){
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	
-	enwiki_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2", O_NOATIME|O_RDONLY|O_LARGEFILE);
-	expired_user_login_urls_fd = open("expired_user_login_urls.txt", O_NOATIME|O_RDWR);
+	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
+	enwiki_fd                = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2",                O_NOATIME|O_RDONLY|O_LARGEFILE);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
 	
 	{
