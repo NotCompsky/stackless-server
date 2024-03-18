@@ -600,7 +600,7 @@ int main(const int argc,  const char* argv[]){
 	extra_buf_1 = reinterpret_cast<char*>(malloc(extra_buf_1__sz));
 	extra_buf_2 = reinterpret_cast<char*>(malloc(extra_buf_2__sz));
 	if (unlikely((server_buf == nullptr) or (extra_buf_1 == nullptr) or (extra_buf_2 == nullptr))){
-		write(2, "Cannot allocate memory for main buffers\n", 41);
+		write(2, "Cannot allocate memory\n", 23);
 		return 1;
 	}
 	
