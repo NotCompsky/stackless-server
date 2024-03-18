@@ -534,12 +534,13 @@ class HTTPResponseHandler {
 };
 
 int main(const int argc,  const char* argv[]){
-	if (argc != 3){
-		write(2, "USAGE: [port] [seed]\n", 14);
+	if (argc != 4){
+		write(2, "USAGE: [port] [seed] [openssl_ciphers]\n", 14);
 		return 1;
 	}
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
+	const char* const openssl_ciphers = argv[3];
 	
 	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	enwiki_fd                = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2",                O_NOATIME|O_RDONLY|O_LARGEFILE);
@@ -633,6 +634,23 @@ int main(const int argc,  const char* argv[]){
         ERR_print_errors_fp(stderr);
         return 1;
     }
+    
+	if (SSL_CTX_set_cipher_list(Server::ssl_ctx, openssl_ciphers) != 1){
+		fprintf(stderr, "Error setting cipher list.\n");
+		ERR_print_errors_fp(stderr);
+		SSL_CTX_free(Server::ssl_ctx);
+		return 1;
+	}
+	{
+		SSL* const ssl = SSL_new(Server::ssl_ctx);
+		const char *cipher_list = SSL_get_cipher_list(ssl, 0);
+		if (cipher_list != NULL) {
+			printf("Cipher suites supported by the server:\n%s\n", cipher_list);
+		} else {
+			printf("Error retrieving cipher suites.\n");
+		}
+	}
+    
     SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS);
 	SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ALL|SSL_OP_NO_SSLv2|SSL_OP_NO_SSLv3);
 	// SSL_CTX_set_options(Server::ssl_ctx, SSL_OP_ENABLE_KTLS_TX_ZEROCOPY_SENDFILE);
