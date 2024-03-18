@@ -34,7 +34,7 @@ server:
 	sudo setcap CAP_NET_BIND_SERVICE=+eip server
 
 run-server:
-	sudo -u staticserver -- ./server 443 8103208574956883562
+	sudo -u staticserver -- ./server 443 8103208574956883562 "ECDHE-ECDSA-AES256-GCM-SHA384" 06-01
 
 
 smallest-hash-of-paths.so:

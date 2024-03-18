@@ -21,6 +21,7 @@
 #include "typedefs.hpp"
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <time.h>
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/extract-page.hpp"
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/get-byte-offset-of-page-given-title.hpp"
 
@@ -133,6 +134,46 @@ void expire_user_login_url(const int _secret_paths_fd,  const unsigned secret_pa
 }
 
 
+int server_after_hour_a;
+int server_after_hour_b;
+bool is_currently_within_hours;
+bool server_after_hour__a_disables;
+
+#ifdef DISABLE_SERVER_AFTER_HOURS
+void determine_is_currently_within_hours(const time_t t){
+	struct tm* local_time = gmtime(&t); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
+	const int hour = local_time->tm_hour;
+	is_currently_within_hours = ((hour >= server_after_hour_a) and (hour < server_after_hour_b)) ^ server_after_hour__a_disables;
+}
+constexpr static const std::string_view server_out_of_hours_response__pre =
+	HEADER__RETURN_CODE__OK
+	"Content-Length: 251\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>Out of hours</h1>"
+		"<p>Website is sleeping</p>"
+		"<p>Come back between "
+;
+constexpr static const std::string_view server_out_of_hours_response__post =
+		" (GMT)</p>"
+	"</body>"
+	"</html>"
+;
+static
+char server_out_of_hours_response__buf[server_out_of_hours_response__pre.size() + 5 + server_out_of_hours_response__post.size()];
+static const std::string_view server_out_of_hours_response(server_out_of_hours_response__buf,  server_out_of_hours_response__pre.size() + 5 + server_out_of_hours_response__post.size());
+#endif
+
 
 class HTTPResponseHandler {
  public:
@@ -153,7 +194,13 @@ class HTTPResponseHandler {
 		const char* const body_content_start,
 		const std::size_t body_len,
 		std::vector<char*>& headers
-	){		
+	){
+#ifdef DISABLE_SERVER_AFTER_HOURS
+		if (not is_currently_within_hours){
+			return server_out_of_hours_response;
+		}
+#endif
+		
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
@@ -525,6 +572,14 @@ class HTTPResponseHandler {
 		}
 		if (n_nonempty != 0)
 			printf("EWOULDBLOCK_queue[%lu] has %u non-empty entries (%luKiB)\n", EWOULDBLOCK_queue.size(), n_nonempty, total_sz/1024);
+		
+#ifdef DISABLE_SERVER_AFTER_HOURS
+		{
+			const time_t current_time = time(0);
+			determine_is_currently_within_hours(current_time);
+		}
+#endif
+		
 		// TODO: Tidy vectors such as EWOULDBLOCK_queue by removing items where client_socket==0
 		return false;
 	}
@@ -534,13 +589,64 @@ class HTTPResponseHandler {
 };
 
 int main(const int argc,  const char* argv[]){
-	if (argc != 4){
-		write(2, "USAGE: [port] [seed] [openssl_ciphers]\n", 14);
+	if (argc != 5){
+		write(2, "USAGE: [port] [seed] [openssl_ciphers] [enable_within_hours (HH-HH in GMT)]\n", 76);
 		return 1;
 	}
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	const char* const openssl_ciphers = argv[3];
+	
+#ifdef DISABLE_SERVER_AFTER_HOURS
+	{
+		const char* const hh_hh = argv[4];
+		if (strlen(hh_hh) != 5){
+			[[unlikely]]
+			write(2, "Invalid time\n", 13);
+			return 1;
+		}
+		if (hh_hh[2] != '-'){
+			[[unlikely]]
+			write(2, "Invalid time\n", 13);
+			return 1;
+		}
+		
+		const int ennable_server_after_hour = a2n<int,const char*,false>(hh_hh);
+		const int disable_server_after_hour = a2n<int,const char*,false>(hh_hh+3);
+		
+		if (
+			(ennable_server_after_hour < 0) or
+			(ennable_server_after_hour > 23) or
+			(disable_server_after_hour < 0) or
+			(disable_server_after_hour > 23)
+		){
+			[[unlikely]]
+			//printf("Invalid time: %i - %i\n", ennable_server_after_hour, disable_server_after_hour);
+			write(2, "Invalid time\n", 13);
+			return 1;
+		}
+		
+		if (disable_server_after_hour < ennable_server_after_hour){
+			server_after_hour_a = disable_server_after_hour;
+			server_after_hour_b = ennable_server_after_hour;
+			server_after_hour__a_disables = true;
+		} else {
+			server_after_hour_a = ennable_server_after_hour;
+			server_after_hour_b = disable_server_after_hour;
+			server_after_hour__a_disables = false;
+		}
+		
+		determine_is_currently_within_hours(time(0));
+		
+		memcpy(server_out_of_hours_response__buf, server_out_of_hours_response__pre.data(), server_out_of_hours_response__pre.size());
+		server_out_of_hours_response__buf[server_out_of_hours_response__pre.size()+0] = '0' + (ennable_server_after_hour/10);
+		server_out_of_hours_response__buf[server_out_of_hours_response__pre.size()+1] = '0' + (ennable_server_after_hour%10);
+		server_out_of_hours_response__buf[server_out_of_hours_response__pre.size()+2] = '-';
+		server_out_of_hours_response__buf[server_out_of_hours_response__pre.size()+3] = '0' + (disable_server_after_hour/10);
+		server_out_of_hours_response__buf[server_out_of_hours_response__pre.size()+4] = '0' + (disable_server_after_hour%10);
+		memcpy(server_out_of_hours_response__buf+server_out_of_hours_response__pre.size()+5, server_out_of_hours_response__post.data(), server_out_of_hours_response__post.size());
+	}
+#endif
 	
 	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	enwiki_fd                = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2",                O_NOATIME|O_RDONLY|O_LARGEFILE);
