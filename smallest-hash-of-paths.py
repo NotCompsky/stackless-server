@@ -215,6 +215,7 @@ if __name__ == "__main__":
 	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]
 	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> {shiftby1}")
 	sorteds:list = []
+	inputs__sorted_to_new_order_w_gaps_etc:list = []
 	for i in range(max(inputs_mappedoutputs)+1):
 		indx:int = 0
 		try:
@@ -489,6 +490,8 @@ if __name__ == "__main__":
 			f.write(f"constexpr uint32_t DIARY_MULTIPLIER = {diary_multiplier};\n")
 			f.write(f"constexpr unsigned DIARY_LIST_LENGTH = {max(diary_mappedoutputs)+1};\n")
 			f.write(f"constexpr uint32_t DIARY_SHIFTBY = {diary_shiftby};\n")
+			
+			f.write(f"constexpr uint32_t HASH1_ORIG_INTS[{max(inputs_mappedoutputs)+1}] = {write_int_arr_for_cpp(inputs__sorted_to_new_order_w_gaps_etc)};\n")
 			
 			if len(inputs2) == 0:
 				f.write("#define HASH2_IS_NONE\n")

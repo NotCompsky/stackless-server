@@ -422,6 +422,11 @@ class HTTPResponseHandler {
 				printf("[%.4s] %u -> %u\n", str+5, path_id, path_indx);
 				
 				if (path_indx < HASH1_LIST_LENGTH){
+					if (path_id != HASH1_ORIG_INTS[path_indx]){
+						[[unlikely]]
+						return not_found;
+					}
+					
 					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
 					const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
 					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
