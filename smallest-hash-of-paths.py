@@ -483,7 +483,7 @@ if __name__ == "__main__":
 			f.write(f"constexpr unsigned HASH1_shiftby = {shiftby1};\n")
 			f.write(f"constexpr uint32_t HASH1_MULTIPLIER = {args.multiplier};\n")
 			f.write(f"constexpr unsigned HASH1_LIST_LENGTH = {max(inputs_mappedoutputs)+1};\n")
-			f.write(f"const uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
+			f.write(f"constexpr uint32_t HASH1_METADATAS[{len(files__offsets_and_sizes)}] = {write_int_arr_for_cpp(files__offsets_and_sizes)};\n")
 			
 			f.write(f"constexpr unsigned HASH1_METADATAS__DIARY_OFFSET = {len(sorteds)*2};\n")
 			f.write(f"constexpr uint32_t DIARY_MULTIPLIER = {diary_multiplier};\n")
@@ -512,7 +512,7 @@ if __name__ == "__main__":
 					mimetype:str = dir2_indx2mimetype[indx]
 					fsz:int = dir2_indx2fsz[indx]
 					s += f",{{\"{dblqt(os.path.realpath(fpath))}\", {json.dumps(mimetype)}, {fsz}}}"
-				f.write(f"const HASH2_indx2metadata_item HASH2_indx2metadata[{max(inputs2_mappedoutputs)+1}] = {{{s[1:]}}};\n")
+				f.write(f"constexpr HASH2_indx2metadata_item HASH2_indx2metadata[{max(inputs2_mappedoutputs)+1}] = {{{s[1:]}}};\n")
 			
 			for i, antiinput_val in enumerate(anti_inputs):
 				f.write(f"constexpr uint32_t HASH_ANTIINPUT_{i} = {antiinput_val};\n")
