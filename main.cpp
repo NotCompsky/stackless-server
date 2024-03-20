@@ -227,7 +227,9 @@ class HTTPResponseHandler {
 		
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
-		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
+		constexpr const char prefix_GET[4] = {'G','E','T',' '};
+		constexpr const char prefix_POST[4] = {'P','O','S','T'};
+		if (reinterpret_cast<uint32_t*>(str)[0] == uint32_value_of(prefix_GET)){
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
 			
