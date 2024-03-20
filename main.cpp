@@ -99,6 +99,28 @@ bool compare_secret_path_hashes(const char(&hash1)[hash1_sz],  const char* const
 }
 char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + user_cookie_len + http_response__set_user_cookie__postfix.size()];
 
+const char* get_cookies_startatspace(const char* const str,  const char* const headers_endish){ // "Cookie: " <- NOT after the space
+	const char* cookies_startatspace = nullptr;
+	const char* headers_itr = str + 7; // "GET /\r\n"
+	while(headers_itr != headers_endish){
+		if (
+			((headers_itr[0] == 'C') or (headers_itr[0] == 'c')) and
+			(headers_itr[1] == 'o') and
+			(headers_itr[2] == 'o') and
+			(headers_itr[3] == 'k') and
+			(headers_itr[4] == 'i') and
+			(headers_itr[5] == 'e') and
+			(headers_itr[6] == ':') and
+			(headers_itr[7] == ' ')
+		){
+			cookies_startatspace = headers_itr + 8 - 1;
+			break;
+		}
+		++headers_itr;
+	}
+	return cookies_startatspace;
+}
+
 constexpr
 
 struct SecretPath {
@@ -205,13 +227,15 @@ class HTTPResponseHandler {
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (likely(reinterpret_cast<uint32_t*>(str)[0] == 542393671)){
+			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
+			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
+			
 			unsigned user_indx = n_users;
 			
 			constexpr const char checkifprefix[4] = {'u','s','e','r'};
 			if (reinterpret_cast<uint32_t*>(str+5)[0] != uint32_value_of(checkifprefix)){
 				[[likely]];
 				
-				constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
 				constexpr char hostname[11] = {'c','o','m','p','s','k','y','.','c','o','m'};
 				
 				{
@@ -256,32 +280,45 @@ class HTTPResponseHandler {
 						}
 					}
 				}
+				{
+					bool has_secfetch_header = false;
+					constexpr char SecFetchMode_field[17] = {'S','e','c','-','F','e','t','c','h','-','M','o','d','e',':',' ','n'}; // Sec-Fetch-Mode
+					const char* const headers_endish1 = body_content_start - constexprstrlen(SecFetchMode_field) - constexprstrlen(endofheaders);
+					char* headers_itr = str + 7; // "GET /\r\n"
+					while(headers_itr != headers_endish1){
+						if (
+							((headers_itr[0] == 'S') or (headers_itr[0] == 's')) and
+							(headers_itr[1] == 'e') and
+							(headers_itr[2] == 'c') and
+							(headers_itr[3] == '-') and
+							((headers_itr[4] == 'F') or (headers_itr[4] == 'f')) and
+							(headers_itr[5] == 'e') and
+							(headers_itr[6] == 't') and
+							(headers_itr[7] == 'c') and
+							(headers_itr[8] == 'h') and
+							(headers_itr[9] == '-') and
+							((headers_itr[10]== 'M') or (headers_itr[10] == 'm')) and
+							(headers_itr[11]== 'o') and
+							(headers_itr[12]== 'd') and
+							(headers_itr[13]== 'e') and
+							(headers_itr[14]== ':') and
+							(headers_itr[15]== ' ') and
+							((headers_itr[16]== 'n') or (headers_itr[16]== 'w')) // no-cors (loaded by HTML tag not JavaScirpt) or navigate (direct page click by user) or websocket
+						){
+							has_secfetch_header = true;
+							break;
+						}
+						++headers_itr;
+					}
+					if (not has_secfetch_header){
+						[[unlikely]]
+						return suspected_robot;
+					}
+				}
 				
 				{
-				char* cookies_startatspace = nullptr;
-				constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
-				const char* const headers_endish2 = body_content_start - constexprstrlen(cookienamefld) - user_cookie_len - constexprstrlen(endofheaders);
-				char* headers_itr = str + 7; // "GET /\r\n"
-				while(headers_itr != headers_endish2){
-					if (
-						((headers_itr[0] == 'C') or (headers_itr[0] == 'c')) and
-						(headers_itr[1] == 'o') and
-						(headers_itr[2] == 'o') and
-						(headers_itr[3] == 'k') and
-						(headers_itr[4] == 'i') and
-						(headers_itr[5] == 'e') and
-						(headers_itr[6] == ':') and
-						(headers_itr[7] == ' ')
-					){
-						cookies_startatspace = headers_itr + 8 - 1;
-						break;
-					}
-					++headers_itr;
-				}
-				if (headers_itr != headers_endish2){
-					// NOTE: cookies_startatspace guaranteed != nullptr
-					
-					// "Cookie: " <- NOT after the space
+				const char* cookies_startatspace = get_cookies_startatspace(str,  body_content_start - constexprstrlen(cookienamefld) - user_cookie_len - constexprstrlen(endofheaders));
+				if (cookies_startatspace != nullptr){
 					while(
 						(cookies_startatspace[2] != '\r')
 					){
@@ -314,9 +351,73 @@ class HTTPResponseHandler {
 				}
 				
 				if (user_indx == n_users){
-					return not_logged_in;
+					{
+						bool has_secfetch_header = false;
+						constexpr char SecFetchMode_field[18] = {'S','e','c','-','F','e','t','c','h','-','M','o','d','e',':',' ','n','a'}; // Sec-Fetch-Mode
+						const char* const headers_endish1 = body_content_start - constexprstrlen(SecFetchMode_field) - constexprstrlen(endofheaders);
+						char* headers_itr = str + 7; // "GET /\r\n"
+						while(headers_itr != headers_endish1){
+							if (
+								((headers_itr[0] == 'S') or (headers_itr[0] == 's')) and
+								(headers_itr[1] == 'e') and
+								(headers_itr[2] == 'c') and
+								(headers_itr[3] == '-') and
+								((headers_itr[4] == 'F') or (headers_itr[4] == 'f')) and
+								(headers_itr[5] == 'e') and
+								(headers_itr[6] == 't') and
+								(headers_itr[7] == 'c') and
+								(headers_itr[8] == 'h') and
+								(headers_itr[9] == '-') and
+								((headers_itr[10]== 'M') or (headers_itr[10] == 'm')) and
+								(headers_itr[11]== 'o') and
+								(headers_itr[12]== 'd') and
+								(headers_itr[13]== 'e') and
+								(headers_itr[14]== ':') and
+								(headers_itr[15]== ' ') and
+								(headers_itr[16]== 'n') and
+								(headers_itr[17]== 'a') // navigate (direct page click by user)
+							){
+								has_secfetch_header = true;
+								break;
+							}
+							++headers_itr;
+						}
+						if (not has_secfetch_header){
+							[[unlikely]]
+							return not_logged_in__dont_set_fuck_header;
+						}
+					}
+					
+					return not_logged_in__set_fuck_header;
 				}
 			} else {
+				constexpr unsigned fuckcookie_len = 6;
+				const char* cookies_startatspace = get_cookies_startatspace(str,  body_content_start - constexprstrlen(cookienamefld) - fuckcookie_len - constexprstrlen(endofheaders));
+				if (cookies_startatspace == nullptr){
+					return cant_register_user_due_to_lack_of_fuck_cookie;
+				}
+				
+				while(
+					(cookies_startatspace[2] != '\r')
+				){
+					if (
+						(cookies_startatspace[0] == ' ') and
+						(cookies_startatspace[1] == 'f') and
+						(cookies_startatspace[2] == 'u') and
+						(cookies_startatspace[3] == 'c') and
+						(cookies_startatspace[4] == 'k') and
+						(cookies_startatspace[5] == '=') and
+						(cookies_startatspace[6] == '1')
+					){
+						break;
+					}
+					++cookies_startatspace;
+				}
+				
+				if (cookies_startatspace[2] == '\r'){
+					return cant_register_user_due_to_lack_of_fuck_cookie;
+				}
+				
 				for (unsigned secret_path_indx = 0;  secret_path_indx < secret_path_values.size();  ++secret_path_indx){
 					SecretPath& secret_path = secret_path_values[secret_path_indx];
 					// "GET /use" is ignored

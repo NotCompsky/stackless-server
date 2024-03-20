@@ -1,5 +1,5 @@
 function getorpost(url, body, fn){
-	const d = {credentials:"include", method:["POST","GET"][(body === null)|0]};
+	const d = {credentials:"include", mode:"no-cors", method:["POST","GET"][(body === null)|0]};
 	if (body !== null){
 		d["body"] = body;
 	}
