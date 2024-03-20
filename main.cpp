@@ -220,6 +220,7 @@ class HTTPResponseHandler {
 	){
 #ifdef DISABLE_SERVER_AFTER_HOURS
 		if (not is_currently_within_hours){
+			this->keep_alive = false;
 			return server_out_of_hours_response;
 		}
 #endif
@@ -259,6 +260,7 @@ class HTTPResponseHandler {
 					}
 					if (headers_itr == headers_endish1){
 						[[unlikely]]
+						this->keep_alive = false;
 						return wrong_hostname;
 					} else {
 						if (not (
@@ -276,6 +278,7 @@ class HTTPResponseHandler {
 							(hostname_startatspace[11]== '\r')
 						)){
 							[[unlikely]]
+							this->keep_alive = false;
 							return wrong_hostname;
 						}
 					}
@@ -312,6 +315,7 @@ class HTTPResponseHandler {
 					}
 					if (not has_secfetch_header){
 						[[unlikely]]
+						this->keep_alive = false;
 						return suspected_robot;
 					}
 				}
@@ -384,16 +388,19 @@ class HTTPResponseHandler {
 						}
 						if (not has_secfetch_header){
 							[[unlikely]]
+							this->keep_alive = false;
 							return not_logged_in__dont_set_fuck_header;
 						}
 					}
 					
+					this->keep_alive = false;
 					return not_logged_in__set_fuck_header;
 				}
 			} else {
 				constexpr unsigned fuckcookie_len = 6;
 				const char* cookies_startatspace = get_cookies_startatspace(str,  body_content_start - constexprstrlen(cookienamefld) - fuckcookie_len - constexprstrlen(endofheaders));
 				if (cookies_startatspace == nullptr){
+					this->keep_alive = false;
 					return cant_register_user_due_to_lack_of_fuck_cookie;
 				}
 				
@@ -415,6 +422,7 @@ class HTTPResponseHandler {
 				}
 				
 				if (cookies_startatspace[2] == '\r'){
+					this->keep_alive = false;
 					return cant_register_user_due_to_lack_of_fuck_cookie;
 				}
 				
@@ -423,6 +431,7 @@ class HTTPResponseHandler {
 					// "GET /use" is ignored
 					if (compare_secret_path_hashes(secret_path.path, str+8)){
 						if (secret_path.is_already_used){
+							this->keep_alive = false;
 							return user_login_url_already_used;
 						}
 						memcpy(
@@ -438,6 +447,7 @@ class HTTPResponseHandler {
 				{
 					[[unlikely]]
 					printf("Failed user login attempt: %.32s\n", str+8);
+					this->keep_alive = false;
 					return not_found;
 				}
 			}
@@ -456,11 +466,14 @@ class HTTPResponseHandler {
 					size_t to;
 					const compsky::http::header::GetRangeHeaderResult rc = compsky::http::header::get_range(str, from, to);
 					if (unlikely(rc == compsky::http::header::GetRangeHeaderResult::invalid)){
+						this->keep_alive = false;
 						return not_found;
 					}
 					
-					if (unlikely( (to != 0) and (to <= from) ))
+					if (unlikely( (to != 0) and (to <= from) )){
+						this->keep_alive = false;
 						return not_found;
+					}
 					
 					const HASH2_indx2metadata_item& metadata = HASH2_indx2metadata[path_indx2];
 					
@@ -513,6 +526,7 @@ class HTTPResponseHandler {
 					}
 				} else {
 					[[unlikely]]
+					this->keep_alive = false;
 					return not_found;
 				}
 #endif
@@ -525,6 +539,7 @@ class HTTPResponseHandler {
 				if (path_indx < HASH1_LIST_LENGTH){
 					if (path_id != HASH1_ORIG_INTS[path_indx]){
 						[[unlikely]]
+						this->keep_alive = false;
 						return not_found;
 					}
 					
@@ -665,6 +680,7 @@ class HTTPResponseHandler {
 			}
 		}
 		
+		this->keep_alive = false;
 		return not_found;
 	}
 	
