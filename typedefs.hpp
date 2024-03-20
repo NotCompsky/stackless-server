@@ -50,6 +50,15 @@ constexpr static const std::string_view wrong_hostname =
 	"\r\n"
 	"Wrong host"
 ;
+constexpr static const std::string_view suspected_robot =
+	HEADER__RETURN_CODE__NOT_AUTHORISED
+	"Content-Length: 15\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"Suspected robot"
+;
 constexpr static const std::string_view user_login_url_already_used =
 	HEADER__RETURN_CODE__OK
 	"Content-Length: 288\r\n"
@@ -70,9 +79,9 @@ constexpr static const std::string_view user_login_url_already_used =
 	"</body>"
 	"</html>"
 ;
-constexpr static const std::string_view not_logged_in =
+constexpr static const std::string_view not_logged_in__dont_set_fuck_header =
 	HEADER__RETURN_CODE__OK
-	"Content-Length: 256\r\n"
+	"Content-Length: 364\r\n"
 	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
 	"Content-Type: text/html; charset=UTF-8\r\n" \
 	SECURITY_HEADERS_EXCLUDING_CSP
@@ -87,6 +96,51 @@ constexpr static const std::string_view not_logged_in =
 	"<body>"
 		"<h1>Not logged in</h1>"
 		"<p>Please request a login link by contacting the website owner</p>"
+		"<p>You also look like a robot, so maybe use a different browser or device, because you might be blocked.</p>"
+	"</body>"
+	"</html>"
+;
+constexpr static const std::string_view not_logged_in__set_fuck_header =
+	HEADER__RETURN_CODE__OK
+	"Content-Length: 256\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"Set-Cookie: fuck=1; max-age=31536000; SameSite=Strict; Secure; HttpOnly\r\n" // to mitigate against gmail/microsoft automatically visiting registration URLs that are emailed to users
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>Not logged in</h1>"
+		"<p>Please request a login link by contacting the website owner</p>"
+	"</body>"
+	"</html>"
+;
+constexpr static const std::string_view cant_register_user_due_to_lack_of_fuck_cookie =
+	HEADER__RETURN_CODE__OK
+	"Content-Length: 936\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='; img-src 'i.imgur.com'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>You are attempting to register on an unrecognised device</h1>"
+		"<img src=\"https://i.imgur.com/9dlLLM1.gif\"></img>"
+		"<p>Apologies if you are human, but <a href=\"https://support.google.com/mail/thread/16878288/gmail-is-opening-and-caching-urls-within-emails-without-user-intervention-how-and-why?hl=en\">some email services such as GMail and Hotmail automatically visit any URLs in emails</a> and this would break account registrations without this mitigation.</p>"
+		"<p>You must use the same device to register an account as the device you requested the account with. You can still have multiple devices, but each would register their own account.</p>"
+		"<p>I could instead block Google's IP addresses, but then they'd mark my website as 'malicious'! So it has to be this way.</p>"
 	"</body>"
 	"</html>"
 ;
