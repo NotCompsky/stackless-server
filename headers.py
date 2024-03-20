@@ -4,7 +4,7 @@ def make_static_headers(content_encoding_part:str, contents_len:int, csp_header:
 		"Cache-Control: max-age=2592000\r\n"
 		"Connection: keep-alive\r\n"
 		"" + content_encoding_part + ""
-		"Content-Length: " + str(len(contents)) + "\r\n"
+		"Content-Length: " + str(contents_len) + "\r\n"
 		"Content-Security-Policy: " + csp_header + "\r\n"
 		"Content-Type: " + mimetype + "\r\n"
 		"Referrer-Policy: no-referrer\r\n"
