@@ -422,8 +422,8 @@ print(f"Total size of all files used by server: {total_filesize//(1024*1024)} Mi
 for fileid in fileid2alternative_thumbnail:
 	print(f"ERROR: Failed to use alternative thumbnail for {fileid}")
 
-def escstr(s:str):
-	return s.replace("\\","\\\\").replace("\"","\\\"")
+def apparmor_escstr(s:str):
+	return s.replace("\\","\\\\").replace("\"","\\\"").replace("[","\\[")
 
 if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev_all_filepaths_added_to_server)):
 	with open("prev_all_filepaths_added_to_server.json.new","w") as f:
@@ -432,6 +432,6 @@ if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev
 	
 	with open("profile.largefiles.apparmor","w") as f:
 		for fp in all_filepaths_added_to_server:
-			f.write(f'"{escstr(fp)}" r,\n')
+			f.write(f'"{apparmor_escstr(fp)}" r,\n')
 
 mimetype_utils.save_cached_mimetypes("cached_mimetypes.json")
