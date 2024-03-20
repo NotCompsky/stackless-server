@@ -25,8 +25,6 @@ std::vector<WebsocketUserMetadata> websocket_client_metadatas;
 static
 std::vector<unsigned> websocket_client_ids;
 
-char* all_usernames;
-
 
 class NonHTTPRequestHandler {
  public:
@@ -132,7 +130,7 @@ class NonHTTPRequestHandler {
 			} else {
 				response_buf[1] = new_payload_length__plus_username;
 			}
-			memcpy(response_buf+offset, all_usernames+username_offset, username_len);
+			memcpy(response_buf+offset, usernames_buf+username_offset, username_len);
 			offset += username_len;
 			response_buf[offset  ] = ':';
 			response_buf[offset+1] = ' ';
