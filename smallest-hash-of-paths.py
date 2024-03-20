@@ -7,9 +7,9 @@ from struct import unpack
 import ctypes
 import numpy as np
 import mimetype_utils
-import hashlib
-import base64
 from html import escape as html_escape
+from sha256integrity import get_sha256_hash_in_b64_form
+from headers import make_static_headers
 
 
 mimetype_utils.load_cached_mimetypes("cached_mimetypes.json")
@@ -26,11 +26,7 @@ c_finding_0xedc72f12_w_avoids.restype = ctypes.c_uint
 def dblqt(s:str):
 	return s.replace('\\','\\\\').replace('"','\\"')
 
-def unretarded_b64_encode(b:bytes):
-	return base64.encodebytes(b).replace(b"\n",b"")
 
-def get_sha256_hash_in_b64_form(contents:bytes):
-	return unretarded_b64_encode(hashlib.sha256(contents).digest())
 
 '''
 def str2cliststr(s:str):
@@ -442,21 +438,7 @@ if __name__ == "__main__":
 						contents = contents_compressed
 						content_encoding_part = "Content-Encoding: gzip\r\n"
 				
-				headers:str = (
-					"HTTP/1.1 200 OK\r\n"
-					"Cache-Control: max-age=2592000\r\n"
-					"Connection: keep-alive\r\n"
-					"" + content_encoding_part + ""
-					"Content-Length: " + str(len(contents)) + "\r\n"
-					"Content-Security-Policy: " + csp_header + "\r\n"
-					"Content-Type: " + mimetype + "\r\n"
-					"Referrer-Policy: no-referrer\r\n"
-					"Strict-Transport-Security: max-age=31536000\r\n"
-					"X-Content-Type-Options: nosniff\r\n"
-					"X-Frame-Options: SAMEORIGIN\r\n"
-					"X-Permitted-Cross-Domain-Policies: none\r\n"
-					"X-XSS-Protection: 1; mode=block\r\n"
-				)
+				headers:str = make_static_headers(content_encoding_part, len(contents), csp_header, mimetype)
 				
 				contents = headers.encode() + b"\r\n" + contents
 				content_len:int = len(contents)
