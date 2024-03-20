@@ -25,9 +25,9 @@ def guess_mimetype(fp:str):
 	global cached_mimetypes_modified
 	
 	realfp:str = os.path.realpath(fp)
-	last_modified:int = os.stat(fp).st_mtime
+	last_modified:int = os.stat(realfp).st_mtime
 	
-	cached_mimetype, cached_mtime = cached_mimetypes.get(fp,[None,0])
+	cached_mimetype, cached_mtime = cached_mimetypes.get(realfp,[None,0])
 	if cached_mtime == last_modified:
 		return cached_mimetype
 	
@@ -78,7 +78,7 @@ def guess_mimetype(fp:str):
 		mimetype = "video/webm"
 	if forced_to_guess:
 		print(f"Forced to guess mimetype for file: {realfp} ?=? {mimetype}")
-	cached_mimetypes[fp] = [mimetype, last_modified]
+	cached_mimetypes[realfp] = [mimetype, last_modified]
 	cached_mimetypes_modified = True
 	return mimetype
 
