@@ -192,10 +192,10 @@ filesizes:list = []
 
 all_filepaths_added_to_server:list = []
 
-def fp_of_file_added_to_server(fp:str):
+def fp_of_file_added_to_server(fileid:int, fp:str):
 	global total_filesize
 	fsz:int = os.stat(fp).st_size
-	filesizes.append((fsz,fp))
+	filesizes.append((fsz,fileid,fp))
 	total_filesize += fsz
 	all_filepaths_added_to_server.append(fp)
 
@@ -216,7 +216,14 @@ for fp in (
 	,
 ):
 	set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
-	fp_of_file_added_to_server(fp)
+	fp_of_file_added_to_server(None, fp)
+	i += 1
+captcha_video_fps:list = []
+captcha_questions:list = []
+process_captcha_clips_and_questions(i, captcha_video_fps, captcha_questions)
+for fp in captcha_video_fps:
+	set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
+	fp_of_file_added_to_server(None, fp)
 	i += 1
 tagem_fileid2indx:dict = {}
 fileid2alternative_thumbnail:dict = {}
@@ -273,7 +280,11 @@ for fileid in tagem_fileids:
 	if fileid == 7155: # Endless Space 2 hour compilation
 		continue
 	
-	fp:str = tagemdb.qry("SELECT CONCAT(d.full_path,f.name) FROM file f JOIN dir d ON d.id=f.dir WHERE f.id="+str(fileid))[0][0]
+	fp:str = None
+	if os.path.exists(f"/media/vangelic/DATA/static-server-files/compressed_videos/by-tagem-fileid/{fileid}"):
+		fp = f"/media/vangelic/DATA/static-server-files/compressed_videos/by-tagem-fileid/{fileid}"
+	if fp is None:
+		fp = tagemdb.qry("SELECT CONCAT(d.full_path,f.name) FROM file f JOIN dir d ON d.id=f.dir WHERE f.id="+str(fileid))[0][0]
 	if type(fp) is bytes:
 		fp = fp.decode()
 	if not os.path.isfile(fp):
@@ -357,7 +368,7 @@ for fileid in tagem_fileids:
 	tagem_fileid2indx[fileid] = i
 	fileid2associatedtags.append([i,thumb_str,file_visible_tagids,file_mimetype,subtitles])
 	set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
-	fp_of_file_added_to_server(fp)
+	fp_of_file_added_to_server(fileid, fp)
 	i += 1
 tag2thumbnail = {(0 if (key==0) else tagem_tagids__ordered_keys__including_hidden_tagids.index(key)):val for key,val in tag2thumbnail.items()}
 for (name,description,filepaths) in (
@@ -378,7 +389,7 @@ for (name,description,filepaths) in (
 		subtitles:list = []
 		fileid2associatedtags.append([i,thumb_str,[tagindx],file_mimetype,subtitles])
 		set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
-		fp_of_file_added_to_server(fp)
+		fp_of_file_added_to_server(None, fp)
 		i += 1
 while os.path.exists(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}"):
 	os.remove(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}")
@@ -416,8 +427,8 @@ introduction_to_each_category = {tagem_tagids__ordered_keys.index(tagid):tagem_f
 with open("/home/vangelic/repos/compsky/static-and-chat-server/files/static/all_.json","w") as f:
 	json.dump([tagem_tagids__as_indices,fileid2associatedtags,tag2thumbnail,introduction_to_each_category],f,indent=None,separators=(",",":"))
 
-for fsz,fp in sorted(filesizes,key=lambda x:x[0],reverse=True)[:50]:
-	print(f"{fsz} {fp}")
+for fsz,fileid,fp in sorted(filesizes,key=lambda x:x[0],reverse=True)[:50]:
+	print(f"{fsz}\t{fileid}\t{fp}")
 print(f"Total size of all files used by server: {total_filesize//(1024*1024)} MiB")
 for fileid in fileid2alternative_thumbnail:
 	print(f"ERROR: Failed to use alternative thumbnail for {fileid}")
