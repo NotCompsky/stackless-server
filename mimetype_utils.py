@@ -9,6 +9,7 @@ cached_mimetypes_modified:bool = False
 
 
 def load_cached_mimetypes(cache_fp:str):
+	global cached_mimetypes
 	if os.path.exists(cache_fp):
 		with open(cache_fp,"r") as f:
 			cached_mimetypes = json.load(f)
