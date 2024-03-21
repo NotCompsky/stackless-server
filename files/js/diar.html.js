@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
 			
 			return;
 		}
-		fetch("/d00/"+id, {method:"GET"}).then(r => {
+		fetch("/d00/"+id, {credentials:"include", mode:"no-cors", method:"GET"}).then(r => {
 			if (r.ok){
 				r.text().then(s => {
 					diarybtn_prev.href = "#" + s.substr(0,4);

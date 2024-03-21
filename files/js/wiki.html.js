@@ -26,7 +26,7 @@ const text_decoder = new TextDecoder();
 const thisurlhashstart = document.location.protocol + "//" + document.location.host + document.location.pathname + "#";
 
 function showwikipage(title){
-	fetch("/w00/"+title, {method:"GET"}).then(r => {
+	fetch("/w00/"+title, {credentials:"include", mode:"no-cors", method:"GET"}).then(r => {
 		if (r.ok){
 			r.text().then(s => {
 				wikipagecontent.innerHTML = wikitext2html(s);
