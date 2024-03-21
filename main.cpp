@@ -196,6 +196,18 @@ static const std::string_view server_out_of_hours_response(server_out_of_hours_r
 #endif
 
 
+static char logline[1024];
+
+
+void set_logline_time(const int hour,  const int mins){
+	logline[0] = '0' + (hour/10);
+	logline[1] = '0' + (hour%10);
+	logline[2] = ':';
+	logline[3] = '0' + (mins/10);
+	logline[4] = '0' + (mins%10);
+}
+
+
 class HTTPResponseHandler {
  public:
 	bool keep_alive;
@@ -207,7 +219,7 @@ class HTTPResponseHandler {
 	char remote_addr_str[INET6_ADDRSTRLEN];
 	unsigned remote_addr_str_len;
 	
-	std::string_view handle_request(
+	std::string_view handle_request__core(
 		Server::ClientContext* client_context,
 		std::vector<Server::ClientContext>& client_contexts,
 		std::vector<Server::LocalListenerContext>& local_listener_contexts,
@@ -717,6 +729,31 @@ class HTTPResponseHandler {
 		return not_found;
 	}
 	
+	std::string_view handle_request(
+		Server::ClientContext* client_context,
+		std::vector<Server::ClientContext>& client_contexts,
+		std::vector<Server::LocalListenerContext>& local_listener_contexts,
+		char* str,
+		const char* const body_content_start,
+		const std::size_t body_len,
+		std::vector<char*>& headers
+	){
+		const std::string_view response(handle_request__core(client_context, client_contexts, local_listener_contexts, str, body_content_start, body_len, headers));
+		
+		// "HH:MM "
+		memcpy(logline+6, str, 14);
+		// " -> "
+		uintptr_t response_data_memloc = reinterpret_cast<uintptr_t>(response.data());
+		for (unsigned i = 16;  i != 0;  --i){
+			logline[24+i] = ((response_data_memloc%16) < 10) ? ('0' + (response_data_memloc%16)) : ('a' + (response_data_memloc%16));
+			response_data_memloc /= 16;
+		}
+		// " keepalive="
+		logline[52] = '0' + (this->keep_alive);
+		write(1, logline, 54);
+		return response;
+	}
+	
 	bool handle_timer_event(){
 		unsigned n_nonempty = 0;
 		uint64_t total_sz = 0;
@@ -731,6 +768,7 @@ class HTTPResponseHandler {
 		
 		const time_t current_time = time(0);
 		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
+		set_logline_time(local_time->tm_hour, local_time->tm_min);
 #ifdef DISABLE_SERVER_AFTER_HOURS
 		determine_is_currently_within_hours(local_time->tm_hour);
 #endif
@@ -752,8 +790,27 @@ int main(const int argc,  const char* argv[]){
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	const char* const openssl_ciphers = argv[3];
 	
+	logline[5] = ' ';
+	logline[20] = ' ';
+	logline[21] = '-';
+	logline[22] = '>';
+	logline[23] = ' ';
+	logline[41] = ' ';
+	logline[42] = 'k';
+	logline[43] = 'e';
+	logline[44] = 'e';
+	logline[45] = 'p';
+	logline[46] = 'a';
+	logline[47] = 'l';
+	logline[48] = 'i';
+	logline[49] = 'v';
+	logline[50] = 'e';
+	logline[51] = '=';
+	logline[53] = '\n';
+	
 	const time_t current_time = time(0);
 	struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
+	set_logline_time(local_time->tm_hour, local_time->tm_min);
 	
 #ifdef DISABLE_SERVER_AFTER_HOURS
 	{
