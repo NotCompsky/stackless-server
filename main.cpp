@@ -229,8 +229,9 @@ class HTTPResponseHandler {
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		constexpr const char prefix_GET[4] = {'G','E','T',' '};
 		constexpr const char prefix_POST[4] = {'P','O','S','T'};
+		constexpr const char prefix_HEAD[4] = {'H','E','A','D'};
 		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
-		if (prefix_id == uint32_value_of(prefix_GET)){
+		if ((prefix_id == uint32_value_of(prefix_GET)) or (prefix_id == uint32_value_of(prefix_HEAD))){
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
 			
@@ -429,6 +430,11 @@ class HTTPResponseHandler {
 					return cant_register_user_due_to_lack_of_fuck_cookie;
 				}
 				
+				if (prefix_id == uint32_value_of(prefix_HEAD)){
+					[[unlikely]]
+					return cant_register_user_due_to_lack_of_fuck_cookie;
+				}
+				
 				for (unsigned secret_path_indx = 0;  secret_path_indx < secret_path_values.size();  ++secret_path_indx){
 					SecretPath& secret_path = secret_path_values[secret_path_indx];
 					// "GET /use" is ignored
@@ -483,8 +489,19 @@ class HTTPResponseHandler {
 					const size_t bytes_to_read1 = (rc == compsky::http::header::GetRangeHeaderResult::none) ? filestreaming__block_sz : ((to) ? (to - from) : filestreaming__stream_block_sz);
 					const size_t bytes_to_read  = (bytes_to_read1 > (metadata.fsz-from)) ? (metadata.fsz-from) : bytes_to_read1;
 					
-					const int fd = open(metadata.filepath, O_NOATIME|O_RDONLY);
-					if (likely(lseek(fd, from, SEEK_SET) == from)){
+					int fd;
+					if (prefix_id == uint32_value_of(prefix_GET)){
+						fd = open(metadata.filepath, O_NOATIME|O_RDONLY);
+						if (unlikely(fd == -1)){
+							printf("Cannot open file\n\tfile = %s\n\terror = %s\n", metadata.filepath, strerror(errno));
+							return server_error;
+						}
+						if (unlikely(lseek(fd, from, SEEK_SET) != from)){
+							close(fd);
+							return server_error;
+						}
+					}
+					{
 						char* server_itr = server_buf;
 						if ((rc == compsky::http::header::GetRangeHeaderResult::none) and (bytes_to_read == metadata.fsz)){
 							// Both Firefox and Chrome send a range header for videos, neither for images
@@ -514,6 +531,9 @@ class HTTPResponseHandler {
 								"\r\n"
 							);
 						}
+						if (prefix_id == uint32_value_of(prefix_HEAD)){
+							return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf));
+						}
 						const ssize_t n_bytes_read = read(fd, server_itr, bytes_to_read);
 						close(fd);
 						if (unlikely(n_bytes_read != bytes_to_read)){
@@ -523,9 +543,6 @@ class HTTPResponseHandler {
 							return server_error;
 						}
 						return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf)+n_bytes_read);
-					} else {
-						close(fd);
-						return server_error;
 					}
 				} else {
 					[[unlikely]]
@@ -548,13 +565,24 @@ class HTTPResponseHandler {
 					
 					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
 					const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
+					// TODO: Deal with HEAD requests
 					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
 						const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
 						return std::string_view(server_buf, n_bytes_written);
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
+					if (prefix_id == uint32_value_of(prefix_HEAD)){
+						[[unlikely]]
+						this->keep_alive = false;
+						return not_found;
+					}
 					return request_websocket_open(client_context, nullptr, headers, all_usernames[user_indx].offset, all_usernames[user_indx].length);
 				} else if (path_id == uint32_value_of(wiki_prefix)){
+					if (prefix_id == uint32_value_of(prefix_HEAD)){
+						// TODO?
+						return not_found;
+					}
+					
 					constexpr char wikipathprefix[9] = {'G','E','T',' ','/','w','0','0','/'};
 					char* const title_requested = str + constexprstrlen(wikipathprefix);
 					unsigned title_requested_len = 0;
@@ -661,6 +689,10 @@ class HTTPResponseHandler {
 					memcpy(server_itr, wikipage_headers1.data(), wikipage_headers1.size());
 					return std::string_view(server_itr, compsky::utils::ptrdiff(html_end,server_itr));
 				} else if (path_id == uint32_value_of(diaryprefix)){
+					if (prefix_id == uint32_value_of(prefix_HEAD)){
+						// TODO?
+						return not_found;
+					}
 					// "GET /d00/"<IDSTR>
 					const uint32_t diary_idstr = reinterpret_cast<uint32_t*>(str+9)[0];
 					const uint32_t diary_indx = ((diary_idstr * DIARY_MULTIPLIER) & 0xffffffff) >> DIARY_SHIFTBY;
