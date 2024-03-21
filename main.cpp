@@ -162,9 +162,7 @@ bool is_currently_within_hours;
 bool server_after_hour__a_disables;
 
 #ifdef DISABLE_SERVER_AFTER_HOURS
-void determine_is_currently_within_hours(const time_t t){
-	struct tm* local_time = gmtime(&t); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
-	const int hour = local_time->tm_hour;
+void determine_is_currently_within_hours(const int hour){
 	is_currently_within_hours = ((hour >= server_after_hour_a) and (hour < server_after_hour_b)) ^ server_after_hour__a_disables;
 }
 constexpr static const std::string_view server_out_of_hours_response__pre =
@@ -731,11 +729,10 @@ class HTTPResponseHandler {
 		if (n_nonempty != 0)
 			printf("EWOULDBLOCK_queue[%lu] has %u non-empty entries (%luKiB)\n", EWOULDBLOCK_queue.size(), n_nonempty, total_sz/1024);
 		
+		const time_t current_time = time(0);
+		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
 #ifdef DISABLE_SERVER_AFTER_HOURS
-		{
-			const time_t current_time = time(0);
-			determine_is_currently_within_hours(current_time);
-		}
+		determine_is_currently_within_hours(local_time->tm_hour);
 #endif
 		
 		// TODO: Tidy vectors such as EWOULDBLOCK_queue by removing items where client_socket==0
@@ -754,6 +751,9 @@ int main(const int argc,  const char* argv[]){
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	const char* const openssl_ciphers = argv[3];
+	
+	const time_t current_time = time(0);
+	struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
 	
 #ifdef DISABLE_SERVER_AFTER_HOURS
 	{
@@ -794,7 +794,7 @@ int main(const int argc,  const char* argv[]){
 			server_after_hour__a_disables = false;
 		}
 		
-		determine_is_currently_within_hours(time(0));
+		determine_is_currently_within_hours(local_time->tm_hour);
 		
 		constexpr size_t offset1 = server_out_of_hours_response__pre.size();
 		memcpy(server_out_of_hours_response__buf, server_out_of_hours_response__pre.data(), offset1);
