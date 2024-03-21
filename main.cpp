@@ -745,7 +745,7 @@ class HTTPResponseHandler {
 		// " -> "
 		uintptr_t response_data_memloc = reinterpret_cast<uintptr_t>(response.data());
 		for (unsigned i = 16;  i != 0;  --i){
-			logline[24+i] = ((response_data_memloc%16) < 10) ? ('0' + (response_data_memloc%16)) : ('a' + (response_data_memloc%16));
+			logline[24+i] = ((response_data_memloc%16) < 10) ? ('0' + (response_data_memloc%16)) : ('a' + (response_data_memloc%16) - 10);
 			response_data_memloc /= 16;
 		}
 		// " keepalive="
