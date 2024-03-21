@@ -26,9 +26,9 @@ def guess_mimetype(fp:str):
 	global cached_mimetypes_modified
 	
 	realfp:str = os.path.realpath(fp)
-	last_modified:int = os.stat(realfp).st_mtime
+	last_modified:float = os.stat(realfp).st_mtime
 	
-	cached_mimetype, cached_mtime = cached_mimetypes.get(realfp,[None,0])
+	cached_mimetype, cached_mtime = cached_mimetypes.get(realfp,[None,0.0])
 	if cached_mtime == last_modified:
 		return cached_mimetype
 	
