@@ -315,11 +315,19 @@ if __name__ == "__main__":
 			files_to_pack.append((True,False,False,fp,prev_idstr+"\n"+next_idstr+"\n"))
 		with open(args.pack_files_to, "wb") as fw:
 			realname2aliasname:dict = {}
+			prev_processed_fp_dfkjskfdjs:dict = {}
 			for is_diary, dont_compress, is_rpill, fp, content_prefix in files_to_pack:
 				# dont_compress allows us to pretend it was produced automatically, not static pre-compressed content
 				
+				if fp in prev_processed_fp_dfkjskfdjs:
+					offset, content_len = prev_processed_fp_dfkjskfdjs[fp]
+					files__offsets_and_sizes.append(offset)
+					files__offsets_and_sizes.append(content_len)
+					continue
+				
 				written_n_bytes:int = 0
 				contents:bytes = None
+				
 				with open(fp, "rb") as fr:
 					contents = fr.read()
 				
@@ -451,8 +459,10 @@ if __name__ == "__main__":
 					max_file_and_header_sz = content_len
 				
 				files__offsets_and_sizes.append(offset)
-				offset += content_len
 				files__offsets_and_sizes.append(content_len)
+				prev_processed_fp_dfkjskfdjs[fp] = (offset, content_len)
+				
+				offset += content_len
 		
 		def write_int_arr_for_cpp(arr:list):
 			s:str = "{"
