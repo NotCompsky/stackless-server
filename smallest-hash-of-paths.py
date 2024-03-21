@@ -317,9 +317,9 @@ if __name__ == "__main__":
 				# dont_compress allows us to pretend it was produced automatically, not static pre-compressed content
 				
 				if fp in prev_processed_fp_dfkjskfdjs:
-					offset, content_len = prev_processed_fp_dfkjskfdjs[fp]
-					files__offsets_and_sizes.append(offset)
-					files__offsets_and_sizes.append(content_len)
+					_offset, _content_len = prev_processed_fp_dfkjskfdjs[fp]
+					files__offsets_and_sizes.append(_offset)
+					files__offsets_and_sizes.append(_content_len)
 					continue
 				
 				written_n_bytes:int = 0
