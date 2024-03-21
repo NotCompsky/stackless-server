@@ -10,6 +10,7 @@ import mimetype_utils
 from html import escape as html_escape
 from sha256integrity import get_sha256_hash_in_b64_form
 from headers import make_static_headers
+import compression_utils
 
 
 mimetype_utils.load_cached_mimetypes("cached_mimetypes.json")
@@ -37,10 +38,6 @@ def str2cliststr(s:str):
 		r += "'" + c + "',"
 	return r[:-1] + "}"
 '''
-
-def gzip_compress(contents:bytes):
-	CO = zlib.compressobj(level=9, wbits=31)
-	return CO.compress(contents)+CO.flush()
 
 def get_int_array_from_numpy_array(array):
 	contig_array = np.ascontiguousarray(array, dtype=np.uint32)
@@ -439,12 +436,7 @@ if __name__ == "__main__":
 					contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
 					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
 				
-				content_encoding_part:str = ""
-				if not dont_compress:
-					contents_compressed:bytes = gzip_compress(contents)
-					if len(contents_compressed) < len(contents)+10:
-						contents = contents_compressed
-						content_encoding_part = "Content-Encoding: gzip\r\n"
+				content_encoding_part, contents = compression_utils.compress_w_best_compressor(contents)
 				
 				headers:str = make_static_headers(content_encoding_part, len(contents), csp_header, mimetype)
 				
