@@ -4,6 +4,7 @@
 #include <cstdio> // for printf
 #include <cstring> // for memset
 #include <cstdlib> // for malloc
+#include <arpa/inet.h> // for inet_ntop
 
 
 int main(const int argc,  const char* argv[]){
@@ -37,14 +38,21 @@ int main(const int argc,  const char* argv[]){
 			write(1, "Reached end of file or unexpected end\n", 38);
 			break;
 		}
-		const int hour = reinterpret_cast<int*>(logline)[0];
-		const int mins = reinterpret_cast<int*>(logline)[1];
+		const time_t t = reinterpret_cast<time_t*>(logline)[0];
+		struct tm* local_time = gmtime(&t);
+		const int hour = local_time->tm_hour;
+		const int mins = local_time->tm_min;
+		const in_addr_t ip_address = reinterpret_cast<in_addr_t*>(logline+logline_ipaddrindx)[0];
+		
 		const unsigned custom_strview_size = reinterpret_cast<unsigned*>(logline+logline_datetime_sz)[0];
 		const unsigned response_indx = logline[logline_respindxindx];
 		const bool keepalive = logline[logline_keepaliveindx];
 		const char* const logline_reqheaders = logline + logline_reqheadersindx;
 		
-		printf("%2d:%2d: response=%s, custom_strview_size %u, keepalive=%u\n%.1024s\n\n", hour, mins, all_response_names+100*response_indx, custom_strview_size, (unsigned)keepalive, logline_reqheaders);
+		char _buf[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &ip_address, _buf, INET_ADDRSTRLEN);
+		
+		printf("%2d:%2d %.*s response=%s, custom_strview_size %u, keepalive=%u\n%.1024s\n\n", hour, mins, (int)INET_ADDRSTRLEN, _buf, all_response_names+100*response_indx, custom_strview_size, (unsigned)keepalive, logline_reqheaders);
 	}
 	close(logfile_fd);
 	return 0;

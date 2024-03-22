@@ -170,9 +170,8 @@ void determine_is_currently_within_hours(const int hour){
 #endif
 
 
-void set_logline_time(const int hour,  const int mins){
-	reinterpret_cast<int*>(logline)[0] = hour;
-	reinterpret_cast<int*>(logline)[1] = mins;
+void set_logline_time(const time_t current_time){
+	reinterpret_cast<time_t*>(logline)[0] = current_time;
 }
 
 
@@ -751,7 +750,10 @@ class HTTPResponseHandler {
 		
 		return_goto:
 		
-		reinterpret_cast<unsigned*>(logline+logline_datetime_sz)[0] = custom_strview.size();
+		const in_addr_t ip_address = client_context->client_addr.sin_addr.s_addr;
+		
+		reinterpret_cast<in_addr_t*>(logline+logline_ipaddrindx)[0] = ip_address;
+		reinterpret_cast<unsigned*>(logline+logline_customstrviewindx)[0] = custom_strview.size();
 		logline[logline_respindxindx] = response_indx;
 		static_assert(response_enum::N < 256);
 		logline[logline_keepaliveindx] = this->keep_alive;
@@ -781,7 +783,7 @@ class HTTPResponseHandler {
 		
 		const time_t current_time = time(0);
 		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
-		set_logline_time(local_time->tm_hour, local_time->tm_min);
+		set_logline_time(current_time);
 #ifdef DISABLE_SERVER_AFTER_HOURS
 		determine_is_currently_within_hours(local_time->tm_hour);
 #endif
@@ -805,7 +807,7 @@ int main(const int argc,  const char* argv[]){
 	
 	const time_t current_time = time(0);
 	struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
-	set_logline_time(local_time->tm_hour, local_time->tm_min);
+	set_logline_time(current_time);
 	
 #ifdef DISABLE_SERVER_AFTER_HOURS
 	{
