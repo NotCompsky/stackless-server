@@ -9,7 +9,12 @@ static_assert(filestreaming__block_sz >= filestreaming__stream_block_sz, "filest
 constexpr size_t server_buf_sz = (HASH1_max_file_and_header_sz > (filestreaming__block_sz+filestreaming__max_response_header_sz)) ? HASH1_max_file_and_header_sz : (filestreaming__block_sz+filestreaming__max_response_header_sz);
 class HTTPResponseHandler;
 class NonHTTPRequestHandler;
-typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, 0, 60, 5> Server;
+
+constexpr size_t n_extra_data_longs = 0;
+constexpr time_t timer_interval = 10;
+constexpr unsigned timeout_in_timer_intervals = 360;
+
+typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HTTPResponseHandler, NonHTTPRequestHandler, n_extra_data_longs, timer_interval, timeout_in_timer_intervals> Server;
 
 #define SECURITY_HEADERS_EXCLUDING_CSP \
 	"Referrer-Policy: no-referrer\r\n" /* HEADER__SECURITY__NO_REFERRER */ \
