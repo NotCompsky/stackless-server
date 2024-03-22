@@ -782,9 +782,9 @@ class HTTPResponseHandler {
 			printf("EWOULDBLOCK_queue[%lu] has %u non-empty entries (%luKiB)\n", EWOULDBLOCK_queue.size(), n_nonempty, total_sz/1024);
 		
 		const time_t current_time = time(0);
-		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
 		set_logline_time(current_time);
 #ifdef DISABLE_SERVER_AFTER_HOURS
+		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
 		determine_is_currently_within_hours(local_time->tm_hour);
 #endif
 		
@@ -806,11 +806,12 @@ int main(const int argc,  const char* argv[]){
 	const char* const openssl_ciphers = argv[3];
 	
 	const time_t current_time = time(0);
-	struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
 	set_logline_time(current_time);
 	
 #ifdef DISABLE_SERVER_AFTER_HOURS
 	{
+		struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
+		
 		const char* const hh_hh = argv[4];
 		if (strlen(hh_hh) != 5){
 			[[unlikely]]
