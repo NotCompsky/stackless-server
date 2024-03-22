@@ -185,6 +185,19 @@ namespace response_enum {
 		N
 	};
 }
+constexpr static const std::string_view all_response_names[11] = {
+	"_r::not_found",
+	"_r::server_error",
+	"_r::wrong_hostname",
+	"_r::suspected_robot",
+	"_r::user_login_url_already_used",
+	"_r::not_logged_in__dont_set_fuck_header",
+	"_r::not_logged_in__set_fuck_header",
+	"_r::cant_register_user_due_to_lack_of_fuck_cookie",
+	"_r::wiki_page_not_found",
+	"_r::wiki_page_error",
+	"using_server_buf",
+};
 constexpr static const std::string_view all_responses[10] = {
 	_r::not_found,
 	_r::server_error,

@@ -2,21 +2,8 @@
 #include <unistd.h> // for write
 #include <fcntl.h> // for O_NOATIME etc
 #include <cstdio> // for printf
-
-
-constexpr static const char* all_response_names[11] = {
-	"_r::not_found",
-	"_r::server_error",
-	"_r::wrong_hostname",
-	"_r::suspected_robot",
-	"_r::user_login_url_already_used",
-	"_r::not_logged_in__dont_set_fuck_header",
-	"_r::not_logged_in__set_fuck_header",
-	"_r::cant_register_user_due_to_lack_of_fuck_cookie",
-	"_r::wiki_page_not_found",
-	"_r::wiki_page_error",
-	"using_server_buf",
-};
+#include <cstring> // for memset
+#include <cstdlib> // for malloc
 
 
 int main(const int argc,  const char* argv[]){
@@ -32,6 +19,19 @@ int main(const int argc,  const char* argv[]){
 		write(1, "Cannot open file\n", 17);
 	}
 	
+	unsigned n_response_names;
+	read(logfile_fd, &n_response_names, sizeof(unsigned));
+	
+	char* const all_response_names = reinterpret_cast<char*>(malloc(n_response_names*100));
+	memset(all_response_names, 0, n_response_names*100);
+	
+	for (unsigned i = 0;  i < n_response_names;  ++i){
+		unsigned char response_name_len;
+		read(logfile_fd, &response_name_len, sizeof(unsigned char));
+		read(logfile_fd,  all_response_names + 100*i,  response_name_len);
+		printf("Registered response name: [%u] %.*s\n", (unsigned)response_name_len, (int)response_name_len, all_response_names + 100*i);
+	}
+	
 	while(true){
 		if (read(logfile_fd, logline, logline_sz) != logline_sz){
 			write(1, "Reached end of file or unexpected end\n", 38);
@@ -44,7 +44,7 @@ int main(const int argc,  const char* argv[]){
 		const bool keepalive = logline[logline_keepaliveindx];
 		const char* const logline_reqheaders = logline + logline_reqheadersindx;
 		
-		printf("%2d:%2d: response=%s, custom_strview_size %u, keepalive=%u\n%.1024s\n\n", hour, mins, all_response_names[response_indx], custom_strview_size, (unsigned)keepalive, logline_reqheaders);
+		printf("%2d:%2d: response=%s, custom_strview_size %u, keepalive=%u\n%.1024s\n\n", hour, mins, all_response_names+100*response_indx, custom_strview_size, (unsigned)keepalive, logline_reqheaders);
 	}
 	close(logfile_fd);
 	return 0;

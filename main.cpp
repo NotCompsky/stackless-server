@@ -63,8 +63,9 @@ uint64_t uint64_value_of(const char(&s)[8]){
 	return std::bit_cast<std::uint64_t>(s);
 }
 
-template<unsigned N>
-unsigned constexprstrlen(const char(&s)[N]){
+template<typename T,  unsigned N>
+constexpr
+unsigned constexprstrlen(T(&s)[N]){
 	return N;
 }
 
@@ -991,6 +992,18 @@ int main(const int argc,  const char* argv[]){
 	if (unlikely((logfile_fd == -1) or (packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
 		write(2, "Failed logfile_fd to open expired_user_login_urls or packed_file or enwiki\n", 75);
 		return 1;
+	}
+	
+	{
+		constexpr unsigned n_response_names_ce = constexprstrlen(all_response_names);
+		unsigned n_response_names = n_response_names_ce;
+		write(logfile_fd, reinterpret_cast<void*>(&n_response_names), sizeof(unsigned));
+		for (unsigned i = 0;  i < n_response_names_ce;  ++i){
+			const std::string_view& sv = all_response_names[i];
+			const unsigned char sv_size = sv.size();
+			write(logfile_fd, &sv_size, sizeof(unsigned char));
+			write(logfile_fd, sv.data(), sv.size());
+		}
 	}
 	
 	server_buf = reinterpret_cast<char*>(malloc(server_buf_sz));
