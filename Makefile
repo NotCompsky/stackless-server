@@ -33,6 +33,12 @@ server:
 	sudo chmod 500 server
 	sudo setcap CAP_NET_BIND_SERVICE=+eip server
 
+log-reader:
+	c++ read-logs.cpp -std=c++2b -O3 -march=native -o log-reader -s -fomit-frame-pointer
+
+read-logs:
+	sudo -u staticserver ./log-reader /media/vangelic/DATA/tmp/static_webserver.log
+
 run-server:
 	sudo -u staticserver -- ./server 443 8103208574956883562 "ECDHE-ECDSA-AES256-GCM-SHA384" 06-01
 
