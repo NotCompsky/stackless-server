@@ -25,6 +25,7 @@
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/extract-page.hpp"
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/get-byte-offset-of-page-given-title.hpp"
 #include "logline.hpp"
+#include "cookies_utils.hpp"
 
 static_assert(OPENSSL_VERSION_MAJOR == 3, "Minimum OpenSSL version not met: major");
 
@@ -83,46 +84,7 @@ std::string_view http_response__set_user_cookie__postfix(
 	"Strict-Transport-Security: max-age=31536000\r\n" // maybe: includeSubDomains
 	"\r\n"
 );
-template<unsigned hash1_sz>
-bool compare_secret_path_hashes(const char(&hash1)[hash1_sz],  const char* const hash2){
-	const uint64_t* const a = reinterpret_cast<const uint64_t*>(hash1);
-	const uint64_t* const b = reinterpret_cast<const uint64_t*>(hash2);
-	static_assert(hash1_sz==32, "compare_secret_path_hashes assumes wrong hash1_sz");
-	/*printf("%.32s vs %.32s\n", hash1, hash2);
-	printf("%lu vs %lu\n", a[0], b[0]);
-	printf("%lu vs %lu\n", a[1], b[1]);
-	printf("%lu vs %lu\n", a[2], b[2]);
-	printf("%lu vs %lu\n", a[3], b[3]);*/
-	return (
-		(a[0]==b[0]) and
-		(a[1]==b[1]) and
-		(a[2]==b[2]) and
-		(a[3]==b[3])
-	);
-}
 char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + user_cookie_len + http_response__set_user_cookie__postfix.size()];
-
-const char* get_cookies_startatspace(const char* const str,  const char* const headers_endish){ // "Cookie: " <- NOT after the space
-	const char* cookies_startatspace = nullptr;
-	const char* headers_itr = str + 7; // "GET /\r\n"
-	while(headers_itr != headers_endish){
-		if (
-			((headers_itr[0] == 'C') or (headers_itr[0] == 'c')) and
-			(headers_itr[1] == 'o') and
-			(headers_itr[2] == 'o') and
-			(headers_itr[3] == 'k') and
-			(headers_itr[4] == 'i') and
-			(headers_itr[5] == 'e') and
-			(headers_itr[6] == ':') and
-			(headers_itr[7] == ' ')
-		){
-			cookies_startatspace = headers_itr + 8 - 1;
-			break;
-		}
-		++headers_itr;
-	}
-	return cookies_startatspace;
-}
 
 constexpr
 
@@ -319,18 +281,7 @@ class HTTPResponseHandler {
 				{
 				const char* cookies_startatspace = get_cookies_startatspace(str,  body_content_start - constexprstrlen(cookienamefld) - user_cookie_len - constexprstrlen(endofheaders));
 				if (cookies_startatspace != nullptr){
-					while(
-						(cookies_startatspace[2] != '\r')
-					){
-						if (
-							(cookies_startatspace[0] == ' ') and
-							(cookies_startatspace[1] == 'u') and
-							(cookies_startatspace[2] == '=')
-						){
-							break;
-						}
-						++cookies_startatspace;
-					}
+					cookies_startatspace = find_start_of_u_cookie(cookies_startatspace);
 					if (cookies_startatspace[2] != '\r'){
 						// NOTE: Guaranteed to be user_cookie_len safe-to-access characters here
 						const char* const user_cookie = cookies_startatspace + 3;
@@ -984,6 +935,17 @@ int main(const int argc,  const char* argv[]){
 			const unsigned char sv_size = sv.size();
 			write(logfile_fd, &sv_size, sizeof(unsigned char));
 			write(logfile_fd, sv.data(), sv.size());
+		}
+		
+		unsigned _n_users = n_users;
+		write(logfile_fd, &_n_users, sizeof(unsigned));
+		
+		unsigned usernames_buf_len = sizeof(usernames_buf);
+		write(logfile_fd, &usernames_buf_len, sizeof(unsigned));
+		write(logfile_fd, usernames_buf, usernames_buf_len);
+		
+		for (unsigned i = 0;  i < n_users;  ++i){
+			write(logfile_fd, all_users[i].hash, user_cookie_len);
 		}
 	}
 	
