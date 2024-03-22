@@ -167,34 +167,6 @@ bool server_after_hour__a_disables;
 void determine_is_currently_within_hours(const int hour){
 	is_currently_within_hours = ((hour >= server_after_hour_a) and (hour < server_after_hour_b)) ^ server_after_hour__a_disables;
 }
-constexpr static const std::string_view server_out_of_hours_response__pre =
-	HEADER__RETURN_CODE__OK
-	"Content-Length: 272\r\n"
-	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
-	"Content-Type: text/html; charset=UTF-8\r\n" \
-	SECURITY_HEADERS_EXCLUDING_CSP
-	"\r\n"
-	"<!DOCTYPE html>"
-	"<html>"
-	"<head>"
-		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
-			"body{color:white;background:black;}"
-		"</style>"
-	"</head>"
-	"<body>"
-		"<h1>Out of hours</h1>"
-		"<p>Website is sleeping</p>"
-		"<p>Come back between "
-;
-constexpr static const std::string_view server_out_of_hours_response__example_of_middle_content = "06:00-24:00 or 00:00-01:00";
-constexpr static const std::string_view server_out_of_hours_response__post =
-		" (GMT)</p>"
-	"</body>"
-	"</html>"
-;
-static
-char server_out_of_hours_response__buf[server_out_of_hours_response__pre.size() + 5 + server_out_of_hours_response__post.size()];
-static const std::string_view server_out_of_hours_response(server_out_of_hours_response__buf,  server_out_of_hours_response__pre.size() + server_out_of_hours_response__example_of_middle_content.size() + server_out_of_hours_response__post.size());
 #endif
 
 
@@ -224,23 +196,25 @@ class HTTPResponseHandler {
 		const std::size_t body_len,
 		std::vector<char*>& headers
 	){
+		constexpr const char prefix_GET[4] = {'G','E','T',' '};
+		constexpr const char prefix_POST[4] = {'P','O','S','T'};
+		constexpr const char prefix_HEAD[4] = {'H','E','A','D'};
+		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
+		
+		std::string_view custom_strview;
 		this->keep_alive = false;
+		unsigned response_indx = response_enum::NOT_FOUND;
 		
 #ifdef DISABLE_SERVER_AFTER_HOURS
 		if (not is_currently_within_hours){
 			this->keep_alive = false;
-			return server_out_of_hours_response;
+			response_indx = response_enum::SERVER_OUT_OF_HOURS;
+			goto return_goto;
 		}
 #endif
 		
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
-		constexpr const char prefix_GET[4] = {'G','E','T',' '};
-		constexpr const char prefix_POST[4] = {'P','O','S','T'};
-		constexpr const char prefix_HEAD[4] = {'H','E','A','D'};
-		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
-		unsigned response_indx = response_enum::NOT_FOUND;
-		std::string_view custom_strview;
 		if ((prefix_id == uint32_value_of(prefix_GET)) or (prefix_id == uint32_value_of(prefix_HEAD))){
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
@@ -874,54 +848,54 @@ int main(const int argc,  const char* argv[]){
 		
 		determine_is_currently_within_hours(local_time->tm_hour);
 		
-		constexpr size_t offset1 = server_out_of_hours_response__pre.size();
-		memcpy(server_out_of_hours_response__buf, server_out_of_hours_response__pre.data(), offset1);
-		server_out_of_hours_response__buf[offset1+0] = '0' + (ennable_server_after_hour/10);
-		server_out_of_hours_response__buf[offset1+1] = '0' + (ennable_server_after_hour%10);
-		server_out_of_hours_response__buf[offset1+2] = ':';
-		server_out_of_hours_response__buf[offset1+3] = '0';
-		server_out_of_hours_response__buf[offset1+4] = '0';
-		server_out_of_hours_response__buf[offset1+5] = '-';
+		constexpr size_t offset1 = _r::server_out_of_hours_response__pre.size();
+		memcpy(_r::server_out_of_hours_response__buf, _r::server_out_of_hours_response__pre.data(), offset1);
+		_r::server_out_of_hours_response__buf[offset1+0] = '0' + (ennable_server_after_hour/10);
+		_r::server_out_of_hours_response__buf[offset1+1] = '0' + (ennable_server_after_hour%10);
+		_r::server_out_of_hours_response__buf[offset1+2] = ':';
+		_r::server_out_of_hours_response__buf[offset1+3] = '0';
+		_r::server_out_of_hours_response__buf[offset1+4] = '0';
+		_r::server_out_of_hours_response__buf[offset1+5] = '-';
 		
 		size_t offset2 = offset1 + 6;
 		if (disable_server_after_hour < ennable_server_after_hour){
-			server_out_of_hours_response__buf[offset1+6] = '2';
-			server_out_of_hours_response__buf[offset1+7] = '4';
-			server_out_of_hours_response__buf[offset1+8] = ':';
-			server_out_of_hours_response__buf[offset1+9] = '0';
-			server_out_of_hours_response__buf[offset1+10]= '0';
-			server_out_of_hours_response__buf[offset1+11]= ' ';
-			server_out_of_hours_response__buf[offset1+12]= 'o';
-			server_out_of_hours_response__buf[offset1+13]= 'r';
-			server_out_of_hours_response__buf[offset1+14]= ' ';
-			server_out_of_hours_response__buf[offset1+15]= '0';
-			server_out_of_hours_response__buf[offset1+16]= '0';
-			server_out_of_hours_response__buf[offset1+17]= ':';
-			server_out_of_hours_response__buf[offset1+18]= '0';
-			server_out_of_hours_response__buf[offset1+19]= '0';
-			server_out_of_hours_response__buf[offset1+20]= '-';
+			_r::server_out_of_hours_response__buf[offset1+6] = '2';
+			_r::server_out_of_hours_response__buf[offset1+7] = '4';
+			_r::server_out_of_hours_response__buf[offset1+8] = ':';
+			_r::server_out_of_hours_response__buf[offset1+9] = '0';
+			_r::server_out_of_hours_response__buf[offset1+10]= '0';
+			_r::server_out_of_hours_response__buf[offset1+11]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+12]= 'o';
+			_r::server_out_of_hours_response__buf[offset1+13]= 'r';
+			_r::server_out_of_hours_response__buf[offset1+14]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+15]= '0';
+			_r::server_out_of_hours_response__buf[offset1+16]= '0';
+			_r::server_out_of_hours_response__buf[offset1+17]= ':';
+			_r::server_out_of_hours_response__buf[offset1+18]= '0';
+			_r::server_out_of_hours_response__buf[offset1+19]= '0';
+			_r::server_out_of_hours_response__buf[offset1+20]= '-';
 			offset2 = offset1 + 21;
 		} else {
-			server_out_of_hours_response__buf[offset1+11]= '&'; // &nbsp; or &#xA0; (non-break space) just to use up the characters and keep the buffer the same size
-			server_out_of_hours_response__buf[offset1+12]= 'n';
-			server_out_of_hours_response__buf[offset1+13]= 'b';
-			server_out_of_hours_response__buf[offset1+14]= 's';
-			server_out_of_hours_response__buf[offset1+15]= 'p';
-			server_out_of_hours_response__buf[offset1+16]= ';';
-			server_out_of_hours_response__buf[offset1+17]= ' ';
-			server_out_of_hours_response__buf[offset1+18]= ' ';
-			server_out_of_hours_response__buf[offset1+19]= ' ';
-			server_out_of_hours_response__buf[offset1+20]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+11]= '&'; // &nbsp; or &#xA0; (non-break space) just to use up the characters and keep the buffer the same size
+			_r::server_out_of_hours_response__buf[offset1+12]= 'n';
+			_r::server_out_of_hours_response__buf[offset1+13]= 'b';
+			_r::server_out_of_hours_response__buf[offset1+14]= 's';
+			_r::server_out_of_hours_response__buf[offset1+15]= 'p';
+			_r::server_out_of_hours_response__buf[offset1+16]= ';';
+			_r::server_out_of_hours_response__buf[offset1+17]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+18]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+19]= ' ';
+			_r::server_out_of_hours_response__buf[offset1+20]= ' ';
 		}
 		{
-			server_out_of_hours_response__buf[offset2  ] = '0' + (disable_server_after_hour/10);
-			server_out_of_hours_response__buf[offset2+1] = '0' + (disable_server_after_hour%10);
-			server_out_of_hours_response__buf[offset2+2] = ':';
-			server_out_of_hours_response__buf[offset2+3] = '0';
-			server_out_of_hours_response__buf[offset2+4] = '0';
+			_r::server_out_of_hours_response__buf[offset2  ] = '0' + (disable_server_after_hour/10);
+			_r::server_out_of_hours_response__buf[offset2+1] = '0' + (disable_server_after_hour%10);
+			_r::server_out_of_hours_response__buf[offset2+2] = ':';
+			_r::server_out_of_hours_response__buf[offset2+3] = '0';
+			_r::server_out_of_hours_response__buf[offset2+4] = '0';
 		}
 		
-		memcpy(server_out_of_hours_response__buf+offset1+server_out_of_hours_response__example_of_middle_content.size(), server_out_of_hours_response__post.data(), server_out_of_hours_response__post.size());
+		memcpy(_r::server_out_of_hours_response__buf+offset1+_r::server_out_of_hours_response__example_of_middle_content.size(), _r::server_out_of_hours_response__post.data(), _r::server_out_of_hours_response__post.size());
 	}
 #endif
 	

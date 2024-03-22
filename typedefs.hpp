@@ -167,6 +167,42 @@ constexpr static const std::string_view wiki_page_error =
 	"Page exists but cannot be displayed due to software bug"
 ;
 
+
+#ifdef DISABLE_SERVER_AFTER_HOURS
+constexpr static const std::string_view server_out_of_hours_response__pre =
+	HEADER__RETURN_CODE__OK
+	// "Connection: keep-alive\r\n" // HEADER__CONNECTION_KEEP_ALIVE
+	"Content-Length: 272\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>Out of hours</h1>"
+		"<p>Website is sleeping</p>"
+		"<p>Come back between "
+;
+constexpr static const std::string_view server_out_of_hours_response__example_of_middle_content = "06:00-24:00 or 00:00-01:00";
+constexpr static const std::string_view server_out_of_hours_response__post =
+		" (GMT)</p>"
+	"</body>"
+	"</html>"
+;
+static
+char server_out_of_hours_response__buf[server_out_of_hours_response__pre.size() + 5 + server_out_of_hours_response__post.size()];
+static constexpr std::string_view server_out_of_hours_response(server_out_of_hours_response__buf,  server_out_of_hours_response__pre.size() + server_out_of_hours_response__example_of_middle_content.size() + server_out_of_hours_response__post.size());
+#else
+static constexpr std::string_view server_out_of_hours_response(nullptr,0);
+#endif
+
+
 } // namespace _r
 
 namespace response_enum {
@@ -182,10 +218,11 @@ namespace response_enum {
 		WIKI_PAGE_NOT_FOUND,
 		WIKI_PAGE_ERROR,
 		SENDING_FROM_CUSTOM_STRVIEW,
+		SERVER_OUT_OF_HOURS,
 		N
 	};
 }
-constexpr static const std::string_view all_response_names[11] = {
+constexpr static const std::string_view all_response_names[12] = {
 	"_r::not_found",
 	"_r::server_error",
 	"_r::wrong_hostname",
@@ -197,8 +234,9 @@ constexpr static const std::string_view all_response_names[11] = {
 	"_r::wiki_page_not_found",
 	"_r::wiki_page_error",
 	"using_server_buf",
+	"_r::server_out_of_hours_response",
 };
-constexpr static const std::string_view all_responses[10] = {
+constexpr static const std::string_view all_responses[11] = {
 	_r::not_found,
 	_r::server_error,
 	_r::wrong_hostname,
@@ -208,5 +246,6 @@ constexpr static const std::string_view all_responses[10] = {
 	_r::not_logged_in__set_fuck_header,
 	_r::cant_register_user_due_to_lack_of_fuck_cookie,
 	_r::wiki_page_not_found,
-	_r::wiki_page_error
+	_r::wiki_page_error,
+	_r::server_out_of_hours_response,
 };
