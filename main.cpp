@@ -215,7 +215,7 @@ class HTTPResponseHandler {
 	char remote_addr_str[INET6_ADDRSTRLEN];
 	unsigned remote_addr_str_len;
 	
-	std::string_view handle_request__core(
+	std::string_view handle_request(
 		Server::ClientContext* client_context,
 		std::vector<Server::ClientContext>& client_contexts,
 		std::vector<Server::LocalListenerContext>& local_listener_contexts,
@@ -791,19 +791,6 @@ class HTTPResponseHandler {
 		} else {
 			return all_responses[response_indx];
 		}
-	}
-	
-	std::string_view handle_request(
-		Server::ClientContext* client_context,
-		std::vector<Server::ClientContext>& client_contexts,
-		std::vector<Server::LocalListenerContext>& local_listener_contexts,
-		char* str,
-		const char* const body_content_start,
-		const std::size_t body_len,
-		std::vector<char*>& headers
-	){
-		const std::string_view response(handle_request__core(client_context, client_contexts, local_listener_contexts, str, body_content_start, body_len, headers));
-		return response;
 	}
 	
 	bool handle_timer_event(){
