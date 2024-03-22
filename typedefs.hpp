@@ -22,6 +22,8 @@ typedef compsky::server::Server<MAX_HEADER_LEN, default_req_buffer_sz_minus1, HT
 	/* TODO: "Expect-CT: max-age=86400, enforce\r\n" (expect a valid Signed Certificate Timestamp (SCT) for each certificate in the certificate chain, forcing any SSL certificate forgery to leave a 'paper trail' of logs AFAIK) */ \
 	/* NOTE: HPKP header has been deprecated, but it looked good */
 
+namespace _r {
+
 constexpr static const std::string_view not_found =
 	HEADER__RETURN_CODE__NOT_FOUND
 	"Content-Length: 9\r\n"
@@ -164,3 +166,34 @@ constexpr static const std::string_view wiki_page_error =
 	"\r\n"
 	"Page exists but cannot be displayed due to software bug"
 ;
+
+} // namespace _r
+
+namespace response_enum {
+	enum {
+		NOT_FOUND,
+		SERVER_ERROR,
+		WRONG_HOSTNAME,
+		SUSPECTED_ROBOT,
+		USER_LOGIN_URL_ALREADY_USED,
+		NOT_LOGGED_IN__DONT_SET_FUCK_HEADER,
+		NOT_LOGGED_IN__SET_FUCK_HEADER,
+		CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE,
+		WIKI_PAGE_NOT_FOUND,
+		WIKI_PAGE_ERROR,
+		SENDING_FROM_CUSTOM_STRVIEW,
+		N
+	};
+}
+constexpr static const std::string_view all_responses[10] = {
+	_r::not_found,
+	_r::server_error,
+	_r::wrong_hostname,
+	_r::suspected_robot,
+	_r::user_login_url_already_used,
+	_r::not_logged_in__dont_set_fuck_header,
+	_r::not_logged_in__set_fuck_header,
+	_r::cant_register_user_due_to_lack_of_fuck_cookie,
+	_r::wiki_page_not_found,
+	_r::wiki_page_error
+};

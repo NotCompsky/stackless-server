@@ -228,6 +228,8 @@ class HTTPResponseHandler {
 		const std::size_t body_len,
 		std::vector<char*>& headers
 	){
+		this->keep_alive = false;
+		
 #ifdef DISABLE_SERVER_AFTER_HOURS
 		if (not is_currently_within_hours){
 			this->keep_alive = false;
@@ -241,6 +243,8 @@ class HTTPResponseHandler {
 		constexpr const char prefix_POST[4] = {'P','O','S','T'};
 		constexpr const char prefix_HEAD[4] = {'H','E','A','D'};
 		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
+		unsigned response_indx = response_enum::NOT_FOUND;
+		std::string_view custom_strview;
 		if ((prefix_id == uint32_value_of(prefix_GET)) or (prefix_id == uint32_value_of(prefix_HEAD))){
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
@@ -275,7 +279,8 @@ class HTTPResponseHandler {
 					if (headers_itr == headers_endish1){
 						[[unlikely]]
 						this->keep_alive = false;
-						return wrong_hostname;
+						response_indx = response_enum::WRONG_HOSTNAME;
+						goto return_goto;
 					} else {
 						if (not (
 							(hostname_startatspace[0] == hostname[0]) and
@@ -293,7 +298,8 @@ class HTTPResponseHandler {
 						)){
 							[[unlikely]]
 							this->keep_alive = false;
-							return wrong_hostname;
+							response_indx = response_enum::WRONG_HOSTNAME;
+							goto return_goto;
 						}
 					}
 				}
@@ -330,7 +336,8 @@ class HTTPResponseHandler {
 					if (not has_secfetch_header){
 						[[unlikely]]
 						this->keep_alive = false;
-						return suspected_robot;
+						response_indx = response_enum::SUSPECTED_ROBOT;
+						goto return_goto;
 					}
 				}
 				
@@ -403,19 +410,22 @@ class HTTPResponseHandler {
 						if (not has_secfetch_header){
 							[[unlikely]]
 							this->keep_alive = false;
-							return not_logged_in__dont_set_fuck_header;
+							response_indx = response_enum::NOT_LOGGED_IN__DONT_SET_FUCK_HEADER;
+							goto return_goto;
 						}
 					}
 					
 					this->keep_alive = false;
-					return not_logged_in__set_fuck_header;
+					response_indx = response_enum::NOT_LOGGED_IN__SET_FUCK_HEADER;
+					goto return_goto;
 				}
 			} else {
 				constexpr unsigned fuckcookie_len = 6;
 				const char* cookies_startatspace = get_cookies_startatspace(str,  body_content_start - constexprstrlen(cookienamefld) - fuckcookie_len - constexprstrlen(endofheaders));
 				if (cookies_startatspace == nullptr){
 					this->keep_alive = false;
-					return cant_register_user_due_to_lack_of_fuck_cookie;
+					response_indx = response_enum::CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE;;
+					goto return_goto;
 				}
 				
 				while(
@@ -437,12 +447,15 @@ class HTTPResponseHandler {
 				
 				if (cookies_startatspace[2] == '\r'){
 					this->keep_alive = false;
-					return cant_register_user_due_to_lack_of_fuck_cookie;
+					response_indx = response_enum::CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE;;
+					goto return_goto;
 				}
 				
 				if (prefix_id == uint32_value_of(prefix_HEAD)){
 					[[unlikely]]
-					return cant_register_user_due_to_lack_of_fuck_cookie;
+					this->keep_alive = true;
+					response_indx = response_enum::CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE;;
+					goto return_goto;
 				}
 				
 				for (unsigned secret_path_indx = 0;  secret_path_indx < secret_path_values.size();  ++secret_path_indx){
@@ -451,7 +464,8 @@ class HTTPResponseHandler {
 					if (compare_secret_path_hashes(secret_path.path, str+8)){
 						if (secret_path.is_already_used){
 							this->keep_alive = false;
-							return user_login_url_already_used;
+							response_indx = response_enum::USER_LOGIN_URL_ALREADY_USED;;
+							goto return_goto;
 						}
 						memcpy(
 							http_response__set_user_cookie + http_response__set_user_cookie__prefix.size(),
@@ -460,14 +474,18 @@ class HTTPResponseHandler {
 						);
 						secret_path.is_already_used = true;
 						expire_user_login_url(secret_paths_fd, secret_path_indx);
-						return std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+user_cookie_len+http_response__set_user_cookie__postfix.size());
+						this->keep_alive = true;
+						response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+						custom_strview = std::string_view(http_response__set_user_cookie, http_response__set_user_cookie__prefix.size()+user_cookie_len+http_response__set_user_cookie__postfix.size());
+						goto return_goto;
 					}
 				}
 				{
 					[[unlikely]]
 					printf("Failed user login attempt: %.32s\n", str+8);
 					this->keep_alive = false;
-					return not_found;
+					response_indx = response_enum::NOT_FOUND;
+					goto return_goto;
 				}
 			}
 			
@@ -486,12 +504,14 @@ class HTTPResponseHandler {
 					const compsky::http::header::GetRangeHeaderResult rc = compsky::http::header::get_range(str, from, to);
 					if (unlikely(rc == compsky::http::header::GetRangeHeaderResult::invalid)){
 						this->keep_alive = false;
-						return not_found;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					
 					if (unlikely( (to != 0) and (to <= from) )){
 						this->keep_alive = false;
-						return not_found;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					
 					const HASH2_indx2metadata_item& metadata = HASH2_indx2metadata[path_indx2];
@@ -504,11 +524,15 @@ class HTTPResponseHandler {
 						fd = open(metadata.filepath, O_NOATIME|O_RDONLY);
 						if (unlikely(fd == -1)){
 							printf("Cannot open file\n\tfile = %s\n\terror = %s\n", metadata.filepath, strerror(errno));
-							return server_error;
+							this->keep_alive = true;
+							response_indx = response_enum::SERVER_ERROR;
+							goto return_goto;
 						}
 						if (unlikely(lseek(fd, from, SEEK_SET) != from)){
 							close(fd);
-							return server_error;
+							this->keep_alive = true;
+							response_indx = response_enum::SERVER_ERROR;
+							goto return_goto;
 						}
 					}
 					{
@@ -542,7 +566,10 @@ class HTTPResponseHandler {
 							);
 						}
 						if (prefix_id == uint32_value_of(prefix_HEAD)){
-							return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf));
+							this->keep_alive = true;
+							response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+							custom_strview = std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf));
+							goto return_goto;
 						}
 						const ssize_t n_bytes_read = read(fd, server_itr, bytes_to_read);
 						close(fd);
@@ -550,14 +577,20 @@ class HTTPResponseHandler {
 							// TODO: Maybe read FIRST, then construct headers?
 							///server_itr = server_buf;
 							///compsky::asciify::asciify(server_itr, n_bytes_read, " == n_bytes_read != bytes_to_read == ", bytes_to_read, "; bytes_to_read1 == ", bytes_to_read1);
-							return server_error;
+							this->keep_alive = true;
+							response_indx = response_enum::SERVER_ERROR;
+							goto return_goto;
 						}
-						return std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf)+n_bytes_read);
+						this->keep_alive = true;
+						response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+						custom_strview = std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf)+n_bytes_read);
+						goto return_goto;
 					}
 				} else {
 					[[unlikely]]
 					this->keep_alive = false;
-					return not_found;
+					response_indx = response_enum::NOT_FOUND;
+					goto return_goto;
 				}
 #endif
 			} else {
@@ -570,7 +603,8 @@ class HTTPResponseHandler {
 					if (path_id != HASH1_ORIG_INTS[path_indx]){
 						[[unlikely]]
 						this->keep_alive = false;
-						return not_found;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					
 					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
@@ -578,19 +612,25 @@ class HTTPResponseHandler {
 					// TODO: Deal with HEAD requests
 					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
 						const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
-						return std::string_view(server_buf, n_bytes_written);
+						this->keep_alive = true;
+						response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+						custom_strview = std::string_view(server_buf, n_bytes_written);
+						goto return_goto;
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
 					if (prefix_id == uint32_value_of(prefix_HEAD)){
 						[[unlikely]]
 						this->keep_alive = false;
-						return not_found;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					return request_websocket_open(client_context, nullptr, headers, all_usernames[user_indx].offset, all_usernames[user_indx].length);
 				} else if (path_id == uint32_value_of(wiki_prefix)){
 					if (prefix_id == uint32_value_of(prefix_HEAD)){
 						// TODO?
-						return not_found;
+						this->keep_alive = true;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					
 					constexpr char wikipathprefix[9] = {'G','E','T',' ','/','w','0','0','/'};
@@ -607,7 +647,9 @@ class HTTPResponseHandler {
 					
 					if (title_requested_len > 255){
 						[[unlikely]]
-						return wiki_page_not_found;
+						this->keep_alive = true;
+						response_indx = response_enum::WIKI_PAGE_NOT_FOUND;
+						goto return_goto;
 					}
 					
 					constexpr uint32_t* const all_citation_urls = nullptr;
@@ -636,8 +678,11 @@ class HTTPResponseHandler {
 						extra_buf_2,
 						is_wikipedia
 					));
-					if (unlikely(offset_and_pageid.pageid == nullptr))
-						return wiki_page_not_found;
+					if (unlikely(offset_and_pageid.pageid == nullptr)){
+						this->keep_alive = true;
+						response_indx = response_enum::WIKI_PAGE_NOT_FOUND;
+						goto return_goto;
+					}
 					const std::string_view wikipage_html_contents(compsky_wiki_extractor::process_file(
 						extra_buf_1,
 						extra_buf_2,
@@ -651,7 +696,9 @@ class HTTPResponseHandler {
 						extract_as_html
 					));
 					if (unlikely(wikipage_html_contents.data()[0] == '\0')){
-						return wiki_page_error;
+						this->keep_alive = true;
+						response_indx = response_enum::WIKI_PAGE_ERROR;
+						goto return_goto;
 					}
 					
 					char* _start_of_this_page = const_cast<char*>(wikipage_html_contents.data());
@@ -701,7 +748,9 @@ class HTTPResponseHandler {
 				} else if (path_id == uint32_value_of(diaryprefix)){
 					if (prefix_id == uint32_value_of(prefix_HEAD)){
 						// TODO?
-						return not_found;
+						this->keep_alive = true;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
 					}
 					// "GET /d00/"<IDSTR>
 					const uint32_t diary_idstr = reinterpret_cast<uint32_t*>(str+9)[0];
@@ -714,19 +763,28 @@ class HTTPResponseHandler {
 						
 						if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
 							const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
-							return std::string_view(server_buf, n_bytes_written);
+							this->keep_alive = true;
+							custom_strview = std::string_view(server_buf, n_bytes_written);
+							response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+							goto return_goto;
 						}
 					}
 				}
 				{
 					[[unlikely]]
-					return server_error;
+					this->keep_alive = true;
+					response_indx = response_enum::SERVER_ERROR;
+					goto return_goto;
 				}
 			}
 		}
 		
-		this->keep_alive = false;
-		return not_found;
+		return_goto:
+		if (response_indx == response_enum::SENDING_FROM_CUSTOM_STRVIEW){
+			return custom_strview;
+		} else {
+			return all_responses[response_indx];
+		}
 	}
 	
 	std::string_view handle_request(

@@ -104,7 +104,7 @@ bool is_b64_char(const char c){
 			(origin_header_start == nullptr) or
 			(hostname_start == nullptr) // NOTE: Not sure if required to be non-null?
 		){
-			return not_found;
+			return _r::not_found;
 		}
 		
 		bool is_valid_origin = false;
@@ -131,7 +131,7 @@ bool is_b64_char(const char c){
 		}
 		if (unlikely(not is_valid_origin)){
 			printf("Invalid origin vs hostname: %.20s vs %.20s\n", origin_header_start ? origin_header_start : "(NULL)", hostname_start ? hostname_start : "(NULL)");
-			return not_found;
+			return _r::not_found;
 		}
 		
 		char server_key_input[24 + 36]; // TODO: See if client key is decoded first - it probably isn't because the purpose is just to be random
