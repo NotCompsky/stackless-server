@@ -159,6 +159,12 @@ void expire_user_login_url(const int _secret_paths_fd,  const unsigned secret_pa
 }
 
 
+constexpr unsigned n_timer_intervals_per_ratelimit = 3600 / timer_interval;
+static_assert(n_timer_intervals_per_ratelimit >= 3);
+constexpr unsigned max_requests_per_ratelimit = 360;
+unsigned timer_intervals_within_this_ratelimit = 0;
+
+
 #ifdef DISABLE_SERVER_AFTER_HOURS
 int server_after_hour_a;
 int server_after_hour_b;
@@ -332,8 +338,13 @@ class HTTPResponseHandler {
 						[[likely]]
 						
 						for (user_indx = 0;  user_indx < n_users;  ++user_indx){
-							const User& user = all_users[user_indx];
+							User& user = all_users[user_indx];
 							if (compare_secret_path_hashes(user.hash, user_cookie)){
+								if (++user.requests_in_this_ratelimit > max_requests_per_ratelimit){
+									this->keep_alive = false;
+									response_indx = response_enum::RATELIMITED;
+									goto return_goto;
+								}
 								break;
 							}
 						}
@@ -780,6 +791,13 @@ class HTTPResponseHandler {
 		}
 		if (n_nonempty != 0)
 			printf("EWOULDBLOCK_queue[%lu] has %u non-empty entries (%luKiB)\n", EWOULDBLOCK_queue.size(), n_nonempty, total_sz/1024);
+		
+		if (++timer_intervals_within_this_ratelimit == n_timer_intervals_per_ratelimit){
+			for (unsigned i = 0;  i < n_users;  ++i){
+				all_users[n_users].requests_in_this_ratelimit = 0;
+			}
+			timer_intervals_within_this_ratelimit = 0;
+		}
 		
 		const time_t current_time = time(0);
 		set_logline_time(current_time);

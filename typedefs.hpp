@@ -171,6 +171,15 @@ constexpr static const std::string_view wiki_page_error =
 	"\r\n"
 	"Page exists but cannot be displayed due to software bug"
 ;
+constexpr static const std::string_view ratelimited =
+	HEADER__RETURN_CODE__NOT_AUTHORISED
+	"Content-Length: 88\r\n"
+	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/plain\r\n"
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"\r\n"
+	"Your user account has issued too many requests, please wait an hour before trying again."
+;
 
 
 #ifdef DISABLE_SERVER_AFTER_HOURS
@@ -222,12 +231,13 @@ namespace response_enum {
 		CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE,
 		WIKI_PAGE_NOT_FOUND,
 		WIKI_PAGE_ERROR,
-		SENDING_FROM_CUSTOM_STRVIEW,
 		SERVER_OUT_OF_HOURS,
+		RATELIMITED,
+		SENDING_FROM_CUSTOM_STRVIEW,
 		N
 	};
 }
-constexpr static const std::string_view all_response_names[12] = {
+constexpr static const std::string_view all_response_names[13] = {
 	"_r::not_found",
 	"_r::server_error",
 	"_r::wrong_hostname",
@@ -238,10 +248,11 @@ constexpr static const std::string_view all_response_names[12] = {
 	"_r::cant_register_user_due_to_lack_of_fuck_cookie",
 	"_r::wiki_page_not_found",
 	"_r::wiki_page_error",
-	"using_server_buf",
 	"_r::server_out_of_hours_response",
+	"_r::ratelimited",
+	"using_server_buf", // NOTE: Always has to be at end
 };
-constexpr static const std::string_view all_responses[11] = {
+constexpr static const std::string_view all_responses[12] = {
 	_r::not_found,
 	_r::server_error,
 	_r::wrong_hostname,
@@ -253,4 +264,5 @@ constexpr static const std::string_view all_responses[11] = {
 	_r::wiki_page_not_found,
 	_r::wiki_page_error,
 	_r::server_out_of_hours_response,
+	_r::ratelimited,
 };

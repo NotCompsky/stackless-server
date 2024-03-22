@@ -7,6 +7,7 @@ constexpr unsigned secret_path_hash_len = 32;
 struct User {
 	const char hash[user_cookie_len];
 	const unsigned user_indx;
+	unsigned requests_in_this_ratelimit;
 	/*static_assert(user_cookie_len==32, "user_cookie_len!=32");
 	template<unsigned _username_len>
 	Username(
@@ -25,7 +26,6 @@ struct Username {
 	const uint16_t length;
 };
 constexpr unsigned n_users = 3;
-constexpr
 User all_users[n_users]{
 	{{'9','G','Y','6','t','s','f','Q','g','p','2','k','u','t','e','q','Z','c','N','N','8','J','Q','R','N','3','m','L','k','2','4','l'},0},
 	{{'U','e','U','0','m','w','K','0','Y','2','q','Z','/','D','3','I','h','n','o','d','/','v','I','i','n','A','A','A','N','V','W','I'},1},
