@@ -24,6 +24,7 @@
 #include <time.h>
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/extract-page.hpp"
 #include "/home/vangelic/repos/compsky/bin/wikipedia/src/get-byte-offset-of-page-given-title.hpp"
+#include "logline.hpp"
 
 static_assert(OPENSSL_VERSION_MAJOR == 3, "Minimum OpenSSL version not met: major");
 
@@ -36,6 +37,7 @@ static_assert(OPENSSL_VERSION_MAJOR == 3, "Minimum OpenSSL version not met: majo
 std::vector<Server::ClientContext> all_client_contexts;
 std::vector<Server::EWOULDBLOCK_queue_item> EWOULDBLOCK_queue;
 
+int logfile_fd;
 int packed_file_fd;
 int enwiki_fd;
 int enwiki_archiveindices_fd;
@@ -196,15 +198,9 @@ static const std::string_view server_out_of_hours_response(server_out_of_hours_r
 #endif
 
 
-static char logline[1024];
-
-
 void set_logline_time(const int hour,  const int mins){
-	logline[0] = '0' + (hour/10);
-	logline[1] = '0' + (hour%10);
-	logline[2] = ':';
-	logline[3] = '0' + (mins/10);
-	logline[4] = '0' + (mins%10);
+	reinterpret_cast<int*>(logline)[0] = hour;
+	reinterpret_cast<int*>(logline)[1] = mins;
 }
 
 
@@ -780,6 +776,16 @@ class HTTPResponseHandler {
 		}
 		
 		return_goto:
+		
+		reinterpret_cast<unsigned*>(logline+logline_datetime_sz)[0] = custom_strview.size();
+		logline[logline_respindxindx] = response_indx;
+		static_assert(response_enum::N < 256);
+		logline[logline_keepaliveindx] = this->keep_alive;
+		
+		memcpy(logline + logline_reqheadersindx,  str,  logline_reqheaders_len);
+		
+		write(logfile_fd, logline, logline_sz);
+		
 		if (response_indx == response_enum::SENDING_FROM_CUSTOM_STRVIEW){
 			return custom_strview;
 		} else {
@@ -797,18 +803,6 @@ class HTTPResponseHandler {
 		std::vector<char*>& headers
 	){
 		const std::string_view response(handle_request__core(client_context, client_contexts, local_listener_contexts, str, body_content_start, body_len, headers));
-		
-		// "HH:MM "
-		memcpy(logline+6, str, 14);
-		// " -> "
-		uintptr_t response_data_memloc = reinterpret_cast<uintptr_t>(response.data());
-		for (unsigned i = 16;  i != 0;  --i){
-			logline[24+i] = ((response_data_memloc%16) < 10) ? ('0' + (response_data_memloc%16)) : ('a' + (response_data_memloc%16) - 10);
-			response_data_memloc /= 16;
-		}
-		// " keepalive="
-		logline[52] = '0' + (this->keep_alive);
-		write(1, logline, 54);
 		return response;
 	}
 	
@@ -847,24 +841,6 @@ int main(const int argc,  const char* argv[]){
 	const unsigned listeningport = a2n<unsigned,const char*,false>(argv[1]);
 	const uint64_t seed = a2n<uint64_t,const char*,false>(argv[2]);
 	const char* const openssl_ciphers = argv[3];
-	
-	logline[5] = ' ';
-	logline[20] = ' ';
-	logline[21] = '-';
-	logline[22] = '>';
-	logline[23] = ' ';
-	logline[41] = ' ';
-	logline[42] = 'k';
-	logline[43] = 'e';
-	logline[44] = 'e';
-	logline[45] = 'p';
-	logline[46] = 'a';
-	logline[47] = 'l';
-	logline[48] = 'i';
-	logline[49] = 'v';
-	logline[50] = 'e';
-	logline[51] = '=';
-	logline[53] = '\n';
 	
 	const time_t current_time = time(0);
 	struct tm* local_time = gmtime(&current_time); // NOTE: Does NOT allocate memory, it is a pointer to a static struct
@@ -962,6 +938,7 @@ int main(const int argc,  const char* argv[]){
 	}
 #endif
 	
+	logfile_fd = open(logfile_fp, O_NOATIME|O_WRONLY);
 	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	enwiki_fd                = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2",                O_NOATIME|O_RDONLY|O_LARGEFILE);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
@@ -1011,8 +988,8 @@ int main(const int argc,  const char* argv[]){
 		}
 	}
 	
-	if (unlikely((packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
-		write(2, "Failed to open expired_user_login_urls or packed_file or enwiki\n", 64);
+	if (unlikely((logfile_fd == -1) or (packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
+		write(2, "Failed logfile_fd to open expired_user_login_urls or packed_file or enwiki\n", 75);
 		return 1;
 	}
 	
