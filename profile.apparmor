@@ -60,6 +60,7 @@
   "/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2" r,
   "/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz" r,
   /home/vangelic/repos/compsky/static-and-chat-server/secret_paths.txt rw,
+  /media/vangelic/DATA/tmp/static_webserver.log w,
   /media/vangelic/DATA/tmp/static_webserver.pack r,
   # TODO /path/to/logfile w,
 }
