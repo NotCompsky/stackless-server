@@ -423,7 +423,10 @@ class HTTPResponseHandler {
 			constexpr const char prefix1[4] = {'/','s','t','a'};
 			constexpr const char wiki_prefix[4] = {'w','0','0','/'};
 			constexpr const char diaryprefix[4] = {'d','0','0','/'};
-			if (reinterpret_cast<uint32_t*>(str)[1] == uint32_value_of(prefix1)){
+			if (
+				(reinterpret_cast<uint32_t*>(str)[1] == uint32_value_of(prefix1)) or // GET
+				(reinterpret_cast<uint32_t*>(str+1)[1] == uint32_value_of(prefix1)) // HEAD
+			){
 				// "GET /static/"
 #ifndef HASH2_IS_NONE
 				const uint32_t path_id = reinterpret_cast<uint32_t*>(str+12)[0];
