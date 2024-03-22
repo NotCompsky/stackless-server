@@ -159,12 +159,11 @@ void expire_user_login_url(const int _secret_paths_fd,  const unsigned secret_pa
 }
 
 
+#ifdef DISABLE_SERVER_AFTER_HOURS
 int server_after_hour_a;
 int server_after_hour_b;
 bool is_currently_within_hours;
 bool server_after_hour__a_disables;
-
-#ifdef DISABLE_SERVER_AFTER_HOURS
 void determine_is_currently_within_hours(const int hour){
 	is_currently_within_hours = ((hour >= server_after_hour_a) and (hour < server_after_hour_b)) ^ server_after_hour__a_disables;
 }
