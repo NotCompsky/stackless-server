@@ -97,9 +97,9 @@ tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to 
 	116236:"Retrowave", # Sovietwave
 	239896:"Film Scores",# SAFE Film Scores
 	239897:"Orchestralishy Style", # Safe Epic Music
-	3020:"Unknown Orchestra 1", # Endless Space Soundtrack
-	3002:"Unknown Orchestra 2", # Sword of the Stars Soundtrack
-	3065:"Unknown Orchestra 3", # Civilization VI Soundtrack
+	3020:"Orchestra1", # Endless Space Soundtrack
+	3002:"Orchestra2", # Sword of the Stars Soundtrack
+	3065:"Orchestra3", # Civilization VI Soundtrack
 	2566:"LotR", # Lord of the Rings Soundtrack
 	
 	# 1309:"History Music Video",
@@ -137,7 +137,7 @@ tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to 
 	#3032:"TV Show Intro",
 	236829:"Sad Music Video",
 	66172:"Artistic Music Video",
-	1219:"Progress Music Video",
+	1219:"Brainwashing", # Progress Music Video",
 	1221:"Cinematic Music Video",
 	1202:"SciFi Music Video",
 	239923:"Apocalypse",
@@ -161,7 +161,7 @@ tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to 
 	2550:"Bear McCreary",
 	1210:"Alexa Fesa",
 	72541:"Karl Sternau",
-	237310:"Nothing In Common", # Fatherland Playlist,
+	237310:"Nationhood", # Fatherland Playlist,
 	
 	81788:"Covid Culture",
 	40844:"CovidPunk",
@@ -169,7 +169,7 @@ tagem_tagids:dict = { # NOTE: As of Python 3.7, regular dicts are guaranteed to 
 	5131:"Meymeys",
 	104184:"Religious Imagery",
 	#378:"Animal",
-	236111:"K-Pop but less gay",
+	236111:"KPop",
 	FAKETAG_hassubtitles:"Has subtitles",
 	239898:"Weird songs or songs with weird backstories",
 	239895:"CRINGE ALERT! DON'T WATCH!",
@@ -444,5 +444,16 @@ if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev
 	with open("profile.largefiles.apparmor","w") as f:
 		for fp in all_filepaths_added_to_server:
 			f.write(f'"{apparmor_escstr(fp)}" r,\n')
+
+if True:
+	tagem_tagnames:list = [tagem_tagids[tagid] for tagid in tagem_tagids]
+	def subfn(m):
+		return m.group(1) + str(1+tagem_tagnames.index(m.group(3))) + m.group(2)
+	mainpage_contents:str = None
+	with open("files/static/index.html","r") as f:
+		mainpage_contents = f.read()
+	mainpage_contents = re.sub('(<a href="rand.html#\\[)[0-9]+(,[^"]+\\]"><img .*alt="([^"]+)".*</img></a>)', subfn, mainpage_contents)
+	with open("files/static/index.html","w") as f:
+		f.write(mainpage_contents)
 
 mimetype_utils.save_cached_mimetypes("cached_mimetypes.json")
