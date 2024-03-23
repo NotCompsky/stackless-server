@@ -49,7 +49,7 @@ constexpr static const std::string_view server_error =
 	"Server error"
 ;
 constexpr static const std::string_view wrong_hostname =
-	HEADER__RETURN_CODE__SERVER_ERR
+	HEADER__RETURN_CODE__NOT_AUTHORISED
 	"Content-Length: 10\r\n"
 	"Content-Security-Policy: default-src 'none'\r\n" // HEADER__SECURITY__CSP__NONE
 	"Content-Type: text/plain\r\n"
