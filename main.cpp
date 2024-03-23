@@ -165,7 +165,6 @@ class HTTPResponseHandler {
 	){
 		constexpr const char prefix_GET[4] = {'G','E','T',' '};
 		constexpr const char prefix_POST[4] = {'P','O','S','T'};
-		constexpr const char prefix_HEAD[4] = {'H','E','A','D'};
 		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
 		
 		std::string_view custom_strview;
@@ -182,7 +181,9 @@ class HTTPResponseHandler {
 		
 		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
 		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
-		if ((prefix_id == uint32_value_of(prefix_GET)) or (prefix_id == uint32_value_of(prefix_HEAD))){
+		if (prefix_id == uint32_value_of(prefix_GET)){
+			bool has_IfModifiedSince_header = false;
+			
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
 			
@@ -382,7 +383,7 @@ class HTTPResponseHandler {
 					goto return_goto;
 				}
 				
-				if (prefix_id == uint32_value_of(prefix_HEAD)){
+				if (has_IfModifiedSince_header){
 					[[unlikely]]
 					this->keep_alive = true;
 					response_indx = response_enum::CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE;;
@@ -454,7 +455,7 @@ class HTTPResponseHandler {
 					const size_t bytes_to_read  = (bytes_to_read1 > (metadata.fsz-from)) ? (metadata.fsz-from) : bytes_to_read1;
 					
 					int fd;
-					if (prefix_id == uint32_value_of(prefix_GET)){
+					if (not has_IfModifiedSince_header){
 						fd = open(metadata.filepath, O_NOATIME|O_RDONLY);
 						if (unlikely(fd == -1)){
 							printf("Cannot open file\n\tfile = %s\n\terror = %s\n", metadata.filepath, strerror(errno));
@@ -499,7 +500,7 @@ class HTTPResponseHandler {
 								"\r\n"
 							);
 						}
-						if (prefix_id == uint32_value_of(prefix_HEAD)){
+						if (has_IfModifiedSince_header){
 							this->keep_alive = true;
 							response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
 							custom_strview = std::string_view(server_buf, compsky::utils::ptrdiff(server_itr,server_buf));
@@ -552,7 +553,7 @@ class HTTPResponseHandler {
 						goto return_goto;
 					}
 				} else if (path_id == HASH_ANTIINPUT_0){
-					if (prefix_id == uint32_value_of(prefix_HEAD)){
+					if (has_IfModifiedSince_header){
 						[[unlikely]]
 						this->keep_alive = false;
 						response_indx = response_enum::NOT_FOUND;
@@ -560,7 +561,7 @@ class HTTPResponseHandler {
 					}
 					return request_websocket_open(client_context, nullptr, headers, all_usernames[user_indx].offset, all_usernames[user_indx].length);
 				} else if (path_id == uint32_value_of(wiki_prefix)){
-					if (prefix_id == uint32_value_of(prefix_HEAD)){
+					if (has_IfModifiedSince_header){
 						// TODO?
 						this->keep_alive = true;
 						response_indx = response_enum::NOT_FOUND;
@@ -680,7 +681,7 @@ class HTTPResponseHandler {
 					memcpy(server_itr, wikipage_headers1.data(), wikipage_headers1.size());
 					return std::string_view(server_itr, compsky::utils::ptrdiff(html_end,server_itr));
 				} else if (path_id == uint32_value_of(diaryprefix)){
-					if (prefix_id == uint32_value_of(prefix_HEAD)){
+					if (has_IfModifiedSince_header){
 						// TODO?
 						this->keep_alive = true;
 						response_indx = response_enum::NOT_FOUND;
