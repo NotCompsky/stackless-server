@@ -749,7 +749,7 @@ class HTTPResponseHandler {
 		
 		if (++timer_intervals_within_this_ratelimit == n_timer_intervals_per_ratelimit){
 			for (unsigned i = 0;  i < n_users;  ++i){
-				all_users[n_users].requests_in_this_ratelimit = 0;
+				all_users[i].requests_in_this_ratelimit = 0;
 			}
 			timer_intervals_within_this_ratelimit = 0;
 		}

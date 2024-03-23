@@ -210,7 +210,7 @@ constexpr static const std::string_view server_out_of_hours_response__post =
 	"</html>"
 ;
 static
-char server_out_of_hours_response__buf[server_out_of_hours_response__pre.size() + 5 + server_out_of_hours_response__post.size()];
+char server_out_of_hours_response__buf[server_out_of_hours_response__pre.size() + server_out_of_hours_response__example_of_middle_content.size() + server_out_of_hours_response__post.size()];
 static constexpr std::string_view server_out_of_hours_response(server_out_of_hours_response__buf,  server_out_of_hours_response__pre.size() + server_out_of_hours_response__example_of_middle_content.size() + server_out_of_hours_response__post.size());
 #else
 static constexpr std::string_view server_out_of_hours_response(nullptr,0);
