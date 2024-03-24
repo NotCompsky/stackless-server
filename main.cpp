@@ -165,6 +165,8 @@ class HTTPResponseHandler {
 	){
 		constexpr const char prefix_GET[4] = {'G','E','T',' '};
 		constexpr const char prefix_POST[4] = {'P','O','S','T'};
+		constexpr const char websocket_path[4] = {'1','/','t','e'};
+		constexpr uint32_t websocket_pathid = uint32_value_of(websocket_path);
 		const uint32_t prefix_id = reinterpret_cast<uint32_t*>(str)[0];
 		
 		std::string_view custom_strview;
@@ -532,27 +534,8 @@ class HTTPResponseHandler {
 				// "GET /foobar\r\n" -> "GET " and "foob" as above and "path" respectively
 				const uint32_t path_id = reinterpret_cast<uint32_t*>(str+5)[0];
 				const uint32_t path_indx = ((path_id*HASH1_MULTIPLIER) & 0xffffffff) >> HASH1_shiftby;
-				printf("[%.4s] %u -> %u\n", str+5, path_id, path_indx);
 				
-				if (path_indx < HASH1_LIST_LENGTH){
-					if (path_id != HASH1_ORIG_INTS[path_indx]){
-						[[unlikely]]
-						this->keep_alive = false;
-						response_indx = response_enum::NOT_FOUND;
-						goto return_goto;
-					}
-					
-					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
-					const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
-					// TODO: Deal with HEAD requests
-					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
-						const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
-						this->keep_alive = true;
-						response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
-						custom_strview = std::string_view(server_buf, n_bytes_written);
-						goto return_goto;
-					}
-				} else if (path_id == HASH_ANTIINPUT_0){
+				if (path_id == websocket_pathid){
 					if (has_IfModifiedSince_header){
 						[[unlikely]]
 						this->keep_alive = false;
@@ -680,6 +663,23 @@ class HTTPResponseHandler {
 					server_itr -= wikipage_headers1.size();
 					memcpy(server_itr, wikipage_headers1.data(), wikipage_headers1.size());
 					return std::string_view(server_itr, compsky::utils::ptrdiff(html_end,server_itr));
+				} else if (path_indx < HASH1_LIST_LENGTH){
+					if (path_id != HASH1_ORIG_INTS[path_indx]){
+						[[unlikely]]
+						this->keep_alive = false;
+						response_indx = response_enum::NOT_FOUND;
+						goto return_goto;
+					}
+					
+					const ssize_t offset = HASH1_METADATAS[2*path_indx+0];
+					const ssize_t fsize  = HASH1_METADATAS[2*path_indx+1];
+					if (likely(lseek(packed_file_fd, offset, SEEK_SET) == offset)){
+						const ssize_t n_bytes_written = read(packed_file_fd, server_buf, fsize);
+						this->keep_alive = true;
+						response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
+						custom_strview = std::string_view(server_buf, n_bytes_written);
+						goto return_goto;
+					}
 				} else if (path_id == uint32_value_of(diaryprefix)){
 					if (has_IfModifiedSince_header){
 						// TODO?

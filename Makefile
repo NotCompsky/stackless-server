@@ -13,7 +13,7 @@ gen_media_metadata:
 
 gen_hash_functions:
 	sudo rm /media/vangelic/DATA/tmp/static_webserver.pack || dummy=1
-	python3 smallest-hash-of-paths.py --dir files/static --dir2 files/large --pack-files-to /media/vangelic/DATA/tmp/static_webserver.pack --write-hpp files/files.hpp --anti-inputs "1/te" --anti-inputs "user" --anti-inputs "w00/" --anti-inputs "d00/"
+	python3 smallest-hash-of-paths.py --dir files/static --dir2 files/large --pack-files-to /media/vangelic/DATA/tmp/static_webserver.pack --write-hpp files/files.hpp --anti-inputs "user" --anti-inputs "d00/"
 	sudo chown staticserver:staticserver /media/vangelic/DATA/tmp/static_webserver.pack
 	sudo chmod 400 /media/vangelic/DATA/tmp/static_webserver.pack
 	# NOTE: shouldn't be any need to do this, but apparently normal files refuse to be read by staticserver user without it. But benefit is that files aren't modified accidentally by other users.
