@@ -119,6 +119,24 @@ def get_shiftby(inputs_sz:int):
 			break
 	return shiftby
 
+def get_inputs_from_dir(rootdirpathlen:int, dirpath:str, input_indx2fp:list, inputs:list):
+	for fname in os.listdir(dirpath):
+		fp:str = dirpath + "/" + fname
+		if os.path.isdir(fp):
+			get_inputs_from_dir(rootdirpathlen, fp, input_indx2fp, inputs)
+			continue
+		if fname == "index.html":
+			input_indx2fp[args.inputs.index(" HTT")] = fp
+			continue
+		if fname.endswith(".kate-swp"):
+			continue
+		input_indx2fp.append(fp)
+		val:str = fp[rootdirpathlen:rootdirpathlen+4]
+		if val in args.inputs:
+			raise ValueError("2 files have the same preceding 2 chars: "+fp[rootdirpathlen:rootdirpathlen+2]+". Maybe use uint64_t instead of uint32_t?")
+		inputs.append(val)
+
+
 if __name__ == "__main__":
 	import argparse
 	import random
@@ -150,20 +168,8 @@ if __name__ == "__main__":
 		import os
 		args.inputs.append(" HTT")
 		input_indx2fp.append(None)
-		for fname in os.listdir(args.dir):
-			fp:str = args.dir + "/" + fname
-			if os.path.isdir(fp):
-				continue
-			if fname == "index.html":
-				input_indx2fp[args.inputs.index(" HTT")] = fp
-				continue
-			if fname.endswith(".kate-swp"):
-				continue
-			input_indx2fp.append(fp)
-			val:str = fname[:4]
-			if val in args.inputs:
-				raise ValueError("2 files have the same preceding 2 chars: "+fname[:2]+". Maybe use uint64_t instead of uint32_t?")
-			args.inputs.append(val)
+		get_inputs_from_dir(len(args.dir)+1, args.dir, input_indx2fp, args.inputs)
+	
 	inputs2_paths:list = []
 	if args.dir2 is not None:
 		import os
