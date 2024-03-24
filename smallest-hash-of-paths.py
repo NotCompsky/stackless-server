@@ -440,7 +440,8 @@ if __name__ == "__main__":
 				if not dont_compress:
 					content_encoding_part, contents = compression_utils.compress_w_best_compressor(contents)
 				
-				headers:str = make_static_headers(content_encoding_part, len(contents), csp_header, mimetype)
+				etag:str = get_sha256_hash_in_b64_form(b"foo"+contents[:1000]+b"bar")
+				headers:str = make_static_headers(content_encoding_part, len(contents), csp_header, mimetype, etag)
 				
 				contents = headers.encode() + b"\r\n" + contents
 				content_len:int = len(contents)
