@@ -436,7 +436,9 @@ if __name__ == "__main__":
 					contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
 					contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
 				
-				content_encoding_part, contents = compression_utils.compress_w_best_compressor(contents)
+				content_encoding_part:str = ""
+				if not dont_compress:
+					content_encoding_part, contents = compression_utils.compress_w_best_compressor(contents)
 				
 				headers:str = make_static_headers(content_encoding_part, len(contents), csp_header, mimetype)
 				
