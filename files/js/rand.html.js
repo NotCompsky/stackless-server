@@ -9,6 +9,9 @@ const filterfn = [
 ];
 
 
+const $ = document.getElementById.bind(document);
+
+
 const global_version = MACRO__GLOBAL_VERSION;
 var all_tags_id2name = null;
 var all_files = null;
@@ -39,6 +42,15 @@ let prev_tag = [0,0,0,0];
 let next_direction = 1;
 let current_media_id = 0;
 let show_file_tags = true; // TODO
+function p(a,b){
+	a.push(b); // saves 3 characters each use
+}
+function l(a){
+	return a.length; // used 12 times; saves 4 characters each use
+}
+function e(a,f){
+	a.addEventListener("pointerup",f); // saves 15 chars each use
+}
 function throw_err(s){
 	errcontainer.innerText = s;
 	errcontainer.style.display = "block";
@@ -52,7 +64,7 @@ function shuffle(array, preset_first_n_elements){ // Fisher-Yates (aka Knuth) Sh
 	let currentIndex = preset_first_n_elements;
 	let randomIndex;
 	// While there remain elements to shuffle.
-	const N = array.length;
+	const N = l(array);
 	while(currentIndex < N){
 		// Pick a remaining element.
 		randomIndex = currentIndex + Math.floor(Math.random() * (N-currentIndex));
@@ -63,7 +75,7 @@ function shuffle(array, preset_first_n_elements){ // Fisher-Yates (aka Knuth) Sh
 	return array;
 }
 function render_tags(){
-	for (let i = 0;  i < all_files.length;  ++i){
+	for (let i = 0;  i < l(all_files);  ++i){
 		if (all_files[i][0] === current_media_id){
 			const tag_ids = all_files[i][2];
 			let html = "";
@@ -72,7 +84,7 @@ function render_tags(){
 			}
 			filetagcontainer.innerHTML = html;
 			for (let node of filetagcontainer.getElementsByTagName("button")){
-				node.addEventListener("pointerup", tagbtnclicked);
+				e(node,"pointerup",tagbtnclicked);
 			}
 			break;
 		}
@@ -119,7 +131,7 @@ function rendermedia(){
 			const useds = [];
 			for (let i = 0;  i < ls[3].length;  ++i){
 				const [srclang,src] = ls[3][i];
-				useds.push(srclang);
+				p(useds,srclang);
 				const caption_node = media_video_subtitles[srclang]; //document.createElement("track");
 				//if (i === 0)
 				//	caption_node.default = "";
@@ -129,7 +141,7 @@ function rendermedia(){
 				//caption_node.label = {"en":"English","de":"Deutsch"}[srclang];
 				//media_video.appendChild(caption_node);
 			}
-			for (let i = 0;  i < media_video_subtitles.length;  ++i){
+			for (let i = 0;  i < l(media_video_subtitles);  ++i){
 				if (!useds.includes(i))
 					media_video_subtitles[i].src = "data:,";
 			}
@@ -175,7 +187,7 @@ function get_new_media(){
 		prev_tag[2] = selector3_value;
 		prev_tag[3] = filterselector_value;
 	}
-	if (html_indx === prev_html.length-1){
+	if (html_indx === l(prev_html)-1){
 		const [tagid1_plus1,tagid2_plus1,NOT_tagid3_plus1,filterid] = prev_tag;
 		const ls = all_tags_id2files[tagid1_plus1]
 			.filter(x => ((    tagid2_plus1===0)||( all_tags_id2files[    tagid2_plus1].includes(x))))
@@ -192,23 +204,23 @@ function get_new_media(){
 			}
 		}
 		shuffle(ls,ls_offset);
-		if (ls.length === 0){
+		if (l(ls) === 0){
 			throw_err("0 results");
 		}
 		for (let x of ls){
 			if (x !== prev_html[html_indx]){
-				for (let i = 0;  i < all_files.length;  ++i){
+				for (let i = 0;  i < l(all_files);  ++i){
 					if (all_files[i][0] === x){
-						prev_html.push([all_files[i][0],all_files[i][3],all_files[i][1],all_files[i][4]]);
+						p(prev_html,[all_files[i][0],all_files[i][3],all_files[i][1],all_files[i][4]]);
 					}
 				}
 			}
 		}
-		if (html_indx !== prev_html.length-1){
+		if (html_indx !== l(prev_html)-1){
 			++html_indx;
 			rendermedia();
 		}
-	} else if (html_indx !== prev_html.length-1){
+	} else if (html_indx !== l(prev_html)-1){
 		++html_indx;
 		rendermedia();
 	}
@@ -244,36 +256,36 @@ function $$$media_volume_changed(eventobj){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-document.getElementById("randymediaplayer_prev").addEventListener("pointerup", ()=>{
+$("randymediaplayer_prev").addEventListener("pointerup", ()=>{
 	next_direction = -1;
 	get_prev_media();
 });
-errcontainer = document.getElementById("randymediaplayer_errcontainer");
-container = document.getElementById("randymediaplayer_container");
-media_video = document.getElementById("randymediaplayer_media_video");
-//media_audio = document.getElementById("randymediaplayer_media_audio");
-media_video_source = document.getElementById("randymediaplayer_media_video_source");
-//media_audio_source = document.getElementById("randymediaplayer_media_audio_source");
+errcontainer = $("randymediaplayer_errcontainer");
+container = $("randymediaplayer_container");
+media_video = $("randymediaplayer_media_video");
+//media_audio = $("randymediaplayer_media_audio");
+media_video_source = $("randymediaplayer_media_video_source");
+//media_audio_source = $("randymediaplayer_media_audio_source");
 media_video_subtitles = document.getElementsByClassName("randymediaplayer_media_video_subtitles");
-selector1 = document.getElementById("randymediaplayer_selector1");
-selector2 = document.getElementById("randymediaplayer_selector2");
-selector3 = document.getElementById("randymediaplayer_selector3");
-filterselector = document.getElementById("randymediaplayer_filterselector");
-nextbtn = document.getElementById("randymediaplayer_next");
-filetagcontainer = document.getElementById("randymediaplayer_filetagcontainer");
-errcontainer.addEventListener("pointerover", ()=>{
+selector1 = $("randymediaplayer_selector1");
+selector2 = $("randymediaplayer_selector2");
+selector3 = $("randymediaplayer_selector3");
+filterselector = $("randymediaplayer_filterselector");
+nextbtn = $("randymediaplayer_next");
+filetagcontainer = $("randymediaplayer_filetagcontainer");
+e(errcontainer,"pointerover",()=>{
 	errcontainer.style.display = "none";
 });
-nextbtn.addEventListener("pointerup", get_new_media);
+e(nextbtn,"pointerup",get_new_media);
 
-media_video_source.addEventListener("error", get_new_media);
-//media_audio_source.addEventListener("error", get_new_media);
-media_video.addEventListener("ended", onmediaend);
-media_video.addEventListener("ratechange", $$$media_rate_changed);
-media_video.addEventListener("volumechange", $$$media_volume_changed);
-//media_audio.addEventListener("ended", onmediaend);
-//media_audio.addEventListener("ratechange", $$$media_rate_changed);
-//media_audio.addEventListener("volumechange", $$$media_volume_changed);
+e(media_video_source,"error",get_new_media);
+//e(media_audio_source,"error",get_new_media);
+e(media_video,"ended",onmediaend);
+e(media_video,"ratechange",$$$media_rate_changed);
+e(media_video,"volumechange",$$$media_volume_changed);
+//e(media_audio,"ended",onmediaend);
+//e(media_audio,"ratechange",$$$media_rate_changed);
+//e(media_audio,"volumechange",$$$media_volume_changed);
 
 function o(i,s){
 	return `<option value="${i}">${s}</option>`;
@@ -285,23 +297,23 @@ fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", meth
 	}
 	r.text().then(datastr => {
 		[all_tags_id2name,all_files,tag2thumbnail,introduction_to_each_category] = JSON.parse(datastr);
-		for (let i = 0;  i < all_tags_id2name.length+1;  ++i){
-			all_tags_id2files.push([]);
+		for (let i = 0;  i < l(all_tags_id2name)+1;  ++i){
+			p(all_tags_id2files,[]);
 		}
 		let s = "";
-		for (let i = 0;  i < all_files.length;  ++i){
+		for (let i = 0;  i < l(all_files);  ++i){
 			const ls = all_files[i];
 			const fileid = ls[0];
 			all_files__as_dict[fileid] = ls;
-			all_tags_id2files[0].push(fileid);
+			p(all_tags_id2files[0],fileid);
 			for (let tagid of ls[2])
-				all_tags_id2files[tagid+1].push(fileid);
+				p(all_tags_id2files[tagid+1],fileid);
 			if (ls[2].length === 0)
 				console.warn("No tagids:", fileid);
 		}
 		let optionshtml = '';
 		let notoptionshtml = '';
-		for (let tagid = 0;  tagid < all_tags_id2name.length;  ++tagid){
+		for (let tagid = 0;  tagid < l(all_tags_id2name);  ++tagid){
 			const tagname = all_tags_id2name[tagid];
 			optionshtml += o(tagid+1,`${tagname} [${all_tags_id2files[tagid+1].length}]`);
 			notoptionshtml += o(tagid+1,`NOT ${tagname}`);
@@ -310,17 +322,17 @@ fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", meth
 		selector2.innerHTML = o(0,"(+Filter)") + optionshtml;
 		selector3.innerHTML = o(0,"(-Filter)") + notoptionshtml;
 		
-		if (document.location.hash.length !== 0){
+		if (l(document.location.hash) !== 0){
 			[selector1.value, selector2.value, selector3.value, filterselector.value, shouldloop] = JSON.parse(document.location.hash.substr(1));
 			if (shouldloop === 0){
 				media_video.loop = false;
 				//media_audio.loop = false;
 			}
 		}
-		selector1.addEventListener("change", get_new_media);
-		selector2.addEventListener("change", get_new_media);
-		selector3.addEventListener("change", get_new_media);
-		filterselector.addEventListener("change", get_new_media);
+		e(selector1,"change",get_new_media);
+		e(selector2,"change",get_new_media);
+		e(selector3,"change",get_new_media);
+		e(filterselector,"change",get_new_media);
 		
 		get_new_media();
 	});
