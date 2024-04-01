@@ -275,6 +275,9 @@ media_video.addEventListener("volumechange", $$$media_volume_changed);
 //media_audio.addEventListener("ratechange", $$$media_rate_changed);
 //media_audio.addEventListener("volumechange", $$$media_volume_changed);
 
+function o(i,s){
+	return `<option value="${i}">${s}</option>`;
+}
 
 fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", method:"GET"}).then(r => {
 	if (!r.ok){
@@ -300,12 +303,12 @@ fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", meth
 		let notoptionshtml = '';
 		for (let tagid = 0;  tagid < all_tags_id2name.length;  ++tagid){
 			const tagname = all_tags_id2name[tagid];
-			optionshtml += `<option value="${tagid+1}">${tagname} [${all_tags_id2files[tagid+1].length}]</option>`;
-			notoptionshtml += `<option value="${tagid+1}">NOT ${tagname}</option>`;
+			optionshtml += o(tagid+1,`${tagname} [${all_tags_id2files[tagid+1].length}]`);
+			notoptionshtml += o(tagid+1,`NOT ${tagname}`);
 		}
-		selector1.innerHTML = `<option value="0">Shuffle all [${all_tags_id2files[0].length}]</option>` + optionshtml;
-		selector2.innerHTML = `<option value="0">(+Filter)</option>` + optionshtml;
-		selector3.innerHTML = `<option value="0">(-Filter)</option>` + notoptionshtml;
+		selector1.innerHTML = o(0,`Shuffle all [${all_tags_id2files[0].length}]`) + optionshtml;
+		selector2.innerHTML = o(0,"(+Filter)") + optionshtml;
+		selector3.innerHTML = o(0,"(-Filter)") + notoptionshtml;
 		
 		if (document.location.hash.length !== 0){
 			[selector1.value, selector2.value, selector3.value, filterselector.value, shouldloop] = JSON.parse(document.location.hash.substr(1));
