@@ -1,16 +1,3 @@
-function getorpost(url, body, fn){
-	const d = {credentials:"include", mode:"no-cors", method:["POST","GET"][(body === null)|0]};
-	if (body !== null){
-		d["body"] = body;
-	}
-	fetch(url, d).then(r => {
-		if (!r.ok){
-			showerr(`Server returned ${r.status}: ${r.statusText}`);
-		}
-		if (fn !== null)
-			r.text().then(fn);
-	});
-}
 const filterfn = [
 	function(fileid){ return true; },
 	function(fileid){ return all_files__as_dict[fileid][3].startsWith("image/"); },
@@ -289,45 +276,49 @@ media_video.addEventListener("volumechange", $$$media_volume_changed);
 //media_audio.addEventListener("volumechange", $$$media_volume_changed);
 
 
-getorpost("MACRO__ALL_FILES_JSON_PATH", null, datastr => {
-	[all_tags_id2name,all_files,tag2thumbnail,introduction_to_each_category] = JSON.parse(datastr);
-	for (let i = 0;  i < all_tags_id2name.length+1;  ++i){
-		all_tags_id2files.push([]);
+fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", method:"GET"}).then(r => {
+	if (!r.ok){
+		showerr(`Server returned ${r.status}: ${r.statusText}`);
 	}
-	let s = "";
-	for (let i = 0;  i < all_files.length;  ++i){
-		const ls = all_files[i];
-		const fileid = ls[0];
-		all_files__as_dict[fileid] = ls;
-		all_tags_id2files[0].push(fileid);
-		for (let tagid of ls[2])
-			all_tags_id2files[tagid+1].push(fileid);
-		if (ls[2].length === 0)
-			console.warn("No tagids:", fileid);
-	}
-	let optionshtml = '';
-	let notoptionshtml = '';
-	for (let tagid = 0;  tagid < all_tags_id2name.length;  ++tagid){
-		const tagname = all_tags_id2name[tagid];
-		optionshtml += `<option value="${tagid+1}">${tagname} [${all_tags_id2files[tagid+1].length}]</option>`;
-		notoptionshtml += `<option value="${tagid+1}">NOT ${tagname}</option>`;
-	}
-	selector1.innerHTML = `<option value="0">Shuffle all [${all_tags_id2files[0].length}]</option>` + optionshtml;
-	selector2.innerHTML = `<option value="0">(+Filter)</option>` + optionshtml;
-	selector3.innerHTML = `<option value="0">(-Filter)</option>` + notoptionshtml;
-	
-	if (document.location.hash.length !== 0){
-		[selector1.value, selector2.value, selector3.value, filterselector.value, shouldloop] = JSON.parse(document.location.hash.substr(1));
-		if (shouldloop === 0){
-			media_video.loop = false;
-			//media_audio.loop = false;
+	r.text().then(datastr => {
+		[all_tags_id2name,all_files,tag2thumbnail,introduction_to_each_category] = JSON.parse(datastr);
+		for (let i = 0;  i < all_tags_id2name.length+1;  ++i){
+			all_tags_id2files.push([]);
 		}
-	}
-	selector1.addEventListener("change", get_new_media);
-	selector2.addEventListener("change", get_new_media);
-	selector3.addEventListener("change", get_new_media);
-	filterselector.addEventListener("change", get_new_media);
-	
-	get_new_media();
-});
+		let s = "";
+		for (let i = 0;  i < all_files.length;  ++i){
+			const ls = all_files[i];
+			const fileid = ls[0];
+			all_files__as_dict[fileid] = ls;
+			all_tags_id2files[0].push(fileid);
+			for (let tagid of ls[2])
+				all_tags_id2files[tagid+1].push(fileid);
+			if (ls[2].length === 0)
+				console.warn("No tagids:", fileid);
+		}
+		let optionshtml = '';
+		let notoptionshtml = '';
+		for (let tagid = 0;  tagid < all_tags_id2name.length;  ++tagid){
+			const tagname = all_tags_id2name[tagid];
+			optionshtml += `<option value="${tagid+1}">${tagname} [${all_tags_id2files[tagid+1].length}]</option>`;
+			notoptionshtml += `<option value="${tagid+1}">NOT ${tagname}</option>`;
+		}
+		selector1.innerHTML = `<option value="0">Shuffle all [${all_tags_id2files[0].length}]</option>` + optionshtml;
+		selector2.innerHTML = `<option value="0">(+Filter)</option>` + optionshtml;
+		selector3.innerHTML = `<option value="0">(-Filter)</option>` + notoptionshtml;
+		
+		if (document.location.hash.length !== 0){
+			[selector1.value, selector2.value, selector3.value, filterselector.value, shouldloop] = JSON.parse(document.location.hash.substr(1));
+			if (shouldloop === 0){
+				media_video.loop = false;
+				//media_audio.loop = false;
+			}
+		}
+		selector1.addEventListener("change", get_new_media);
+		selector2.addEventListener("change", get_new_media);
+		selector3.addEventListener("change", get_new_media);
+		filterselector.addEventListener("change", get_new_media);
+		
+		get_new_media();
+	});
 });
