@@ -876,7 +876,7 @@ int main(const int argc,  const char* argv[]){
 #endif
 	
 	logfile_fd = open(logfile_fp, O_NOATIME|O_WRONLY);
-	packed_file_fd = open(HASH1_FILEPATH, O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
+	packed_file_fd = open("/media/vangelic/DATA/tmp/static_webserver.pack", O_NOATIME|O_RDONLY); // maybe O_LARGEFILE if >4GiB
 	enwiki_fd                = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream.xml.bz2",                O_NOATIME|O_RDONLY|O_LARGEFILE);
 	enwiki_archiveindices_fd = open("/media/vangelic/DATA/dataset/wikipedia/enwiki-20230620-pages-articles-multistream-index.txt.offsetted.gz", O_NOATIME|O_RDONLY);
 	

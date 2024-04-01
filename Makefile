@@ -12,10 +12,10 @@ gen_media_metadata:
 	python3 gen_media_metadata.py
 
 gen_hash_functions:
-	sudo rm /media/vangelic/DATA/tmp/static_webserver.pack || dummy=1
-	python3 smallest-hash-of-paths.py --dir files/static --dir2 files/large --pack-files-to /media/vangelic/DATA/tmp/static_webserver.pack --write-hpp files/files.hpp --anti-inputs "user" --anti-inputs "d00/"
-	sudo chown staticserver:staticserver /media/vangelic/DATA/tmp/static_webserver.pack
-	sudo chmod 400 /media/vangelic/DATA/tmp/static_webserver.pack
+	sudo rm /media/vangelic/DATA/tmp/static_webserver.pack.new || dummy=1
+	python3 smallest-hash-of-paths.py --dir files/static --dir2 files/large --pack-files-to /media/vangelic/DATA/tmp/static_webserver.pack.new --write-hpp files/files.hpp --anti-inputs "user" --anti-inputs "d00/"
+	sudo chown staticserver:staticserver /media/vangelic/DATA/tmp/static_webserver.pack.new
+	sudo chmod 400 /media/vangelic/DATA/tmp/static_webserver.pack.new
 	# NOTE: shouldn't be any need to do this, but apparently normal files refuse to be read by staticserver user without it. But benefit is that files aren't modified accidentally by other users.
 
 largefile_permissions:
@@ -32,6 +32,7 @@ server:
 	sudo chown staticserver:staticserver server
 	sudo chmod 500 server
 	sudo setcap CAP_NET_BIND_SERVICE=+eip server
+	sudo mv /media/vangelic/DATA/tmp/static_webserver.pack.new /media/vangelic/DATA/tmp/static_webserver.pack || dummy=1
 
 log-reader:
 	c++ read-logs.cpp -std=c++2b -O3 -march=native -o log-reader -s -fomit-frame-pointer
