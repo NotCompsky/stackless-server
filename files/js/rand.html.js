@@ -239,7 +239,7 @@ function $$$media_volume_changed(eventobj){
 	}
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
+e(document,'DOMContentLoaded', ()=>{
 $("randymediaplayer_prev").addEventListener("pointerup", ()=>{
 	next_direction = -1;
 	get_prev_media();
@@ -313,4 +313,5 @@ fetch("MACRO__ALL_FILES_JSON_PATH", {credentials:"include", mode:"no-cors", meth
 		
 		get_new_media();
 	});
+});
 });
