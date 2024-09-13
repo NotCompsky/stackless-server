@@ -37,8 +37,8 @@ def maybe_get_cached(cached_fp:str, inputs_sorted:list):
 	return 0
 
 
-def finding_0xedc72f12(idstr:str, inputs:list, shiftby:int):
-	cached_fp:str = None if (idstr is None) else f"finding_0xedc72f12.{idstr}.json"
+def finding_0xedc72f12(idstr:str, n_attempts:int, inputs:list, shiftby:int, dirpath="."):
+	cached_fp:str = None if (idstr is None) else f"{dirpath}/finding_0xedc72f12.{idstr}.json"
 	inputs_sorted:list = sorted(inputs)
 	result:int = maybe_get_cached(cached_fp, inputs_sorted)
 	if result != 0:
@@ -47,7 +47,7 @@ def finding_0xedc72f12(idstr:str, inputs:list, shiftby:int):
 		get_int_array_from_numpy_array(np.array(inputs, dtype=np.uint32)),
 		len(inputs),
 		shiftby,
-		100000000
+		n_attempts
 	)
 	if (cached_fp is not None) and (result != 0):
 		with open(cached_fp,"w") as f:
@@ -55,8 +55,8 @@ def finding_0xedc72f12(idstr:str, inputs:list, shiftby:int):
 	return result
 
 
-def finding_0xedc72f12_w_avoids(idstr:str, inputs:list, anti_inputs:list, shiftby:int):
-	cached_fp:str = None if (idstr is None) else f"finding_0xedc72f12_w_avoids.{idstr}.json"
+def finding_0xedc72f12_w_avoids(idstr:str, n_attempts:int, inputs:list, anti_inputs:list, shiftby:int, dirpath="."):
+	cached_fp:str = None if (idstr is None) else f"{dirpath}/finding_0xedc72f12_w_avoids.{idstr}.json"
 	inputs_sorted:list = sorted(inputs) + [None] + sorted(anti_inputs)
 	result:int = maybe_get_cached(cached_fp, inputs_sorted)
 	if result != 0:
@@ -70,7 +70,7 @@ def finding_0xedc72f12_w_avoids(idstr:str, inputs:list, anti_inputs:list, shiftb
 		len(inputs),
 		len(anti_inputs),
 		shiftby,
-		100000000
+		n_attempts
 	)
 	if (cached_fp is not None) and (result != 0):
 		with open(cached_fp,"w") as f:
@@ -104,16 +104,39 @@ def get_shiftby(inputs_sz:int):
 	return shiftby
 
 
+def str2cliststr(s:str):
+	r:str = "{"
+	for c in s:
+		if (c == "'") or (c == "\\"):
+			c = "\\" + c
+		r += "'" + c + "',"
+	return r[:-1] + "}"
+
+
 if __name__ == "__main__":
 	import argparse
 	
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-i","--inputs",default=[],action="append")
-	
+	parser.add_argument("--multiplier", type=int, default=0)
 	args = parser.parse_args()
 	
 	inputs:list = [get_path_id__u32(x,None) for x in args.inputs]
 	
-	shiftby:int = get_shiftby(len(inputs)) - 1
+	shiftby:int = get_shiftby(len(inputs)) - 0
 	
-	print(finding_0xedc72f12(None, inputs, shiftby))
+	multiplier:int = args.multiplier
+	if multiplier == 0:
+		multiplier = finding_0xedc72f12(None, 0xfffffffe, inputs, shiftby)
+	
+	mapped_outputs:list = [((path_id*multiplier) & 0xffffffff) >> shiftby for path_id in inputs]
+	s:str = ""
+	S:list = []
+	for i in range(max(mapped_outputs)+1):
+		indx:int = 0
+		try:
+			indx = mapped_outputs.index(i)
+		except ValueError:
+			pass
+		s += str2cliststr(args.inputs[indx]) + ","
+		S.append(inputs[indx])

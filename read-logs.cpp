@@ -9,17 +9,102 @@
 #include <arpa/inet.h> // for inet_ntop
 
 
+enum {
+	AGG_NONE,
+	AGG_IP,
+	AGG_PATH,
+	AGG_HOUR,
+	AGG_METHOD,
+	AGG_N
+};
+
+
 struct UserCookie {
 	char value[user_cookie_len];
 };
 
 
 int main(const int argc,  const char* argv[]){
-	if (argc != 2){
-		write(2, "USAGE: [log_filepath]\n", 22);
+	in_addr_t ignore_localhost_address = 0;
+	unsigned aggregate_by = 0;
+	bool verbose = false;
+	
+	if (argc < 2){
+		goto help;
+	}
+	
+	for (unsigned i = 1;  i < argc-1;  ++i){
+		if (argv[i][0] != '-'){
+			goto help;
+		}
+		if (argv[i][1] == '\0'){
+			goto help;
+		}
+		if (argv[i][2] != '\0'){
+			goto help;
+		}
+		switch(argv[i][1]){
+			/*case 'a': {
+				++i;
+				const char* const arg = argv[i];
+				if (arg == nullptr)
+					goto help;
+				switch(arg[0]){
+					case 'i':
+						aggregate_by = AGG_NONE;
+						break;
+					case 'p':
+						aggregate_by = AGG_PATH;
+						break;
+					case 'm':
+						aggregate_by = AGG_METHOD;
+						break;
+					case 'h':
+						aggregate_by = AGG_HOUR;
+						break;
+					default:
+						goto help;
+				}
+				break;
+			}*/
+			case 'v': {
+				verbose = true;
+				break;
+			}
+			case 'l': {
+				const int rc = inet_pton(AF_INET, "127.0.0.1", &ignore_localhost_address);
+				if (rc <= 0){
+					write(2, "inet_pton error\n", 16);
+					return 1;
+				}
+				break;
+			}
+			default:
+				goto help;
+		}
+	}
+	
+	if (false){
+		help:
+		write(
+			2,
+			"USAGE: [[OPTIONS]] [log_filepath]\n"
+			"\n"
+			"OPTIONS:\n"
+			"	-a [WHICH]\n"
+			"		Aggregate by WHICH:\n"
+			"			ip\n"
+			"			path\n"
+			"			method\n"
+			"			hour\n"
+			"	-l	Ignore localhost requests\n"
+			"	-v	Verbose\n",
+			154
+		);
 		return 1;
 	}
-	const char* const logfile_fp = argv[1];
+	
+	const char* const logfile_fp = argv[argc-1];
 	const int logfile_fd = open(logfile_fp, O_NOATIME|O_RDONLY);
 	
 	if (logfile_fd == -1){
@@ -69,6 +154,9 @@ int main(const int argc,  const char* argv[]){
 		const int mins = local_time->tm_min;
 		const in_addr_t ip_address = reinterpret_cast<in_addr_t*>(logline+logline_ipaddrindx)[0];
 		
+		if (ip_address == ignore_localhost_address)
+			continue;
+		
 		const unsigned custom_strview_size = reinterpret_cast<unsigned*>(logline+logline_datetime_sz)[0];
 		const unsigned response_indx = logline[logline_respindxindx];
 		const bool keepalive = logline[logline_keepaliveindx];
@@ -92,7 +180,8 @@ int main(const int argc,  const char* argv[]){
 			}
 		}
 		
-		printf("%2d:%2d %.*s user=%u response=%s custom_strview_size %u keepalive=%u\n%.*s\n\n", hour, mins, (int)INET_ADDRSTRLEN, _buf, user_indx, all_response_names+100*response_indx, custom_strview_size, (unsigned)keepalive, (int)logline_reqheaders_len, logline_reqheaders);
+		if (verbose)
+			printf("%2d:%2d %.*s user=%u response=%s custom_strview_size %u keepalive=%u\n%.*s\n\n", hour, mins, (int)INET_ADDRSTRLEN, _buf, user_indx, all_response_names+100*response_indx, custom_strview_size, (unsigned)keepalive, (int)logline_reqheaders_len, logline_reqheaders);
 	}
 	close(logfile_fd);
 	return 0;

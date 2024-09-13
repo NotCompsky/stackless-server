@@ -10,7 +10,7 @@ def gzip_compress(contents:bytes):
 	return CO.compress(contents)+CO.flush()
 
 def brotli_compress(contents:bytes):
-	return brotli.compress(contents, mode=MODE_GENERIC, quality=11, lgwin=24, lgblock=24)
+	return brotli.compress(contents, mode=brotli.MODE_GENERIC, quality=11, lgwin=24, lgblock=24)
 
 def identity(contents:bytes):
 	return contents

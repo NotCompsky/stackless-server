@@ -87,7 +87,7 @@ class NonHTTPRequestHandler {
 		}
 		
 		if (data_sz != offset + 4*is_masked + payload_length){
-			printf("data_sz %lu  !=  %lu (%u + %u + %u)\n", data_sz, (uint64_t)(offset + 4*is_masked + payload_length), (unsigned)offset, (unsigned)(4*is_masked), (unsigned)payload_length);
+			printf("data_sz %lu  !=  %lu (%u + %u + %u)\n\tclient_context->n_bytes_read == %u\n", data_sz, (uint64_t)(offset + 4*is_masked + payload_length), (unsigned)offset, (unsigned)(4*is_masked), (unsigned)payload_length, (unsigned)client_context->n_bytes_read);
 			if (data_sz > offset + 4*is_masked + payload_length){
 				// TODO: Process case where it has read two consecutive payloads
 				client_context->n_bytes_read = 0;
@@ -137,6 +137,8 @@ class NonHTTPRequestHandler {
 			offset += 2;
 			memcpy(response_buf+offset, payload, new_payload_length);
 			
+			printf("MSG: %.*s\n", (int)(offset+new_payload_length), response_buf);
+			
 			client_context->n_bytes_read = 0;
 			return offset + new_payload_length;
 		}
@@ -149,6 +151,7 @@ class NonHTTPRequestHandler {
 			if (meta.socket == client_context->client_id){
 				meta.socket = 0;
 				websocket_client_ids[i] = 0;
+				printf("%.*s disconnected from WebSocket\n", (int)meta.username_len, usernames_buf+meta.username_offset);
 			}
 		}
 	}

@@ -144,9 +144,9 @@ bool is_b64_char(const char c){
 		SHA1((unsigned char*)server_key_input, 60, sha1);
 		
 		base64_encode__length20(sha1, websocketfirstresponse+97);
-		printf("websocket_client_ids emplaced %u\n", client_context->client_id);
 		websocket_client_ids.emplace_back(client_context->client_id); // TODO: Re-use spaces
 		websocket_client_metadatas.emplace_back(client_context->client_id, username_offset, username_len); // TODO: Re-use spaces
+		printf("websocket client from socket %i\n", client_context->client_socket);
 		client_context->expecting_http = false;
 		return std::string_view(websocketfirstresponse, websocketfirstresponse_sz);
 	}

@@ -107,27 +107,6 @@ constexpr static const std::string_view not_logged_in__dont_set_fuck_header =
 	"</body>"
 	"</html>"
 ;
-constexpr static const std::string_view not_logged_in__set_fuck_header =
-	HEADER__RETURN_CODE__OK
-	"Content-Length: 256\r\n"
-	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
-	"Content-Type: text/html; charset=UTF-8\r\n" \
-	SECURITY_HEADERS_EXCLUDING_CSP
-	"Set-Cookie: fuck=1; max-age=31536000; SameSite=Strict; Secure; HttpOnly\r\n" // to mitigate against gmail/microsoft automatically visiting registration URLs that are emailed to users
-	"\r\n"
-	"<!DOCTYPE html>"
-	"<html>"
-	"<head>"
-		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
-			"body{color:white;background:black;}"
-		"</style>"
-	"</head>"
-	"<body>"
-		"<h1>Not logged in</h1>"
-		"<p>Please request a login link by contacting the website owner</p>"
-	"</body>"
-	"</html>"
-;
 constexpr static const std::string_view cant_register_user_due_to_lack_of_fuck_cookie =
 	HEADER__RETURN_CODE__OK
 	"Content-Length: 936\r\n"
@@ -184,7 +163,7 @@ constexpr static const std::string_view ratelimited =
 
 #ifdef DISABLE_SERVER_AFTER_HOURS
 constexpr static const std::string_view server_out_of_hours_response__pre =
-	HEADER__RETURN_CODE__OK
+	"HTTP/1.1 503 Service Unavailable\r\n"
 	// "Connection: keep-alive\r\n" // HEADER__CONNECTION_KEEP_ALIVE
 	"Content-Length: 272\r\n"
 	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
@@ -227,7 +206,6 @@ namespace response_enum {
 		SUSPECTED_ROBOT,
 		USER_LOGIN_URL_ALREADY_USED,
 		NOT_LOGGED_IN__DONT_SET_FUCK_HEADER,
-		NOT_LOGGED_IN__SET_FUCK_HEADER,
 		CANT_REGISTER_USER_DUE_TO_LACK_OF_FUCK_COOKIE,
 		WIKI_PAGE_NOT_FOUND,
 		WIKI_PAGE_ERROR,
@@ -237,14 +215,13 @@ namespace response_enum {
 		N
 	};
 }
-constexpr static const std::string_view all_response_names[13] = {
+constexpr static const std::string_view all_response_names[12] = {
 	"_r::not_found",
 	"_r::server_error",
 	"_r::wrong_hostname",
 	"_r::suspected_robot",
 	"_r::user_login_url_already_used",
 	"_r::not_logged_in__dont_set_fuck_header",
-	"_r::not_logged_in__set_fuck_header",
 	"_r::cant_register_user_due_to_lack_of_fuck_cookie",
 	"_r::wiki_page_not_found",
 	"_r::wiki_page_error",
@@ -252,14 +229,13 @@ constexpr static const std::string_view all_response_names[13] = {
 	"_r::ratelimited",
 	"using_server_buf", // NOTE: Always has to be at end
 };
-constexpr static const std::string_view all_responses[12] = {
+constexpr static const std::string_view all_responses[11] = {
 	_r::not_found,
 	_r::server_error,
 	_r::wrong_hostname,
 	_r::suspected_robot,
 	_r::user_login_url_already_used,
 	_r::not_logged_in__dont_set_fuck_header,
-	_r::not_logged_in__set_fuck_header,
 	_r::cant_register_user_due_to_lack_of_fuck_cookie,
 	_r::wiki_page_not_found,
 	_r::wiki_page_error,

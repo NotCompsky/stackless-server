@@ -434,7 +434,7 @@ for fileid in fileid2alternative_thumbnail:
 	print(f"ERROR: Failed to use alternative thumbnail for {fileid}")
 
 def apparmor_escstr(s:str):
-	return s.replace("\\","\\\\").replace("\"","\\\"").replace("[","\\[")
+	return s.replace("\\","\\\\").replace("\"","\\\"").replace("[","\\[").replace("]","\\]")
 
 if browser_cache_is_different or (len(all_filepaths_added_to_server) != len(prev_all_filepaths_added_to_server)):
 	with open("prev_all_filepaths_added_to_server.json.new","w") as f:

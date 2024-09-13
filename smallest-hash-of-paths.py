@@ -9,7 +9,7 @@ from html import escape as html_escape
 from sha256integrity import get_sha256_hash_in_b64_form
 from headers import make_static_headers
 import compression_utils
-from modulohash_utils import finding_0xedc72f12, finding_0xedc72f12_w_avoids, get_path_id__u32
+from modulohash_utils import finding_0xedc72f12, finding_0xedc72f12_w_avoids, get_path_id__u32, get_shiftby
 
 
 mimetype_utils.load_cached_mimetypes("cached_mimetypes.json")
@@ -44,15 +44,16 @@ def get_inputs_from_dir(rootdirpathlen:int, dirpath:str, input_indx2fp:list, inp
 			continue
 		input_indx2fp.append(fp)
 		val:str = fp[rootdirpathlen:rootdirpathlen+4]
+		if val == "logi":
+			raise ValueError("/logi is reserved as a honeypot listed in robots.txt")
 		if val in args.inputs:
-			raise ValueError("2 files have the same preceding 2 chars: "+fp[rootdirpathlen:rootdirpathlen+2]+". Maybe use uint64_t instead of uint32_t?")
+			raise ValueError("2 files have the same preceding 2 chars: "+fp[rootdirpathlen:rootdirpathlen+2]+". Triggered by \""+val+"\" Maybe use uint64_t instead of uint32_t?")
 		inputs.append(val)
 
 
 if __name__ == "__main__":
 	import argparse
 	import random
-	from math import log2
 	import json
 	
 	parser = argparse.ArgumentParser()
@@ -112,7 +113,7 @@ if __name__ == "__main__":
 	shiftby2:int = get_shiftby(len(inputs2)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	if len(inputs2) != 0:
 		if args.multiplier2 == 0:
-			args.multiplier2 = finding_0xedc72f12("multiplier2", inputs2, shiftby2)
+			args.multiplier2 = finding_0xedc72f12("multiplier2", 100000000, inputs2, shiftby2)
 			if args.multiplier2 == 0:
 				raise ValueError(f"Failed to find suitable multiplier2 for {len(inputs2)} inputs2, {shiftby2} shiftby")
 	inputs2_mappedoutputs:list = [((path_id*args.multiplier2) & 0xffffffff) >> shiftby2 for path_id in inputs2]
@@ -120,11 +121,14 @@ if __name__ == "__main__":
 	shiftby1:int = get_shiftby(len(inputs)) - 1 # so that less than half of the range is 'empty', making it easier to find space for the anti-inputs
 	
 	if args.multiplier == 0:
-		args.multiplier = finding_0xedc72f12_w_avoids("multiplier1", inputs, anti_inputs, shiftby1)
+		for _ in range(3):
+			args.multiplier = finding_0xedc72f12_w_avoids("multiplier1", 100000000, inputs, anti_inputs, shiftby1)
+			if args.multiplier != 0:
+				break
 		if args.multiplier == 0:
-			raise ValueError(f"Failed to find suitable multiplier1 for {len(inputs)} inputs, {shiftby1} shiftby, {len(anti_inputs)} anti-inputs")
+			print(len(inputs), len(anti_inputs), shiftby1)
+			raise ValueError("Failed to find suitable multiplier1")
 	inputs_mappedoutputs:list = [((path_id*args.multiplier) & 0xffffffff) >> shiftby1 for path_id in inputs]
-	print(f"((path_id*{args.multiplier}) & 0xffffffff) >> {shiftby1}")
 	sorteds:list = []
 	inputs__sorted_to_new_order_w_gaps_etc:list = []
 	for i in range(max(inputs_mappedoutputs)+1):
@@ -134,8 +138,7 @@ if __name__ == "__main__":
 		except ValueError:
 			pass
 		sorteds.append([args.inputs[indx], inputs[indx], input_indx2fp[indx]])
-	for path, path_id, fp in sorteds:
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}:\t{path_id}\t{json.dumps(path)}")
+		inputs__sorted_to_new_order_w_gaps_etc.append(inputs[indx])
 	is_errors:bool = False
 	for path, path_id in zip(args.inputs, inputs):
 		if path_id not in [x[1] for x in sorteds]:
@@ -143,13 +146,12 @@ if __name__ == "__main__":
 			print(f"ERROR: input not included: {((path_id*args.multiplier) & 0xffffffff) >> shiftby1}:\t{path_id}\t{json.dumps(path)}")
 	if is_errors:
 		raise ValueError("Error")
-	print(f"((path_id*{args.multiplier2}) & 0xffffffff) >> {shiftby2} // for unpackaged files")
 	for path, path_id in sorted(zip(inputs2_paths, inputs2), key=lambda x:((x[1]*args.multiplier2)&0xffffffff)>>shiftby2):
 		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
 	
 	print("--anti-inputs:")
 	for path, path_id in zip(args.anti_inputs, anti_inputs):
-		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")
+		print(f"{((path_id*args.multiplier) & 0xffffffff) >> shiftby1}: {((path_id*args.multiplier2) & 0xffffffff) >> shiftby2}:{path_id}\t{json.dumps(path)}")'''
 	
 	diary_entries_old:list = []
 	prev_diary_ids:list = []
@@ -181,7 +183,7 @@ if __name__ == "__main__":
 	if diary_fname2idstr_modified:
 		diary_shiftby = get_shiftby(len(diary_entries_old)) - 1
 		diary_pathids:list = [get_path_id(ls[1]) for ls in diary_entries_old]
-		diary_multiplier = finding_0xedc72f12("diary", diary_pathids, diary_shiftby)
+		diary_multiplier = finding_0xedc72f12("diary", 100000000, diary_pathids, diary_shiftby)
 		if diary_multiplier == 0:
 			raise ValueError("Cannot find suitable diary_multiplier")
 		diary_mappedoutputs = [((pathid*diary_multiplier)&0xffffffff)>>diary_shiftby for pathid in diary_pathids]
@@ -293,7 +295,7 @@ if __name__ == "__main__":
 							csp += ";"
 						csp_header = ""+csp
 					else:
-						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\">",b"<source type=\"\\1\" src=\"/static/\\2?v="+browser_cache_version_cstr+b"\">",contents)
+						contents = re.sub(b"<source type=\"([^\"]+)\" src=\"[.][.]/large/([^\"]+)\"(?: data-src=\"[^\"]+\")?>",b"<source type=\"\\1\" src=\"/static/\\2?v="+browser_cache_version_cstr+b"\">",contents)
 						contents = re.sub(b"background-image: *url[(][.][.]/static/([^)]+)[)];",b"background-image:url(\\1);",contents)
 						contents = re.sub(b"background-image: *url[(][.][.]/large/([^)]+)[)];",b"background-image:url(/static/\\1?v="+browser_cache_version_cstr+b");",contents)
 						

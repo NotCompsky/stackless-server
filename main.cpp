@@ -86,7 +86,31 @@ std::string_view http_response__set_user_cookie__postfix(
 );
 char http_response__set_user_cookie[http_response__set_user_cookie__prefix.size() + user_cookie_len + http_response__set_user_cookie__postfix.size()];
 
-constexpr
+constexpr static const std::string_view not_logged_in__set_fuck_header__prefix =
+	HEADER__RETURN_CODE__OK
+	"Content-Length: 256\r\n"
+	"Content-Security-Policy: default-src 'none'; style-src 'sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y='\r\n" // HEADER__SECURITY__CSP__NONE
+	"Content-Type: text/html; charset=UTF-8\r\n" \
+	SECURITY_HEADERS_EXCLUDING_CSP
+	"Set-Cookie: fuck="
+;
+constexpr static const std::string_view not_logged_in__set_fuck_header__postfix = "; max-age=31536000; SameSite=Strict; Secure; HttpOnly\r\n" // to mitigate against gmail/microsoft automatically visiting registration URLs that are emailed to users
+	"\r\n"
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+		"<style integrity=\"sha256-wrWloy50fEZAc/HT+n6+g5BH2EMxYik8NzH3gR6Ge3Y=\">"
+			"body{color:white;background:black;}"
+		"</style>"
+	"</head>"
+	"<body>"
+		"<h1>Not logged in</h1>"
+		"<p>Please request a login link by contacting the website owner</p>"
+	"</body>"
+	"</html>"
+;
+constexpr unsigned not_logged_in__set_fuck_header__totalsz = not_logged_in__set_fuck_header__prefix.size() + 8 + not_logged_in__set_fuck_header__postfix.size();
+char not_logged_in__set_fuck_header[not_logged_in__set_fuck_header__totalsz];
 
 struct SecretPath {
 	char path[secret_path_hash_len];
@@ -181,10 +205,10 @@ class HTTPResponseHandler {
 		}
 #endif
 		
-		// NOTE: str guaranteed to be at least default_req_buffer_sz_minus1
-		printf("[%.4s] %u\n", str, reinterpret_cast<uint32_t*>(str)[0]);
 		if (prefix_id == uint32_value_of(prefix_GET)){
 			bool has_IfModifiedSince_header = false;
+			// NOTE: No modern browsers use HEAD requests. Instead they use If-Modified-Since header.
+			// TODO: Parse "If-Modified-Since" header, which is the modern equivalent of HEAD requests
 			
 			constexpr char cookienamefld[8] = {'C','o','o','k','i','e',':',' '};
 			constexpr char endofheaders[4] = {'\r','\n','\r','\n'};
@@ -344,13 +368,17 @@ class HTTPResponseHandler {
 						if (not has_secfetch_header){
 							[[unlikely]]
 							this->keep_alive = false;
-							response_indx = response_enum::NOT_LOGGED_IN__DONT_SET_FUCK_HEADER;
+							memcpy(not_logged_in__set_fuck_header+not_logged_in__set_fuck_header__prefix.size(), "fedcba98", 8); // TODO: Hash of IP
+							custom_strview = std::string_view(not_logged_in__set_fuck_header, not_logged_in__set_fuck_header__totalsz);
+							response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
 							goto return_goto;
 						}
 					}
 					
 					this->keep_alive = false;
-					response_indx = response_enum::NOT_LOGGED_IN__SET_FUCK_HEADER;
+					memcpy(not_logged_in__set_fuck_header+not_logged_in__set_fuck_header__prefix.size(), "fedcba98", 8); // TODO: Hash of IP
+					custom_strview = std::string_view(not_logged_in__set_fuck_header, not_logged_in__set_fuck_header__totalsz);
+					response_indx = response_enum::SENDING_FROM_CUSTOM_STRVIEW;
 					goto return_goto;
 				}
 			} else {
@@ -371,8 +399,8 @@ class HTTPResponseHandler {
 						(cookies_startatspace[2] == 'u') and
 						(cookies_startatspace[3] == 'c') and
 						(cookies_startatspace[4] == 'k') and
-						(cookies_startatspace[5] == '=') and
-						(cookies_startatspace[6] == '1')
+						(cookies_startatspace[5] == '=')
+						// TODO: Hash of IP
 					){
 						break;
 					}
@@ -712,6 +740,8 @@ class HTTPResponseHandler {
 					goto return_goto;
 				}
 			}
+		} else {
+			[[unlikely]];
 		}
 		
 		return_goto:
@@ -925,8 +955,24 @@ int main(const int argc,  const char* argv[]){
 		}
 	}
 	
-	if (unlikely((logfile_fd == -1) or (packed_file_fd == -1) or (enwiki_fd == -1) or (enwiki_archiveindices_fd == -1))){
-		write(2, "Failed logfile_fd to open expired_user_login_urls or packed_file or enwiki\n", 75);
+	if (logfile_fd == -1){
+		[[unlikely]]
+		write(2, "Failed to open logfile\n", 23);
+		return 1;
+	}
+	if (packed_file_fd == -1){
+		[[unlikely]]
+		write(2, "Failed to open packed_file\n", 27);
+		return 1;
+	}
+	if (enwiki_fd == -1){
+		[[unlikely]]
+		write(2, "Failed to open enwiki\n", 22);
+		return 1;
+	}
+	if (enwiki_archiveindices_fd == -1){
+		[[unlikely]]
+		write(2, "Failed to open enwiki_archiveindices\n", 37);
 		return 1;
 	}
 	
@@ -974,6 +1020,16 @@ int main(const int argc,  const char* argv[]){
 		http_response__set_user_cookie__postfix.size()
 	);
 	
+	memcpy(
+		not_logged_in__set_fuck_header,
+		not_logged_in__set_fuck_header__prefix.data(),
+		not_logged_in__set_fuck_header__prefix.size()
+	);
+	memcpy(
+		not_logged_in__set_fuck_header + not_logged_in__set_fuck_header__prefix.size() + 8,
+		not_logged_in__set_fuck_header__postfix.data(),
+		not_logged_in__set_fuck_header__postfix.size()
+	);
 	
 	
 	
