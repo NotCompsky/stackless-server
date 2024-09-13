@@ -286,26 +286,41 @@ tag2thumbnail:dict = {
 	236111:"/kpop.jpg",
 }
 for key,val in tag2thumbnail.items():
-	mimetype:str = "image/jpeg" if val.endswith(".jpg") else ("image/webp" if val.endswith(".webp") else "image/png")
-	with open(f"/media/vangelic/DATA/static-server-files/tag-thumbs{val}","rb") as f:
-		tag2thumbnail[key] = "data:"+mimetype+";base64,"+base64.encodebytes(f.read()).replace(b"\n",b"").decode()
+	if type(val) is tuple:
+		tag2thumbnail[key] = val[1]
+	else:
+		mimetype:str = "image/jpeg" if val.endswith(".jpg") else ("image/webp" if val.endswith(".webp") else "image/png")
+		with open(f"/media/vangelic/DATA/static-server-files/tag-thumbs{val}","rb") as f:
+			tag2thumbnail[key] = "data:"+mimetype+";base64,"+base64.encodebytes(f.read()).replace(b"\n",b"").decode()
 fileid2subtitles:dict = {}
+def get_subtitle_vtt_for_fileid(fp:str, lang:str, fileid:int):
+	with open(fp,"rb") as f:
+		subtitle:list = [subtitle_langs.index(lang),"data:text/vtt;base64,"+base64.encodebytes(process_vtt_contents(f.read())).replace(b"\n",b"").decode()]
+		return subtitle
+def process_vtt_contents(s:str):
+	lines:list = []
+	for line in s.split(b"\n"):
+		if line.startswith(b"#"):
+			continue
+		lines.append(line)
+	return b"\n".join(lines)
 for fname in os.listdir("/media/vangelic/DATA/static-server-files/audio-subtitles"):
 	if fname.startswith("test."):
 		continue
 	fp:str = f"/media/vangelic/DATA/static-server-files/audio-subtitles/{fname}"
 	m = re.search("^([0-9]+)[.](.*)$", fname)
+	if m is None:
+		continue
 	fileid:int = int(m.group(1))
 	lang:str = m.group(2)
 	if lang not in subtitle_langs:
 		print(f"WARNING: Skipping unrecognised subtitle language: {lang}")
 		continue
-	with open(fp,"rb") as f:
-		subtitle:list = [subtitle_langs.index(lang),"data:text/vtt;base64,"+base64.encodebytes(f.read()).replace(b"\n",b"").decode()]
-		if fileid in fileid2subtitles:
-			fileid2subtitles[fileid].append(subtitle)
-		else:
-			fileid2subtitles[fileid] = [subtitle]
+	subtitle:str = get_subtitle_vtt_for_fileid(fp,lang,fileid)
+	if fileid in fileid2subtitles:
+		fileid2subtitles[fileid].append(subtitle)
+	else:
+		fileid2subtitles[fileid] = [subtitle]
 for fileid in tagem_fileids:
 	if fileid == 7155: # Endless Space 2 hour compilation
 		continue
@@ -401,23 +416,44 @@ for fileid in tagem_fileids:
 	fp_of_file_added_to_server(fileid, fp)
 	i += 1
 tag2thumbnail = {(0 if (key==0) else tagem_tagids__ordered_keys__including_hidden_tagids.index(key)):val for key,val in tag2thumbnail.items()}
-for (name,description,filepaths) in (
+for name,description,firstmedia,filepaths in (
 	,
 ):
 	tagindx:int = None
-	thumb_str:str = 0
+	default_thumb_str:str = 0
 	if name in tagem_tagids__as_indices:
 		tagindx = tagem_tagids__as_indices.index(name)
 		if tagindx in tag2thumbnail:
-			thumb_str = tag2thumbnail[tagindx]
+			default_thumb_str = tag2thumbnail[tagindx]
 	else:
 		tagindx = len(tagem_tagids__as_indices)
 		tagem_tagids__as_indices.append(name)
-	for fp in filepaths:
+	for fp_indx_in_set, fp in enumerate(filepaths):
+		thumb_str:str = default_thumb_str
+		if type(fp) is tuple:
+			if fp[0] == "PICK_ONE":
+				fp = fp[1][0] # TODO: Choose at random, but only when browser_cache_is_different (i.e. version v=? updated)
+		if type(fp) is tuple:
+			thumb_str = fp[1]
+			fp = fp[0]
+		
+		if fp in all_filepaths_added_to_server:
+			print("WARNING: file already included:", fp)
+			continue
+		
+		file_visible_tagids:list = [tagindx]
+		subtitles:list = []
+		fake_fileid:int = max(tagem_fileid2indx) + 1
+		tagem_fileid2indx[fake_fileid] = i
+		if os.path.isfile(fp+".vtt"):
+			print("Found VTT: "+fp+".vtt")
+			subtitles.append(get_subtitle_vtt_for_fileid(fp+".vtt", "en", fake_fileid))
+			file_visible_tagids.append(tagem_tagids__ordered_keys.index(FAKETAG_hassubtitles))
+		if firstmedia == fp_indx_in_set:
+			introduction_to_each_category[tagindx] = fake_fileid
 		file_mimetype:str = mimetype_utils.guess_mimetype(fp)
 		file_mimetype = mimetype_utils.standardise_mimetype(file_mimetype, fp)
-		subtitles:list = []
-		fileid2associatedtags.append([i,thumb_str,[tagindx],file_mimetype,subtitles])
+		fileid2associatedtags.append([i,thumb_str,file_visible_tagids,file_mimetype,subtitles])
 		set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
 		fp_of_file_added_to_server(None, fp)
 		i += 1
