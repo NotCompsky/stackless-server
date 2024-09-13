@@ -3,7 +3,7 @@ const $=document.getElementById.bind(document),
 	b=(a,b)=>a.startsWith(b), // saves 9 characters each use
 	p=(a,b)=>a.push(b), // saves 3 characters each use
 	l=a=>a.length, // used 12 times; saves 4 characters each use
-	e=(a,f)=>a.addEventListener("pointerup",f), // saves 15 chars each use
+	e=(a,b,f)=>a.addEventListener(b,f), // saves 15 chars each use
 	o=(i,s)=>`<option value="${i}">${s}</option>`,
 	filterfn=[
 		function(fileid){ return true; },
