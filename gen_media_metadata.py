@@ -218,6 +218,36 @@ for fp in (
 	set_symlink(f"/home/vangelic/repos/compsky/static-and-chat-server/files/large/{i:04d}", fp)
 	fp_of_file_added_to_server(None, fp)
 	i += 1
+for fp in (
+	, # "files/.../path/to/some.html",
+):
+	final_result:list = []
+	
+	is_modified:bool = False
+	with open(fp,"r") as f:
+		for orig_line in f.read().split("\n"):
+			line:str = orig_line
+			m = re.search(''' data-src="(/media/vangelic/DATA/[^"]+)"''', line)
+			if m is not None:
+				_fp:str = m.group(1)
+				set_symlink(f"files/large/{i:04d}", _fp)
+				fp_of_file_added_to_server(None, _fp)
+				if ' src="' in line:
+					line = re.sub(' src="[^"]*"', f' src="../large/{i:04d}"', line)
+				else:
+					line = re.sub(' data-src="', f' src="../large/{i:04d}" data-src="', line)
+				i += 1
+			final_result.append(line)
+			if line != orig_line:
+				is_modified = True
+		if final_result[-1] == "":
+			final_result.pop()
+	
+	if is_modified:
+		with open(fp,"w") as f:
+			for line in final_result:
+				f.write(line+"\n")
+
 captcha_video_fps:list = []
 captcha_questions:list = []
 process_captcha_clips_and_questions(i, captcha_video_fps, captcha_questions)
