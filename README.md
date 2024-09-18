@@ -1,3 +1,11 @@
+# TOC
+
+* [Description](#Description)
+* [Features](#Features)
+* [Screenshots](#Screenshots)
+* [Requirements](#Requirements)
+* [Compiling](#Compiling)
+
 # Description
 
 A web server that has:
@@ -21,6 +29,12 @@ A web server that has:
 * Some basic features such as rate limiting
 * Unusual features such as the ability to block any requests during night time
 
+# Screenshots
+
+![screenshot1](https://github.com/user-attachments/assets/dfc66f61-d257-4305-bd79-3a7b942e6d6b)
+![screenshot chat1](https://github.com/user-attachments/assets/b5f099f4-27a9-4987-868e-75cb58b9300a)
+![screenshot chat2](https://github.com/user-attachments/assets/7489e10c-ad72-4674-a37c-e9a02fa2fea1)
+
 # Requirements
 
 ## Running
@@ -40,7 +54,7 @@ To initialise files for the server - which can be done on a different computer -
 * Python 3
 * Admin privileges to allow it to use port 443 (HTTPS)
 
-## Compiling
+# Compiling
 
 To compile the project:
 
